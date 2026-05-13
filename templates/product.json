@@ -12,10 +12,6 @@
     "main": {
       "type": "product-information",
       "blocks": {
-        "dibs_lb_ordereasy_product_block_8kYVhG": {
-          "type": "shopify://apps/dibs/blocks/lb-ordereasy-product-block/7cc74442-1b61-4b87-afed-944e0def999c",
-          "settings": {}
-        },
         "media-gallery": {
           "type": "_product-media-gallery",
           "static": true,
@@ -178,6 +174,10 @@
               },
               "blocks": {}
             },
+            "dibs_lb_ordereasy_product_block_4xik8z": {
+              "type": "shopify://apps/dibs/blocks/lb-ordereasy-product-block/7cc74442-1b61-4b87-afed-944e0def999c",
+              "settings": {}
+            },
             "variant_picker_R3rGDr": {
               "type": "variant-picker",
               "settings": {
@@ -256,15 +256,13 @@
           "block_order": [
             "group_icgrde",
             "divider_VJhene",
+            "dibs_lb_ordereasy_product_block_4xik8z",
             "variant_picker_R3rGDr",
             "buy_buttons_eYQEYi",
             "text_aEtTtq"
           ]
         }
       },
-      "block_order": [
-        "dibs_lb_ordereasy_product_block_8kYVhG"
-      ],
       "settings": {
         "content_width": "content-center-aligned",
         "desktop_media_position": "left",
