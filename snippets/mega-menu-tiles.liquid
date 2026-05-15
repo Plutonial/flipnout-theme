@@ -1,0 +1,67 @@
+{%- doc -%}
+  Renders SDTM Latest Review and Promo Card tiles for the mega-menu.
+
+  @param {object} block_settings - The block settings object containing promo card configuration.
+  @param {string} tile_id - Unique ID prefix for scoping styles.
+
+  @example
+  {% render 'mega-menu-tiles', block_settings: block.settings, tile_id: 'MegaMenuTiles-1' %}
+{%- enddoc -%}
+
+{% comment %} SDTM Latest Review tile — auto-populated from blogs.sdtm {% endcomment %}
+{%- assign sdtm_blog = blogs['sdtm'] -%}
+{%- if sdtm_blog != blank and sdtm_blog.articles_count > 0 -%}
+  {%- assign sdtm_article = sdtm_blog.articles.first -%}
+{%- endif -%}
+
+<div class="mega-menu-tiles" id="{{ tile_id }}">
+  {% comment %} Tile 1: SDTM Latest Review {% endcomment %}
+  {% if sdtm_article != blank %}
+    <a href="{{ sdtm_article.url }}" class="mega-menu-tile mega-menu-tile--sdtm">
+      <div class="mega-menu-tile__image">
+        {% if sdtm_article.image %}
+          {{ sdtm_article.image | image_url: width: 560 | image_tag:
+            loading: 'lazy',
+            sizes: '280px',
+            widths: '280, 560',
+            class: 'mega-menu-tile__img'
+          }}
+        {% else %}
+          <div class="mega-menu-tile__placeholder"></div>
+        {% endif %}
+      </div>
+      <div class="mega-menu-tile__body">
+        <span class="mega-menu-tile__eyebrow">SDTM</span>
+        <span class="mega-menu-tile__heading">{{ sdtm_article.title }}</span>
+        <span class="mega-menu-tile__cta">Watch the Review</span>
+      </div>
+    </a>
+  {% endif %}
+
+  {% comment %} Tile 2: Promo Card (configurable via theme customizer) {% endcomment %}
+  {% if block_settings.promo_heading != blank or block_settings.promo_image != blank %}
+    <a href="{{ block_settings.promo_cta_link | default: '#' }}" class="mega-menu-tile mega-menu-tile--promo">
+      <div class="mega-menu-tile__image">
+        {% if block_settings.promo_image != blank %}
+          {{ block_settings.promo_image | image_url: width: 560 | image_tag:
+            loading: 'lazy',
+            sizes: '280px',
+            widths: '280, 560',
+            class: 'mega-menu-tile__img'
+          }}
+        {% else %}
+          <div class="mega-menu-tile__placeholder"></div>
+        {% endif %}
+      </div>
+      <div class="mega-menu-tile__body">
+        {% if block_settings.promo_eyebrow != blank %}
+          <span class="mega-menu-tile__eyebrow">{{ block_settings.promo_eyebrow }}</span>
+        {% endif %}
+        {% if block_settings.promo_heading != blank %}
+          <span class="mega-menu-tile__heading">{{ block_settings.promo_heading }}</span>
+        {% endif %}
+        <span class="mega-menu-tile__cta">{{ block_settings.promo_cta_text | default: 'Reserve Now' }}</span>
+      </div>
+    </a>
+  {% endif %}
+</div>

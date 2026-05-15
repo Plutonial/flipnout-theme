@@ -24,6 +24,22 @@
   assign column_count = 0
   assign links_before_wrap = 10
   assign max_menu_columns = grid_columns_count | default: 6
+
+  comment
+    Compute the balanced row count for equalizing mega-menu column heights.
+    We find the smallest child-link count among sibling columns (e.g. Department = 8),
+    then use that as the max rows per column. Lists with more items (e.g. Brand = 15)
+    will wrap into multiple CSS grid columns capped at that row count (8/7 split).
+  endcomment
+  assign balanced_row_count = 0
+  for sibling_link in parent_link.links
+    if sibling_link.links != blank
+      assign sibling_child_size = sibling_link.links | size
+      if balanced_row_count == 0 or sibling_child_size < balanced_row_count
+        assign balanced_row_count = sibling_child_size
+      endif
+    endif
+  endfor
   assign max_menu_columns_tablet = grid_columns_count_tablet | default: 4
 
   ##
@@ -136,19 +152,23 @@
         </span>
       </a>
       {% if link.links != blank %}
+        {% liquid
+          assign child_count = link.links | size
+          assign needs_grid_wrap = false
+          if child_count > balanced_row_count and balanced_row_count > 0
+            assign needs_grid_wrap = true
+          endif
+        %}
         <ul
-          class="list-unstyled"
-          {% if should_break_columns %}
+          class="list-unstyled{% if needs_grid_wrap %} mega-menu-balanced-columns{% endif %}"
+          {% if needs_grid_wrap %}
+            style="--balanced-row-count: {{ balanced_row_count }};"
+          {% elsif should_break_columns %}
             style="column-count: {{ column_span }};"
           {% endif %}
         >
           {% for childLink in link.links %}
-            {% assign break_after_modulo = forloop.index | modulo: links_before_wrap %}
-            <li
-              {% if break_after_modulo == 0 and should_break_columns %}
-                style="break-after: column;"
-              {% endif %}
-            >
+            <li>
               <a
                 href="{{ childLink.url }}"
                 class="mega-menu__link"

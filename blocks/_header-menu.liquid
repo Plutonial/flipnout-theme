@@ -119,13 +119,16 @@
                       parent_link: link,
                       id: list_id,
                       section: section,
-                      grid_columns_count: 6,
+                      grid_columns_count: 8,
                       grid_columns_count_tablet: 4,
                       grid_columns_count_collection_images: 8,
                       menu_content_type: menu_content_type,
                       content_aspect_ratio: ratio,
                       image_border_radius: image_border_radius
                     %}
+                    {% comment %} SDTM + Promo Card tiles on the right side of the mega-menu {% endcomment %}
+                    {% assign tile_id = 'MegaMenuTiles-' | append: forloop.index %}
+                    {% render 'mega-menu-tiles', block_settings: block_settings, tile_id: tile_id %}
                   </div>
                 </div>
               </div>
@@ -573,6 +576,138 @@
     }
   }
 
+  {% comment %} Equalize mega-menu column heights: brand lists use CSS grid to cap at same row count as department column {% endcomment %}
+  .mega-menu-balanced-columns {
+    @media screen and (min-width: 990px) {
+      display: grid;
+      grid-template-rows: repeat(var(--balanced-row-count, 8), auto);
+      grid-auto-flow: column;
+      grid-auto-columns: 1fr;
+      column-gap: 32px;
+    }
+  }
+
+  {% comment %} Prevent text wrapping on brand links inside balanced grid columns {% endcomment %}
+  .mega-menu-balanced-columns .mega-menu__link {
+    white-space: nowrap;
+  }
+
+  {% comment %} Mega-menu tile styles {% endcomment %}
+  .mega-menu-tiles {
+    display: none;
+
+    @media screen and (min-width: 990px) {
+      display: contents;
+    }
+  }
+
+  .mega-menu-tile {
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+    max-height: 360px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: var(--color-background);
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .mega-menu-tile:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .mega-menu-tile__image {
+    position: relative;
+    width: 100%;
+    flex: 0 0 60%;
+    overflow: hidden;
+  }
+
+  .mega-menu-tile__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .mega-menu-tile__placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--color-foreground-muted);
+    opacity: 0.1;
+  }
+
+  .mega-menu-tile__body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px 16px;
+    flex: 1;
+  }
+
+  .mega-menu-tile__eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  .mega-menu-tile__heading {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mega-menu-tile__cta {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: auto;
+    color: var(--color-accent);
+  }
+
+  {% comment %} Mobile: tiles stack full-width below menu sections {% endcomment %}
+  @media screen and (max-width: 989px) {
+    .mega-menu-tiles {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px 0;
+    }
+
+    .mega-menu-tile {
+      width: 100%;
+      max-height: none;
+      flex-direction: row;
+      height: 120px;
+    }
+
+    .mega-menu-tile__image {
+      flex: 0 0 40%;
+      height: 100%;
+    }
+
+    .mega-menu-tile__body {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+
+  {% comment %} Align mega-menu inner content with nav start position, not logo/container edge {% endcomment %}
+  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .mega-menu__grid {
+    @media screen and (min-width: 990px) {
+      padding-left: calc(var(--header-nav-offset, 0px) + var(--gap-xl));
+    }
+  }
+
   .mega-menu__column {
     grid-column: span 1;
   }
@@ -857,6 +992,37 @@
       "unit": "px",
       "default": 0,
       "visible_if": "{{ block.settings.menu_style != 'text' }}"
+    },
+    {
+      "type": "header",
+      "content": "Promo Card Tile"
+    },
+    {
+      "type": "image_picker",
+      "id": "promo_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "promo_eyebrow",
+      "label": "Eyebrow",
+      "default": "Now Pre-Ordering"
+    },
+    {
+      "type": "text",
+      "id": "promo_heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "promo_cta_text",
+      "label": "CTA text",
+      "default": "Reserve Now"
+    },
+    {
+      "type": "url",
+      "id": "promo_cta_link",
+      "label": "CTA link"
     },
     {
       "type": "header",
