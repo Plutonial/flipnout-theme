@@ -57,13 +57,23 @@
             "reviewer": "Sam K.",
             "machine": "Stern Deadpool Pro"
           }
+        },
+        "review-5": {
+          "type": "review",
+          "settings": {
+            "text": "Second machine from FNO and they never disappoint. White-glove delivery and perfectly leveled.",
+            "rating": 5,
+            "reviewer": "Jordan T.",
+            "machine": "Stern Venom Premium"
+          }
         }
       },
       "block_order": [
         "review-1",
         "review-2",
         "review-3",
-        "review-4"
+        "review-4",
+        "review-5"
       ]
     }
   },

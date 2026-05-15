@@ -12,19 +12,52 @@
       <span class="review-card__star" aria-hidden="true">{% if i <= rating %}★{% else %}☆{% endif %}</span>
     {%- endfor -%}
   </div>
-  <p class="review-card__text">{{ text }}</p>
-  <p class="review-card__meta">— {{ reviewer }} • {{ machine }}</p>
+  <blockquote class="review-card__text">"{{ text }}"</blockquote>
+  <p class="review-card__reviewer">— {{ reviewer }}</p>
+  {%- if machine != blank -%}
+    <p class="review-card__machine">{{ machine }}</p>
+  {%- endif -%}
 </article>
 
 {% style %}
   .review-card {
-    border: 1px solid rgb(var(--color-border-rgb) / 20%);
-    border-radius: var(--radius-sm, 8px);
-    padding: var(--spacing-3, 12px);
-    background: rgb(var(--color-foreground-rgb) / 2%);
-    min-width: 260px;
+    background: white;
+    border-radius: 12px;
+    padding: clamp(32px, 5vw, 64px);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.08);
+    text-align: center;
+    max-width: 700px;
+    margin-inline: auto;
   }
-  .review-card__stars { color: #F6C343; letter-spacing: 2px; margin-bottom: 6px; font-size: 14px; }
-  .review-card__text { margin: 0 0 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .review-card__meta { margin: 0; font-size: 13px; color: rgb(var(--color-foreground-rgb) / 70%); }
+
+  .review-card__stars {
+    color: #F6C343;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .review-card__text {
+    margin: 0 0 24px;
+    font-size: clamp(16px, 2vw, 19px);
+    line-height: 1.6;
+    font-style: italic;
+    max-width: 600px;
+    margin-inline: auto;
+    border: none;
+    padding: 0;
+  }
+
+  .review-card__reviewer {
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(var(--color-foreground-rgb) / 0.8);
+  }
+
+  .review-card__machine {
+    margin: 0;
+    font-size: 13px;
+    color: rgb(var(--color-foreground-rgb) / 0.5);
+  }
 {% endstyle %}

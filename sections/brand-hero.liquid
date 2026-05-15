@@ -7,7 +7,7 @@
   assign overlay_darkness = section.settings.overlay_darkness | default: 50
 -%}
 
-<div id="{{ section_id }}" class="brand-hero color-scheme-inherit">
+<div id="{{ section_id }}" class="brand-hero">
   <div class="brand-hero__bg">
     {%- if bg_image -%}
       {{ bg_image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', class: 'brand-hero__bg-img', sizes: '100vw', widths: '800,1200,1600,2000,2400' }}
@@ -17,32 +17,59 @@
     <span class="brand-hero__overlay" aria-hidden="true"></span>
   </div>
 
-  <div class="brand-hero__content page-width">
-    <div class="brand-hero__stack">
-      {%- if brand_logo != blank -%}
-        <img class="brand-hero__logo" src="{{ brand_logo | image_url: width: 600 }}" alt="{{ collection.title }} logo" loading="eager" />
-      {%- endif -%}
+  <div class="brand-hero__content">
+    <div class="brand-hero__container">
+      <div class="brand-hero__stack">
+        {%- if brand_logo != blank -%}
+          <img class="brand-hero__logo" src="{{ brand_logo | image_url: width: 600 }}" alt="{{ collection.title }} logo" loading="eager" />
+        {%- endif -%}
 
-      <h1 class="brand-hero__title h0">{{ collection.title }}</h1>
-      {%- if collection.description != blank -%}
-        <div class="brand-hero__desc subtext rte">{{ collection.description }}</div>
-      {%- endif -%}
+        <h1 class="brand-hero__title">{{ collection.title }}</h1>
+
+        {%- if collection.description != blank -%}
+          <div class="brand-hero__desc rte">{{ collection.description }}</div>
+        {%- endif -%}
+
+        <a href="#brand-machines" class="brand-hero__cta">
+          Shop {{ collection.title }}
+        </a>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var cta = document.querySelector('#{{ section_id }} .brand-hero__cta');
+    if (cta) {
+      cta.addEventListener('click', function (e) {
+        e.preventDefault();
+        var target = document.getElementById('brand-machines');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+  });
+</script>
 
 {% style %}
   #{{ section_id }} {
     position: relative;
   }
+
   #{{ section_id }} .brand-hero__bg {
     position: relative;
     width: 100%;
-    min-height: 40svh;
+    min-height: 60svh;
   }
+
   @media (min-width: 750px) {
-    #{{ section_id }} .brand-hero__bg { min-height: 50svh; }
+    #{{ section_id }} .brand-hero__bg {
+      min-height: 80svh;
+    }
   }
+
   #{{ section_id }} .brand-hero__bg-img {
     position: absolute;
     inset: 0;
@@ -50,27 +77,42 @@
     height: 100%;
     object-fit: cover;
   }
+
   #{{ section_id }} .brand-hero__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgb(0 0 0 / {{ overlay_darkness }}%), rgb(0 0 0 / 0%));
+    background: linear-gradient(
+      to top,
+      rgb(0 0 0 / {{ overlay_darkness | plus: 15 | at_most: 100 }}%),
+      rgb(0 0 0 / {{ overlay_darkness | divided_by: 3 }}%)
+    );
     pointer-events: none;
   }
+
   #{{ section_id }} .brand-hero__content {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: clamp(48px, 8vw, 100px);
   }
+
+  #{{ section_id }} .brand-hero__container {
+    width: 100%;
+    max-width: var(--normal-page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: var(--page-margin, 16px);
+  }
+
   #{{ section_id }} .brand-hero__stack {
-    width: min(100%, 1100px);
     display: grid;
     gap: var(--spacing-4, 16px);
     text-align: {{ text_align }};
     align-items: start;
     justify-items: {% if text_align == 'left' %}start{% else %}center{% endif %};
-    padding-inline: var(--page-padding, 16px);
+    max-width: 700px;
   }
+
   #{{ section_id }} .brand-hero__logo {
     max-height: 120px;
     width: auto;
@@ -80,10 +122,43 @@
     {% else %}
       justify-self: center;
     {% endif %}
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%));
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 40%));
   }
-  #{{ section_id }} .brand-hero__title { color: white; }
-  #{{ section_id }} .brand-hero__desc { color: rgb(255 255 255 / 0.9); }
+
+  #{{ section_id }} .brand-hero__title {
+    color: white;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  #{{ section_id }} .brand-hero__desc {
+    color: rgb(255 255 255 / 0.9);
+    font-size: clamp(16px, 2vw, 20px);
+    line-height: 1.5;
+    max-width: 600px;
+  }
+
+  #{{ section_id }} .brand-hero__cta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 14px 32px;
+    background: white;
+    color: #111;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    border-radius: var(--radius-sm, 8px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #{{ section_id }} .brand-hero__cta:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
+  }
 {% endstyle %}
 
 {% schema %}

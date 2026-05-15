@@ -2,46 +2,67 @@
   assign section_id = 'brand-reviews-' | append: section.id
 -%}
 
-<section id="{{ section_id }}" class="brand-reviews section section--page-width color-scheme-inherit">
-  <div class="brand-reviews__header">
-    <h2 class="h3">{{ section.settings.heading | default: 'What pinball enthusiasts say' }}</h2>
-  </div>
-  <div class="brand-reviews__scroller" role="list">
-    {%- if section.blocks.size > 0 -%}
-      {%- for block in section.blocks -%}
-        <div role="listitem" class="brand-reviews__item">
-          {% render 'review-card' %}
-        </div>
-      {%- endfor -%}
-    {%- else -%}
-      {%- for i in (1..4) -%}
-        <div role="listitem" class="brand-reviews__item">
-          <article class="review-card">
-            <div class="review-card__stars" aria-label="5 out of 5 stars">
-              <span aria-hidden="true">★★★★★</span>
+<section id="{{ section_id }}" class="brand-reviews">
+  <div class="brand-section__container">
+    <h2 class="brand-section__heading">{{ section.settings.heading | default: 'What pinball enthusiasts say' }}</h2>
+
+    <brand-slider class="brand-slider brand-slider--reviews" data-slides-desktop="1" data-slides-mobile="1">
+      <div class="brand-slider__track" role="list">
+        {%- if section.blocks.size > 0 -%}
+          {%- for block in section.blocks -%}
+            <div role="listitem" class="brand-slider__slide brand-reviews__item">
+              {% render 'review-card' %}
             </div>
-            <p class="review-card__text">Outstanding service and the game arrived perfectly dialed-in.</p>
-            <p class="review-card__meta">— Pinball Fan • Stern Premium</p>
-          </article>
-        </div>
-      {%- endfor -%}
-    {%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..4) -%}
+            <div role="listitem" class="brand-slider__slide brand-reviews__item">
+              <article class="review-card">
+                <div class="review-card__stars" aria-label="5 out of 5 stars">
+                  {%- for s in (1..5) -%}
+                    <span class="review-card__star" aria-hidden="true">★</span>
+                  {%- endfor -%}
+                </div>
+                <blockquote class="review-card__text">"Outstanding service and the game arrived perfectly dialed-in."</blockquote>
+                <p class="review-card__reviewer">— Pinball Fan</p>
+                <p class="review-card__machine">Stern Premium</p>
+              </article>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+
+      <button class="brand-slider__arrow brand-slider__arrow--prev" aria-label="Previous review" disabled>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button class="brand-slider__arrow brand-slider__arrow--next" aria-label="Next review">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+
+      <div class="brand-slider__dots"></div>
+    </brand-slider>
   </div>
 </section>
 
 {% style %}
-  #{{ section_id }} .brand-reviews__header { margin-bottom: var(--spacing-3, 12px); }
-  #{{ section_id }} .brand-reviews__scroller {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(260px, 1fr);
-    gap: var(--spacing-3, 12px);
-    overflow-x: auto;
-    padding-bottom: var(--spacing-2, 8px);
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
+  #{{ section_id }} {
+    padding-block: clamp(48px, 8vw, 120px);
+    background: rgb(var(--color-foreground-rgb) / 0.03);
   }
-  #{{ section_id }} .brand-reviews__item { scroll-snap-align: start; }
+
+  .brand-slider--reviews .brand-slider__slide {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
+
+  .brand-slider--reviews .brand-slider__track {
+    scroll-snap-type: x mandatory;
+  }
+
+  .brand-slider--reviews .brand-slider__arrow {
+    top: 50%;
+    transform: translateY(-50%);
+  }
 {% endstyle %}
 
 {% schema %}
@@ -55,7 +76,7 @@
       "type": "review",
       "name": "Review",
       "settings": [
-        { "type": "textarea", "id": "text", "label": "Review text", "default": "Absolutely thrilled with my new Stern Godzilla — shipping was fast and FNO’s support was top-notch." },
+        { "type": "textarea", "id": "text", "label": "Review text", "default": "Absolutely thrilled with my new Stern Godzilla — shipping was fast and FNO's support was top-notch." },
         { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
         { "type": "text", "id": "reviewer", "label": "Reviewer name", "default": "Alex M." },
         { "type": "text", "id": "machine", "label": "Machine name", "default": "Stern Godzilla Premium" }
