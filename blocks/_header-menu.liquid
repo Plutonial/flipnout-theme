@@ -111,21 +111,25 @@
               >
                 {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
                 <div class="mega-menu section section--full-width-margin section--{{ section.settings.section_width }}">
-                  <div
-                    class="mega-menu__grid"
-                    data-menu-grid-id="{{ list_id }}"
-                  >
-                    {% render 'mega-menu-list',
-                      parent_link: link,
-                      id: list_id,
-                      section: section,
-                      grid_columns_count: 8,
-                      grid_columns_count_tablet: 4,
-                      grid_columns_count_collection_images: 8,
-                      menu_content_type: menu_content_type,
-                      content_aspect_ratio: ratio,
-                      image_border_radius: image_border_radius
-                    %}
+                  <div class="mega-menu-inner">
+                    <div class="mega-menu-sections">
+                      <div
+                        class="mega-menu__grid"
+                        data-menu-grid-id="{{ list_id }}"
+                      >
+                        {% render 'mega-menu-list',
+                          parent_link: link,
+                          id: list_id,
+                          section: section,
+                          grid_columns_count: 8,
+                          grid_columns_count_tablet: 4,
+                          grid_columns_count_collection_images: 8,
+                          menu_content_type: menu_content_type,
+                          content_aspect_ratio: ratio,
+                          image_border_radius: image_border_radius
+                        %}
+                      </div>
+                    </div>
                     {% comment %} SDTM + Promo Card tiles on the right side of the mega-menu {% endcomment %}
                     {% assign tile_id = 'MegaMenuTiles-' | append: forloop.index %}
                     {% render 'mega-menu-tiles', block_settings: block_settings, tile_id: tile_id %}
@@ -567,12 +571,14 @@
 
   .mega-menu__grid {
     display: grid;
-    grid-template-columns: repeat(var(--menu-columns-tablet), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--menu-columns-tablet), minmax(auto, 1fr));
     gap: var(--menu-vertical-gap) var(--menu-horizontal-gap);
     width: 100%;
 
     @media screen and (min-width: 990px) {
-      grid-template-columns: repeat(var(--menu-columns-desktop), minmax(0, 1fr));
+      grid-template-columns: repeat(var(--menu-columns-desktop), minmax(auto, 1fr));
+      column-gap: 48px;
+      row-gap: 8px;
     }
   }
 
@@ -592,12 +598,60 @@
     white-space: nowrap;
   }
 
+  {% comment %} Prevent mega-menu link text from wrapping to multiple lines {% endcomment %}
+  .mega-menu__link {
+    white-space: nowrap;
+  }
+
+  {% comment %} Bold mega-menu section headings (By Department, By Brand) {% endcomment %}
+  .mega-menu__link--parent {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+  }
+
+  {% comment %} Uppercase top-level main nav items only {% endcomment %}
+  .menu-list__link {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.9em;
+  }
+
+  {% comment %} Flex wrapper: menu sections + tiles side by side {% endcomment %}
+  .mega-menu-inner {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+
+    @media screen and (max-width: 989px) {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+  .mega-menu-sections {
+    flex: 1;
+    min-width: 0;
+  }
+
+  {% comment %} Extra visual gap between Department (col 1) and Brand columns {% endcomment %}
+  .mega-menu__column:first-child {
+    @media screen and (min-width: 990px) {
+      margin-right: 32px;
+    }
+  }
+
   {% comment %} Mega-menu tile styles {% endcomment %}
   .mega-menu-tiles {
     display: none;
 
     @media screen and (min-width: 990px) {
-      display: contents;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      width: 280px;
+      gap: 24px;
     }
   }
 
@@ -605,7 +659,7 @@
     display: flex;
     flex-direction: column;
     width: 280px;
-    max-height: 360px;
+    max-height: 280px;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -702,7 +756,7 @@
   }
 
   {% comment %} Align mega-menu inner content with nav start position, not logo/container edge {% endcomment %}
-  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .mega-menu__grid {
+  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .mega-menu-inner {
     @media screen and (min-width: 990px) {
       padding-left: calc(var(--header-nav-offset, 0px) + var(--gap-xl));
     }
