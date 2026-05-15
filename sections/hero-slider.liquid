@@ -1,7 +1,7 @@
 {%- liquid
   assign section_id = 'hero-slider-' | append: section.id
   assign autoplay = section.settings.autoplay
-  assign autoplay_speed = section.settings.autoplay_speed
+  assign autoplay_speed = section.settings.autoplay_speed | times: 1000
   assign transition = section.settings.transition
   assign show_dots = section.settings.show_dots
   assign show_arrows = section.settings.show_arrows
@@ -287,11 +287,11 @@
       "type": "range",
       "id": "autoplay_speed",
       "label": "Autoplay speed",
-      "min": 3000,
-      "max": 10000,
-      "step": 500,
-      "unit": "ms",
-      "default": 5000
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
     },
     {
       "type": "select",
