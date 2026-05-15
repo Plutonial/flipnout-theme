@@ -738,6 +738,9 @@
     grid-gap: var(--gap-xl);
     grid-template-columns: var(--header-template-columns);
 
+    /* Add left padding to align header logo with section content */
+    padding-left: var(--page-margin, 16px);
+
     /* If menu is in center column */
     &:has(.header__column--center header-menu) {
       --header-center: auto;
@@ -935,6 +938,11 @@
     .sticky-content {
       margin-top: calc(var(--header-height) * var(--transparent-header-offset-boolean) * -1);
     }
+  }
+
+  /* Add left padding to the first column of the mega menu so it aligns with the header logo */
+  .header-menu .mega-menu__grid > :first-child {
+    padding-left: var(--page-margin, 16px);
   }
 
   /* Optimize layout performance for hidden menus */

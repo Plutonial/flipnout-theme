@@ -82,7 +82,7 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(
-      to top,
+      to bottom,
       rgb(0 0 0 / {{ overlay_darkness | plus: 15 | at_most: 100 }}%),
       rgb(0 0 0 / {{ overlay_darkness | divided_by: 3 }}%)
     );
@@ -93,13 +93,13 @@
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: flex-end;
-    padding-bottom: clamp(48px, 8vw, 100px);
+    align-items: flex-start;
+    padding-top: clamp(48px, 8vw, 100px);
   }
 
   #{{ section_id }} .brand-hero__container {
     width: 100%;
-    max-width: var(--normal-page-width, 1200px);
+    max-width: var(--page-content-width, 1200px);
     margin-inline: auto;
     padding-inline: var(--page-margin, 16px);
   }
@@ -113,9 +113,15 @@
     max-width: 700px;
   }
 
+  {% liquid
+    assign header_logo_width = settings.logo_height | times: settings.logo.aspect_ratio | ceil
+    if header_logo_width == blank or header_logo_width == 0
+      assign header_logo_width = 120
+    endif
+  %}
   #{{ section_id }} .brand-hero__logo {
-    max-height: 120px;
-    width: auto;
+    max-width: {{ header_logo_width }}px;
+    height: auto;
     object-fit: contain;
     {% if logo_position == 'top-left' %}
       justify-self: start;
