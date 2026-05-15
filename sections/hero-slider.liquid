@@ -1,0 +1,418 @@
+{%- liquid
+  assign section_id = 'hero-slider-' | append: section.id
+  assign autoplay = section.settings.autoplay
+  assign autoplay_speed = section.settings.autoplay_speed
+  assign transition = section.settings.transition
+  assign show_dots = section.settings.show_dots
+  assign show_arrows = section.settings.show_arrows
+  assign slide_count = section.blocks.size
+-%}
+
+<hero-slider
+  id="{{ section_id }}"
+  class="hero-slider"
+  data-autoplay="{{ autoplay }}"
+  data-speed="{{ autoplay_speed }}"
+  data-transition="{{ transition }}"
+  data-slide-count="{{ slide_count }}"
+>
+  <div class="hero-slider__track">
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign slide_id = section_id | append: '-slide-' | append: forloop.index
+        assign loading = 'lazy'
+        if forloop.first
+          assign loading = 'eager'
+        endif
+      -%}
+      <div
+        id="{{ slide_id }}"
+        class="hero-slider__slide{% if forloop.first %} hero-slider__slide--active{% endif %}"
+        data-slide-index="{{ forloop.index0 }}"
+        {{ block.shopify_attributes }}
+      >
+        {%- render 'hero-content',
+          hero_id: slide_id,
+          hero_title: block.settings.title,
+          hero_content: block.settings.content,
+          hero_btn_text: block.settings.button_text,
+          hero_btn_link: block.settings.button_link,
+          hero_eyebrow: block.settings.eyebrow,
+          hero_text_align: block.settings.text_align,
+          hero_overlay_darkness: block.settings.overlay_darkness,
+          hero_bg_image: block.settings.background_image,
+          hero_bg_loading: loading
+        -%}
+      </div>
+    {%- endfor -%}
+  </div>
+
+  {%- if show_arrows and slide_count > 1 -%}
+    <button class="hero-slider__arrow hero-slider__arrow--prev" aria-label="Previous slide" type="button">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <button class="hero-slider__arrow hero-slider__arrow--next" aria-label="Next slide" type="button">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  {%- endif -%}
+
+  {%- if show_dots and slide_count > 1 -%}
+    <div class="hero-slider__dots" role="tablist">
+      {%- for block in section.blocks -%}
+        <button
+          class="hero-slider__dot{% if forloop.first %} hero-slider__dot--active{% endif %}"
+          role="tab"
+          aria-label="Go to slide {{ forloop.index }}"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+          data-dot-index="{{ forloop.index0 }}"
+          type="button"
+        ></button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</hero-slider>
+
+<script>
+  if (!customElements.get('hero-slider')) {
+    class HeroSlider extends HTMLElement {
+      connectedCallback() {
+        this.currentIndex = 0;
+        this.slides = this.querySelectorAll('.hero-slider__slide');
+        this.dots = this.querySelectorAll('.hero-slider__dot');
+        this.slideCount = parseInt(this.dataset.slideCount, 10) || 0;
+        this.speed = parseInt(this.dataset.speed, 10) || 5000;
+        this.autoplayEnabled = this.dataset.autoplay === 'true';
+        this.transition = this.dataset.transition || 'slide';
+        this.timer = null;
+        this.touchStartX = 0;
+        this.touchEndX = 0;
+
+        if (this.slideCount < 2) return;
+
+        var prevBtn = this.querySelector('.hero-slider__arrow--prev');
+        var nextBtn = this.querySelector('.hero-slider__arrow--next');
+        if (prevBtn) prevBtn.addEventListener('click', () => this.prev());
+        if (nextBtn) nextBtn.addEventListener('click', () => this.next());
+
+        this.dots.forEach((dot) => {
+          dot.addEventListener('click', () => {
+            this.goTo(parseInt(dot.dataset.dotIndex, 10));
+          });
+        });
+
+        this.addEventListener('mouseenter', () => this.pause());
+        this.addEventListener('mouseleave', () => this.resume());
+
+        this.addEventListener('touchstart', (e) => {
+          this.touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        this.addEventListener('touchend', (e) => {
+          this.touchEndX = e.changedTouches[0].screenX;
+          this.handleSwipe();
+        }, { passive: true });
+
+        if (this.autoplayEnabled) this.startAutoplay();
+      }
+
+      disconnectedCallback() {
+        this.pause();
+      }
+
+      goTo(index) {
+        if (index === this.currentIndex || index < 0 || index >= this.slideCount) return;
+        this.slides[this.currentIndex].classList.remove('hero-slider__slide--active');
+        this.slides[index].classList.add('hero-slider__slide--active');
+        if (this.dots.length) {
+          this.dots[this.currentIndex].classList.remove('hero-slider__dot--active');
+          this.dots[this.currentIndex].setAttribute('aria-selected', 'false');
+          this.dots[index].classList.add('hero-slider__dot--active');
+          this.dots[index].setAttribute('aria-selected', 'true');
+        }
+        this.currentIndex = index;
+        this.resetAutoplay();
+      }
+
+      next() { this.goTo((this.currentIndex + 1) % this.slideCount); }
+      prev() { this.goTo((this.currentIndex - 1 + this.slideCount) % this.slideCount); }
+
+      startAutoplay() {
+        if (!this.autoplayEnabled) return;
+        this.timer = setInterval(() => this.next(), this.speed);
+      }
+
+      pause() { clearInterval(this.timer); }
+      resume() { if (this.autoplayEnabled) this.startAutoplay(); }
+      resetAutoplay() {
+        this.pause();
+        this.resume();
+      }
+
+      handleSwipe() {
+        var diff = this.touchStartX - this.touchEndX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) this.next();
+          else this.prev();
+        }
+      }
+    }
+    customElements.define('hero-slider', HeroSlider);
+  }
+</script>
+
+{% style %}
+  #{{ section_id }} {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .hero-slider__track {
+    position: relative;
+    min-height: 60svh;
+  }
+
+  @media (min-width: 750px) {
+    #{{ section_id }} .hero-slider__track {
+      min-height: 80svh;
+    }
+  }
+
+  #{{ section_id }} .hero-slider__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+    z-index: 0;
+  }
+
+  {% if transition == 'slide' %}
+    #{{ section_id }} .hero-slider__slide {
+      transform: translateX(8%);
+      transition: opacity 0.6s ease, visibility 0.6s ease, transform 0.6s ease;
+    }
+    #{{ section_id }} .hero-slider__slide--active {
+      transform: translateX(0);
+    }
+  {% endif %}
+
+  #{{ section_id }} .hero-slider__slide:first-child {
+    position: relative;
+  }
+
+  #{{ section_id }} .hero-slider__slide--active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 1;
+  }
+
+  {% comment %} Arrows {% endcomment %}
+  #{{ section_id }} .hero-slider__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgb(0 0 0 / 0.35);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease, background 0.2s ease;
+  }
+
+  #{{ section_id }}:hover .hero-slider__arrow {
+    opacity: 1;
+  }
+
+  #{{ section_id }} .hero-slider__arrow:hover {
+    background: rgb(0 0 0 / 0.6);
+  }
+
+  #{{ section_id }} .hero-slider__arrow--prev {
+    left: 16px;
+  }
+
+  #{{ section_id }} .hero-slider__arrow--next {
+    right: 16px;
+  }
+
+  {% comment %} Dots {% endcomment %}
+  #{{ section_id }} .hero-slider__dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+  }
+
+  #{{ section_id }} .hero-slider__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease;
+  }
+
+  #{{ section_id }} .hero-slider__dot--active {
+    background: white;
+  }
+
+  #{{ section_id }} .hero-slider__dot:hover {
+    background: rgb(255 255 255 / 0.6);
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Hero slider",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay speed",
+      "min": 3000,
+      "max": 10000,
+      "step": 500,
+      "unit": "ms",
+      "default": 5000
+    },
+    {
+      "type": "select",
+      "id": "transition",
+      "label": "Transition style",
+      "options": [
+        { "value": "slide", "label": "Slide" },
+        { "value": "fade", "label": "Fade" }
+      ],
+      "default": "slide"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "background_image",
+          "label": "Background image"
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow text"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Slide heading"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Subtitle / body"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "Shop Now"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "select",
+          "id": "text_align",
+          "label": "Text alignment",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ],
+          "default": "left"
+        },
+        {
+          "type": "range",
+          "id": "overlay_darkness",
+          "label": "Overlay darkness",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "max_blocks": 8,
+  "disabled_on": { "groups": ["header", "footer"] },
+  "presets": [
+    {
+      "name": "Hero slider",
+      "category": "Hero",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "Welcome to",
+            "title": "Flip N Out Pinball",
+            "button_text": "Shop Machines",
+            "overlay_darkness": 50
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "New Arrivals",
+            "title": "Latest from Stern",
+            "button_text": "View Collection",
+            "overlay_darkness": 45
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "eyebrow": "Certified Pre-Owned",
+            "title": "Quality Used Machines",
+            "button_text": "Browse Used",
+            "overlay_darkness": 55
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

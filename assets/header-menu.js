@@ -22,6 +22,13 @@ class HeaderMenu extends Component {
    */
   #submenuMutationObserver = null;
 
+  /**
+   * @type {ReturnType<typeof setTimeout> | null}
+   */
+  #closeTimeout = null;
+
+  #HIDE_DELAY = 400;
+
   connectedCallback() {
     super.connectedCallback();
 
@@ -35,6 +42,7 @@ class HeaderMenu extends Component {
     window.removeEventListener('resize', this.#resizeListener);
     this.overflowMenu?.removeEventListener('pointerleave', this.#overflowSubmenuListener);
     this.#cleanupMutationObserver();
+    this.#cancelCloseTimer();
   }
 
   /**
@@ -80,6 +88,7 @@ class HeaderMenu extends Component {
    * @param {PointerEvent | FocusEvent} event
    */
   activate = (event) => {
+    this.#cancelCloseTimer();
     this.dispatchEvent(new MegaMenuHoverEvent());
 
     if (!(event.target instanceof Element) || !this.headerComponent) return;
@@ -177,7 +186,27 @@ class HeaderMenu extends Component {
 
     if (isMovingWithinMenu || isMovingToOverflowMenu || isMovingToSubmenu) return;
 
-    this.#deactivate();
+    this.#startCloseTimer();
+  }
+
+  /**
+   * Start a delayed close timer (400ms) for diagonal traversal tolerance
+   */
+  #startCloseTimer() {
+    this.#cancelCloseTimer();
+    this.#closeTimeout = setTimeout(() => {
+      this.#deactivate();
+    }, this.#HIDE_DELAY);
+  }
+
+  /**
+   * Cancel any pending close timer
+   */
+  #cancelCloseTimer() {
+    if (this.#closeTimeout) {
+      clearTimeout(this.#closeTimeout);
+      this.#closeTimeout = null;
+    }
   }
 
   /**

@@ -1,0 +1,182 @@
+{% comment %}
+  Shared hero slide content — used by brand-hero.liquid and hero-slider.liquid.
+
+  Required variables:
+    hero_id        – unique CSS scope ID
+    hero_title     – H1 text
+    hero_content   – subtitle / richtext (optional)
+    hero_btn_text  – button label
+    hero_btn_link  – button URL
+    hero_eyebrow   – eyebrow text (optional)
+    hero_text_align – left | center | right
+    hero_overlay_darkness – 0-100
+    hero_bg_image  – image object (optional)
+    hero_bg_loading – 'eager' or 'lazy'
+    hero_logo      – logo image URL (optional, brand-hero only)
+    hero_logo_position – top-left | centered (optional)
+{% endcomment %}
+
+{%- liquid
+  assign _text_align = hero_text_align | default: 'left'
+  assign _overlay = hero_overlay_darkness | default: 50
+  assign _loading = hero_bg_loading | default: 'lazy'
+  assign _fetchpriority = 'low'
+  if _loading == 'eager'
+    assign _fetchpriority = 'high'
+  endif
+-%}
+
+<div class="hero-slide__bg">
+  {%- if hero_bg_image -%}
+    {{ hero_bg_image | image_url: width: 2400 | image_tag: loading: _loading, fetchpriority: _fetchpriority, class: 'hero-slide__bg-img', sizes: '100vw', widths: '800,1200,1600,2000,2400' }}
+  {%- else -%}
+    {{ 'hero-apparel-1' | placeholder_svg_tag: 'hero-slide__bg-img hero-slide__bg-img--placeholder' }}
+  {%- endif -%}
+  <span class="hero-slide__overlay" aria-hidden="true"></span>
+</div>
+
+<div class="hero-slide__content">
+  <div class="hero-slide__container">
+    <div class="hero-slide__stack">
+      {%- if hero_logo != blank -%}
+        <img class="hero-slide__logo" src="{{ hero_logo | image_url: width: 600 }}" alt="{{ hero_title }} logo" loading="{{ _loading }}" />
+      {%- endif -%}
+
+      {%- if hero_eyebrow != blank -%}
+        <span class="hero-slide__eyebrow">{{ hero_eyebrow }}</span>
+      {%- endif -%}
+
+      <h1 class="hero-slide__title">{{ hero_title }}</h1>
+
+      {%- if hero_content != blank -%}
+        <div class="hero-slide__desc rte">{{ hero_content }}</div>
+      {%- endif -%}
+
+      {%- if hero_btn_text != blank and hero_btn_link != blank -%}
+        <a href="{{ hero_btn_link }}" class="hero-slide__cta">
+          {{ hero_btn_text }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% style %}
+  #{{ hero_id }} .hero-slide__bg {
+    position: relative;
+    width: 100%;
+    min-height: 60svh;
+  }
+
+  @media (min-width: 750px) {
+    #{{ hero_id }} .hero-slide__bg {
+      min-height: 80svh;
+    }
+  }
+
+  #{{ hero_id }} .hero-slide__bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #{{ hero_id }} .hero-slide__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / {{ _overlay | plus: 15 | at_most: 100 }}%),
+      rgb(0 0 0 / {{ _overlay | divided_by: 3 }}%)
+    );
+    pointer-events: none;
+  }
+
+  #{{ hero_id }} .hero-slide__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    padding-top: clamp(48px, 8vw, 100px);
+  }
+
+  #{{ hero_id }} .hero-slide__container {
+    width: 100%;
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+    padding-inline: var(--page-margin, 16px);
+  }
+
+  @media (min-width: 1440px) {
+    #{{ hero_id }} .hero-slide__container {
+      padding-left: 0;
+    }
+  }
+
+  #{{ hero_id }} .hero-slide__stack {
+    display: grid;
+    gap: var(--spacing-4, 16px);
+    text-align: {{ _text_align }};
+    align-items: start;
+    justify-items: {% if _text_align == 'center' %}center{% elsif _text_align == 'right' %}end{% else %}start{% endif %};
+    max-width: 700px;
+    {% if _text_align == 'center' %}margin-inline: auto;{% endif %}
+    {% if _text_align == 'right' %}margin-left: auto;{% endif %}
+  }
+
+  #{{ hero_id }} .hero-slide__eyebrow {
+    color: rgb(255 255 255 / 0.8);
+    font-size: clamp(12px, 1.5vw, 14px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  #{{ hero_id }} .hero-slide__logo {
+    max-width: 120px;
+    height: auto;
+    object-fit: contain;
+    {% if hero_logo_position == 'centered' %}
+      justify-self: center;
+    {% else %}
+      justify-self: start;
+    {% endif %}
+    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 40%));
+  }
+
+  #{{ hero_id }} .hero-slide__title {
+    color: white;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  #{{ hero_id }} .hero-slide__desc {
+    color: rgb(255 255 255 / 0.9);
+    font-size: clamp(16px, 2vw, 20px);
+    line-height: 1.5;
+    max-width: 600px;
+  }
+
+  #{{ hero_id }} .hero-slide__cta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 14px 32px;
+    background: white;
+    color: #111;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    border-radius: var(--radius-sm, 8px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #{{ hero_id }} .hero-slide__cta:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
+  }
+{% endstyle %}

@@ -5,43 +5,29 @@
   assign text_align = section.settings.text_align | default: 'left'
   assign logo_position = section.settings.logo_position | default: 'top-left'
   assign overlay_darkness = section.settings.overlay_darkness | default: 50
+  assign btn_label = 'Shop ' | append: collection.title
 -%}
 
-<div id="{{ section_id }}" class="brand-hero">
-  <div class="brand-hero__bg">
-    {%- if bg_image -%}
-      {{ bg_image | image_url: width: 2400 | image_tag: loading: 'eager', fetchpriority: 'high', class: 'brand-hero__bg-img', sizes: '100vw', widths: '800,1200,1600,2000,2400' }}
-    {%- else -%}
-      {{ 'hero-apparel-1' | placeholder_svg_tag: 'brand-hero__bg-img brand-hero__bg-img--placeholder' }}
-    {%- endif -%}
-    <span class="brand-hero__overlay" aria-hidden="true"></span>
-  </div>
-
-  <div class="brand-hero__content">
-    <div class="brand-hero__container">
-      <div class="brand-hero__stack">
-        {%- if brand_logo != blank -%}
-          <img class="brand-hero__logo" src="{{ brand_logo | image_url: width: 600 }}" alt="{{ collection.title }} logo" loading="eager" />
-        {%- endif -%}
-
-        <h1 class="brand-hero__title">{{ collection.title }}</h1>
-
-        {%- if collection.description != blank -%}
-          <div class="brand-hero__desc rte">{{ collection.description }}</div>
-        {%- endif -%}
-
-        <a href="#brand-machines" class="brand-hero__cta">
-          Shop {{ collection.title }}
-        </a>
-      </div>
-    </div>
-  </div>
+<div id="{{ section_id }}" class="brand-hero" style="position: relative;">
+  {%- render 'hero-content',
+    hero_id: section_id,
+    hero_title: collection.title,
+    hero_content: collection.description,
+    hero_btn_text: btn_label,
+    hero_btn_link: '#brand-machines',
+    hero_text_align: text_align,
+    hero_overlay_darkness: overlay_darkness,
+    hero_bg_image: bg_image,
+    hero_bg_loading: 'eager',
+    hero_logo: brand_logo,
+    hero_logo_position: logo_position
+  -%}
 </div>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    var cta = document.querySelector('#{{ section_id }} .brand-hero__cta');
-    if (cta) {
+    var cta = document.querySelector('#{{ section_id }} .hero-slide__cta');
+    if (cta && cta.getAttribute('href') === '#brand-machines') {
       cta.addEventListener('click', function (e) {
         e.preventDefault();
         var target = document.getElementById('brand-machines');
@@ -54,122 +40,14 @@
 </script>
 
 {% style %}
-  #{{ section_id }} {
-    position: relative;
-  }
-
-  #{{ section_id }} .brand-hero__bg {
-    position: relative;
-    width: 100%;
+  #{{ section_id }} .hero-slide__bg {
     min-height: 100svh;
   }
 
   @media (min-width: 750px) {
-    #{{ section_id }} .brand-hero__bg {
+    #{{ section_id }} .hero-slide__bg {
       min-height: 100svh;
     }
-  }
-
-  #{{ section_id }} .brand-hero__bg-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  #{{ section_id }} .brand-hero__overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgb(0 0 0 / {{ overlay_darkness | plus: 15 | at_most: 100 }}%),
-      rgb(0 0 0 / {{ overlay_darkness | divided_by: 3 }}%)
-    );
-    pointer-events: none;
-  }
-
-  #{{ section_id }} .brand-hero__content {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-start;
-    padding-top: clamp(48px, 8vw, 100px);
-  }
-
-  #{{ section_id }} .brand-hero__container {
-    width: 100%;
-    max-width: var(--page-content-width, 1200px);
-    margin-inline: auto;
-    padding-inline: var(--page-margin, 16px);
-  }
-
-  @media (min-width: 1440px) {
-    #{{ section_id }} .brand-hero__container {
-      padding-left: 0;
-    }
-  }
-
-  #{{ section_id }} .brand-hero__stack {
-    display: grid;
-    gap: var(--spacing-4, 16px);
-    text-align: {{ text_align }};
-    align-items: start;
-    justify-items: {% if text_align == 'left' %}start{% else %}center{% endif %};
-    max-width: 700px;
-  }
-
-  {% liquid
-    assign header_logo_width = settings.logo_height | times: settings.logo.aspect_ratio | ceil
-    if header_logo_width == blank or header_logo_width == 0
-      assign header_logo_width = 120
-    endif
-  %}
-  #{{ section_id }} .brand-hero__logo {
-    max-width: {{ header_logo_width }}px;
-    height: auto;
-    object-fit: contain;
-    {% if logo_position == 'top-left' %}
-      justify-self: start;
-    {% else %}
-      justify-self: center;
-    {% endif %}
-    filter: drop-shadow(0 2px 4px rgb(0 0 0 / 40%));
-  }
-
-  #{{ section_id }} .brand-hero__title {
-    color: white;
-    font-size: clamp(40px, 6vw, 80px);
-    line-height: 1.05;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0;
-  }
-
-  #{{ section_id }} .brand-hero__desc {
-    color: rgb(255 255 255 / 0.9);
-    font-size: clamp(16px, 2vw, 20px);
-    line-height: 1.5;
-    max-width: 600px;
-  }
-
-  #{{ section_id }} .brand-hero__cta {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 14px 32px;
-    background: white;
-    color: #111;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    border-radius: var(--radius-sm, 8px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  #{{ section_id }} .brand-hero__cta:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
   }
 {% endstyle %}
 
