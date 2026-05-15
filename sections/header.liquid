@@ -738,9 +738,6 @@
     grid-gap: var(--gap-xl);
     grid-template-columns: var(--header-template-columns);
 
-    /* Add left padding to align header logo with section content */
-    padding-left: var(--page-margin, 16px);
-
     /* If menu is in center column */
     &:has(.header__column--center header-menu) {
       --header-center: auto;
@@ -940,11 +937,6 @@
     }
   }
 
-  /* Add left padding to the first column of the mega menu so it aligns with the header logo */
-  .header-menu .mega-menu__grid > :first-child {
-    padding-left: var(--page-margin, 16px);
-  }
-
   /* Optimize layout performance for hidden menus */
   .header-menu .menu-list__submenu {
     content-visibility: auto;
@@ -1112,6 +1104,16 @@
     font-family: var(--menu-localization-font);
     font-size: var(--menu-localization-font-size);
   }
+
+  /* CSS hover bridge: invisible hit-area above mega-menu drawer to prevent gap when traversing diagonally */
+  .menu-list__list-item:not([slot='overflow']) > .menu-list__submenu::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    right: 0;
+    height: 20px;
+  }
 {% endstylesheet %}
 
 {% unless request.design_mode %}
@@ -1122,6 +1124,50 @@
     hydrate('{{ section.id }}', url);
   </script>
 {% endunless %}
+
+{% comment %} Mega-menu close delay: prevents premature close during diagonal cursor traversal {% endcomment %}
+<script type="module">
+  (function() {
+    let closeTimeout = null;
+
+    function patchHeaderMenu(headerMenu) {
+      const origDeactivate = headerMenu.deactivate.bind(headerMenu);
+
+      headerMenu.deactivate = function(event) {
+        if (closeTimeout) clearTimeout(closeTimeout);
+        closeTimeout = setTimeout(() => {
+          origDeactivate(event);
+          closeTimeout = null;
+        }, 400);
+      };
+
+      headerMenu.activate = ((origActivate) => {
+        return function(event) {
+          if (closeTimeout) {
+            clearTimeout(closeTimeout);
+            closeTimeout = null;
+          }
+          origActivate(event);
+        };
+      })(headerMenu.activate);
+    }
+
+    function init() {
+      const headerMenu = document.querySelector('header-menu');
+      if (headerMenu && headerMenu.activate) {
+        patchHeaderMenu(headerMenu);
+      } else {
+        requestAnimationFrame(init);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
 
 {% schema %}
 {

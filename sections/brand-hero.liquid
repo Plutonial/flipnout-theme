@@ -61,12 +61,12 @@
   #{{ section_id }} .brand-hero__bg {
     position: relative;
     width: 100%;
-    min-height: 60svh;
+    min-height: 100svh;
   }
 
   @media (min-width: 750px) {
     #{{ section_id }} .brand-hero__bg {
-      min-height: 80svh;
+      min-height: 100svh;
     }
   }
 
@@ -102,6 +102,12 @@
     max-width: var(--page-content-width, 1200px);
     margin-inline: auto;
     padding-inline: var(--page-margin, 16px);
+  }
+
+  @media (min-width: 1440px) {
+    #{{ section_id }} .brand-hero__container {
+      padding-left: 0;
+    }
   }
 
   #{{ section_id }} .brand-hero__stack {
