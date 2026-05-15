@@ -1,0 +1,30 @@
+{%- liquid
+  assign r_id = 'review-' | append: block.id | default: section.id
+  assign rating = block.settings.rating | default: 5
+  assign text = block.settings.text | default: 'Excellent machine and flawless buying experience.'
+  assign reviewer = block.settings.reviewer | default: 'Happy Buyer'
+  assign machine = block.settings.machine | default: 'Stern Pinball Machine'
+-%}
+
+<article class="review-card" id="{{ r_id }}" {{ block.shopify_attributes }}>
+  <div class="review-card__stars" aria-label="{{ rating }} out of 5 stars">
+    {%- for i in (1..5) -%}
+      <span class="review-card__star" aria-hidden="true">{% if i <= rating %}★{% else %}☆{% endif %}</span>
+    {%- endfor -%}
+  </div>
+  <p class="review-card__text">{{ text }}</p>
+  <p class="review-card__meta">— {{ reviewer }} • {{ machine }}</p>
+</article>
+
+{% style %}
+  .review-card {
+    border: 1px solid rgb(var(--color-border-rgb) / 20%);
+    border-radius: var(--radius-sm, 8px);
+    padding: var(--spacing-3, 12px);
+    background: rgb(var(--color-foreground-rgb) / 2%);
+    min-width: 260px;
+  }
+  .review-card__stars { color: #F6C343; letter-spacing: 2px; margin-bottom: 6px; font-size: 14px; }
+  .review-card__text { margin: 0 0 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .review-card__meta { margin: 0; font-size: 13px; color: rgb(var(--color-foreground-rgb) / 70%); }
+{% endstyle %}

@@ -1,0 +1,79 @@
+{%- liquid
+  assign section_id = 'brand-reviews-' | append: section.id
+-%}
+
+<section id="{{ section_id }}" class="brand-reviews section section--page-width color-scheme-inherit">
+  <div class="brand-reviews__header">
+    <h2 class="h3">{{ section.settings.heading | default: 'What pinball enthusiasts say' }}</h2>
+  </div>
+  <div class="brand-reviews__scroller" role="list">
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}
+        <div role="listitem" class="brand-reviews__item">
+          {% render 'review-card' %}
+        </div>
+      {%- endfor -%}
+    {%- else -%}
+      {%- for i in (1..4) -%}
+        <div role="listitem" class="brand-reviews__item">
+          <article class="review-card">
+            <div class="review-card__stars" aria-label="5 out of 5 stars">
+              <span aria-hidden="true">★★★★★</span>
+            </div>
+            <p class="review-card__text">Outstanding service and the game arrived perfectly dialed-in.</p>
+            <p class="review-card__meta">— Pinball Fan • Stern Premium</p>
+          </article>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} .brand-reviews__header { margin-bottom: var(--spacing-3, 12px); }
+  #{{ section_id }} .brand-reviews__scroller {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(260px, 1fr);
+    gap: var(--spacing-3, 12px);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-2, 8px);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  #{{ section_id }} .brand-reviews__item { scroll-snap-align: start; }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Brand reviews",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "What pinball enthusiasts say" }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "textarea", "id": "text", "label": "Review text", "default": "Absolutely thrilled with my new Stern Godzilla — shipping was fast and FNO’s support was top-notch." },
+        { "type": "range", "id": "rating", "label": "Rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "text", "id": "reviewer", "label": "Reviewer name", "default": "Alex M." },
+        { "type": "text", "id": "machine", "label": "Machine name", "default": "Stern Godzilla Premium" }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "Brand reviews",
+      "blocks": [
+        { "type": "review" },
+        { "type": "review" },
+        { "type": "review" },
+        { "type": "review" }
+      ]
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

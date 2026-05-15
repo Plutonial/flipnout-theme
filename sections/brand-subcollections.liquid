@@ -1,0 +1,120 @@
+{%- liquid
+  assign section_id = 'brand-subcollections-' | append: section.id
+  assign machines = collection.products | where: 'type', 'Pinball Machine'
+  assign arcades = collection.products | where: 'type', 'Arcade Machine'
+  assign accessories = collection.products | where: 'type', 'Accessory'
+
+  # Merge machines + arcades into one array (Liquid lacks concat for arrays of objects; use capture + split workaround)
+  assign machines_list = ''
+  for p in machines
+    assign machines_list = machines_list | append: p.id | append: ','
+  endfor
+  for p in arcades
+    assign machines_list = machines_list | append: p.id | append: ','
+  endfor
+  assign machine_ids = machines_list | split: ','
+-%}
+
+<section id="{{ section_id }}" class="brand-subcollections section section--page-width">
+  <div class="brand-subcollections__group">
+    <div class="brand-subcollections__header">
+      <h2 class="h3">{{ section.settings.heading_machines | default: 'Machines' }}</h2>
+      <a class="link" href="/collections/{{ collection.handle }}?filter.product_type=Pinball+Machine">View all machines</a>
+    </div>
+    <div class="brand-subcollections__scroller" role="list">
+      {%- assign shown = 0 -%}
+      {%- for product in collection.products -%}
+        {%- if shown >= 6 -%}{% break %}{%- endif -%}
+        {%- if product.type contains 'Pinball Machine' or product.type contains 'Arcade Machine' -%}
+          <article role="listitem" class="brand-subcollections__card">
+            <a href="{{ product.url }}" class="brand-subcollections__link">
+              {%- if product.featured_media -%}
+                {{ product.featured_media | image_url: width: 600 | image_tag: class: 'brand-subcollections__image', sizes: '60vw', widths: '300,400,600' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'brand-subcollections__image brand-subcollections__image--placeholder' }}
+              {%- endif -%}
+              <div class="brand-subcollections__meta">
+                <h3 class="brand-subcollections__title">{{ product.title }}</h3>
+                {% render 'price', product_resource: product, show_unit_price: true %}
+              </div>
+            </a>
+          </article>
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <div class="brand-subcollections__group">
+    <div class="brand-subcollections__header">
+      <h2 class="h3">{{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
+      <a class="link" href="/collections/{{ collection.handle }}?filter.product_type=Accessory">View all accessories</a>
+    </div>
+    <div class="brand-subcollections__scroller" role="list">
+      {%- assign shown = 0 -%}
+      {%- for product in collection.products -%}
+        {%- if shown >= 6 -%}{% break %}{%- endif -%}
+        {%- if product.type contains 'Accessory' -%}
+          <article role="listitem" class="brand-subcollections__card">
+            <a href="{{ product.url }}" class="brand-subcollections__link">
+              {%- if product.featured_media -%}
+                {{ product.featured_media | image_url: width: 600 | image_tag: class: 'brand-subcollections__image', sizes: '60vw', widths: '300,400,600' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'brand-subcollections__image brand-subcollections__image--placeholder' }}
+              {%- endif -%}
+              <div class="brand-subcollections__meta">
+                <h3 class="brand-subcollections__title">{{ product.title }}</h3>
+                {% render 'price', product_resource: product, show_unit_price: true %}
+              </div>
+            </a>
+          </article>
+          {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% style %}
+  #{{ section_id }} .brand-subcollections__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-3, 12px);
+    margin-block-end: var(--spacing-3, 12px);
+  }
+  #{{ section_id }} .brand-subcollections__scroller {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 1fr);
+    gap: var(--spacing-3, 12px);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-2, 8px);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  #{{ section_id }} .brand-subcollections__card {
+    scroll-snap-align: start;
+    border: 1px solid rgb(var(--color-border-rgb) / 20%);
+    border-radius: var(--radius-sm, 8px);
+    overflow: hidden;
+    background: rgb(var(--color-background-rgb));
+  }
+  #{{ section_id }} .brand-subcollections__image { width: 100%; height: 180px; object-fit: cover; display: block; }
+  #{{ section_id }} .brand-subcollections__meta { padding: var(--spacing-3, 12px); display: grid; gap: 4px; }
+  #{{ section_id }} .brand-subcollections__title { font: inherit; font-weight: 600; margin: 0; }
+  @media (min-width: 750px) {
+    #{{ section_id }} .brand-subcollections__image { height: 220px; }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Brand subcollections",
+  "settings": [
+    { "type": "text", "id": "heading_machines", "label": "Machines heading", "default": "Machines" },
+    { "type": "text", "id": "heading_accessories", "label": "Accessories heading", "default": "Accessories" }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
