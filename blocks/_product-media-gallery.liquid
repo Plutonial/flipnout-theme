@@ -1,3 +1,10 @@
+{% style %}
+  #shopify-section-{{ section.id }} .product__media img,
+  #shopify-section-{{ section.id }} .product__media-list img {
+    object-fit: {{ block.settings.image_fit | default: 'contain' }};
+  }
+{% endstyle %}
+
 {% render 'product-media-gallery-content',
   media_presentation: block.settings.media_presentation,
   block_settings: block.settings,
@@ -237,6 +244,23 @@
       ],
       "default": "cover",
       "visible_if": "{{ block.settings.aspect_ratio == 'adapt' and block.settings.constrain_to_viewport == true }}"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "Image fit",
+      "info": "Contain for tall portrait products like pinball cabinets. Cover for landscape lifestyle shots.",
+      "options": [
+        {
+          "value": "cover",
+          "label": "Cover (crop to fill)"
+        },
+        {
+          "value": "contain",
+          "label": "Contain (fit without crop)"
+        }
+      ],
+      "default": "contain"
     },
     {
       "type": "range",
