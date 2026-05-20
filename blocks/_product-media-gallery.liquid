@@ -1,7 +1,19 @@
 {% style %}
-  #shopify-section-{{ section.id }} .product__media img,
-  #shopify-section-{{ section.id }} .product__media-list img {
+  /* Image fit toggle: contain (letterbox) or cover (crop) */
+  #shopify-section-{{ section.id }} .product-media-container img {
     object-fit: {{ block.settings.image_fit | default: 'contain' }};
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    margin-inline: auto;
+  }
+
+  /* Increase viewport offset to account for header + thumbnails/dots + breathing room */
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} .product-media-container.constrain-height {
+      --viewport-offset: calc(var(--header-height, 80px) + 100px);
+    }
   }
 {% endstyle %}
 
