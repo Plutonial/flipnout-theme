@@ -1,0 +1,327 @@
+{%- liquid
+  assign section_id = 'collection-hero-' | append: section.id
+
+  assign hero_image = collection.metafields.custom.hero_image
+  unless hero_image
+    assign hero_image = collection.image
+  endunless
+
+  assign hero_position = collection.metafields.custom.hero_position | default: 'center'
+  assign game_logo = collection.metafields.custom.logo
+  assign manufacturer_ref = collection.metafields.custom.manufacturer.value
+  assign bg_color = section.settings.background_color | default: '#1a1a2e'
+  assign cta_text = section.settings.cta_text | default: 'Shop Editions'
+  assign cta_target = section.settings.cta_target | default: '#editions'
+-%}
+
+<section id="{{ section_id }}" class="collection-hero">
+  {% comment %} Desktop: full-bleed with overlay. Mobile: content first, image below. {% endcomment %}
+
+  <div class="collection-hero__content">
+    <div class="collection-hero__scrim" aria-hidden="true"></div>
+    <div class="collection-hero__stack">
+      {%- if game_logo != blank -%}
+        <img
+          class="collection-hero__logo"
+          src="{{ game_logo | image_url: width: 800 }}"
+          alt="{{ collection.title }}"
+          loading="eager"
+          fetchpriority="high"
+          width="800"
+          height="400"
+        />
+        <h1 class="visually-hidden">{{ collection.title }}</h1>
+      {%- else -%}
+        <h1 class="collection-hero__title">{{ collection.title }}</h1>
+      {%- endif -%}
+
+      {%- if manufacturer_ref and manufacturer_ref.metafields.custom.logo != blank -%}
+        <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr" aria-label="{{ manufacturer_ref.title }}">
+          <span class="collection-hero__mfr-by">by</span>
+          <img
+            class="collection-hero__mfr-logo"
+            src="{{ manufacturer_ref.metafields.custom.logo | image_url: width: 300 }}"
+            alt="{{ manufacturer_ref.title }}"
+            loading="eager"
+            width="300"
+            height="100"
+          />
+        </a>
+      {%- endif -%}
+
+      {%- if cta_text != blank -%}
+        <a href="{{ cta_target }}" class="collection-hero__cta">{{ cta_text }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="collection-hero__media">
+    {%- if hero_image -%}
+      {{ hero_image | image_url: width: 2400 | image_tag:
+        loading: 'eager',
+        fetchpriority: 'high',
+        class: 'collection-hero__img',
+        sizes: '100vw',
+        widths: '800,1200,1600,2000,2400'
+      }}
+    {%- endif -%}
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var cta = document.querySelector('#{{ section_id }} .collection-hero__cta');
+    if (cta) {
+      cta.addEventListener('click', function (e) {
+        var href = cta.getAttribute('href');
+        if (href && href.charAt(0) === '#') {
+          e.preventDefault();
+          var target = document.getElementById(href.substring(1));
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    }
+  });
+</script>
+
+{% style %}
+  #{{ section_id }} {
+    --_bg-color: {{ bg_color }};
+    --_hero-position: {{ hero_position }};
+    position: relative;
+    width: 100%;
+    background: var(--_bg-color);
+  }
+
+  {% comment %} ── Mobile: stacked, content first ── {% endcomment %}
+  #{{ section_id }} .collection-hero__content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(48px, 10vw, 80px) var(--page-margin, 16px);
+    z-index: 2;
+    background: var(--_bg-color);
+  }
+
+  #{{ section_id }} .collection-hero__scrim {
+    display: none;
+  }
+
+  #{{ section_id }} .collection-hero__stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-4, 16px);
+    text-align: center;
+    max-width: 700px;
+  }
+
+  #{{ section_id }} .collection-hero__logo {
+    max-width: min(80vw, 500px);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgb(0 0 0 / 40%));
+  }
+
+  #{{ section_id }} .collection-hero__title {
+    color: white;
+    font-size: clamp(36px, 6vw, 72px);
+    line-height: 1.05;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+  }
+
+  #{{ section_id }} .collection-hero__mfr {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+  }
+
+  #{{ section_id }} .collection-hero__mfr:hover {
+    opacity: 1;
+  }
+
+  #{{ section_id }} .collection-hero__mfr-by {
+    color: rgb(255 255 255 / 0.7);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: lowercase;
+  }
+
+  #{{ section_id }} .collection-hero__mfr-logo {
+    max-width: 100px;
+    max-height: 36px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgb(0 0 0 / 30%));
+  }
+
+  #{{ section_id }} .collection-hero__cta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 14px 32px;
+    background: white;
+    color: #111;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    border-radius: var(--radius-sm, 8px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #{{ section_id }} .collection-hero__cta:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
+  }
+
+  #{{ section_id }} .collection-hero__media {
+    position: relative;
+    width: 100%;
+    min-height: 50vw;
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .collection-hero__media::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, var(--_bg-color), transparent);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  #{{ section_id }} .collection-hero__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 50vw;
+    object-fit: cover;
+    object-position: var(--_hero-position) center;
+  }
+
+  {% comment %} ── Desktop: full-bleed overlay ── {% endcomment %}
+  @media (min-width: 750px) {
+    #{{ section_id }} {
+      position: relative;
+      display: block;
+      min-height: calc(100svh - var(--header-height, 80px));
+    }
+
+    #{{ section_id }} .collection-hero__media {
+      position: absolute;
+      inset: 0;
+      min-height: 100%;
+    }
+
+    #{{ section_id }} .collection-hero__media::before {
+      display: none;
+    }
+
+    #{{ section_id }} .collection-hero__img {
+      position: absolute;
+      inset: 0;
+      min-height: 100%;
+    }
+
+    #{{ section_id }} .collection-hero__content {
+      position: relative;
+      min-height: calc(100svh - var(--header-height, 80px));
+      background: none;
+    }
+
+    #{{ section_id }} .collection-hero__scrim {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse at center,
+        rgb(0 0 0 / 55%) 0%,
+        rgb(0 0 0 / 25%) 70%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    #{{ section_id }} .collection-hero__logo {
+      max-width: 500px;
+    }
+
+    #{{ section_id }} .collection-hero__mfr-logo {
+      max-width: 120px;
+      max-height: 44px;
+    }
+  }
+
+  {% comment %} ── Visually hidden utility ── {% endcomment %}
+  .visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Collection hero",
+  "settings": [
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA button text",
+      "default": "Shop Editions"
+    },
+    {
+      "type": "text",
+      "id": "cta_target",
+      "label": "CTA scroll target (anchor)",
+      "default": "#editions"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Fallback background color",
+      "default": "#1a1a2e"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

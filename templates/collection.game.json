@@ -1,0 +1,35 @@
+{
+  "sections": {
+    "collection-hero": {
+      "type": "collection-hero",
+      "settings": {
+        "cta_text": "Shop Editions",
+        "cta_target": "#editions",
+        "background_color": "#1a1a2e",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "game-editions-grid": {
+      "type": "game-editions-grid",
+      "settings": {
+        "heading": "Editions",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "game-lore": {
+      "type": "game-lore",
+      "settings": {
+        "heading": "About the Game",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    }
+  },
+  "order": [
+    "collection-hero",
+    "game-editions-grid",
+    "game-lore"
+  ]
+}

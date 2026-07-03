@@ -1,0 +1,81 @@
+{%- liquid
+  assign section_id = 'game-lore-' | append: section.id
+  assign heading = section.settings.heading | default: 'About the Game'
+-%}
+
+{%- if collection.description != blank -%}
+  <section id="{{ section_id }}" class="game-lore">
+    {%- if heading != blank -%}
+      <h2 class="game-lore__heading">{{ heading }}</h2>
+    {%- endif -%}
+
+    <div class="game-lore__body rte">
+      {{ collection.description }}
+    </div>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-lore__heading {
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 700;
+    margin: 0 0 clamp(16px, 3vw, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-lore__body {
+    font-size: clamp(16px, 1.8vw, 18px);
+    line-height: 1.7;
+    max-width: 780px;
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-lore__body > *:first-child {
+    margin-top: 0;
+  }
+
+  #{{ section_id }} .game-lore__body > *:last-child {
+    margin-bottom: 0;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game lore",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "About the Game"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
