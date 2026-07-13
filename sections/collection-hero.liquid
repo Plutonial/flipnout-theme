@@ -113,18 +113,9 @@
     object-position: var(--_hero-position) center;
   }
 
-  {% comment %} ── Lateral gradient scrim: dark left, clear right ── {% endcomment %}
+  {% comment %} ── Scrim removed; text-shadow provides legibility ── {% endcomment %}
   #{{ section_id }} .collection-hero__scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(to right,
-      rgba(16, 17, 32, 0.82) 0%,
-      rgba(16, 17, 32, 0.55) 32%,
-      rgba(16, 17, 32, 0.05) 62%,
-      rgba(16, 17, 32, 0) 100%
-    );
-    pointer-events: none;
+    display: none;
   }
 
   {% comment %} ── Content overlay: left-aligned ── {% endcomment %}
@@ -135,7 +126,7 @@
     align-items: flex-start;
     justify-content: flex-start;
     min-height: 75vw;
-    padding: calc(var(--header-height, 60px) + 24px) var(--page-margin, 16px) clamp(48px, 10vw, 80px);
+    padding: calc(var(--header-height, 60px) + 8px) var(--page-margin, 16px) clamp(48px, 10vw, 80px);
     width: 100%;
     max-width: var(--page-width, 1200px);
     margin-inline: auto;
@@ -143,11 +134,12 @@
 
   #{{ section_id }} .collection-hero__stack {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-4, 16px);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
     text-align: left;
-    max-width: 560px;
+    max-width: 700px;
   }
 
   {% comment %} ── Game logo: medium, height-constrained ── {% endcomment %}
@@ -201,6 +193,7 @@
   }
 
   #{{ section_id }} .collection-hero__cta {
+    flex-basis: 100%;
     display: inline-block;
     margin-top: 8px;
     padding: 14px 32px;
@@ -227,7 +220,7 @@
 
     #{{ section_id }} .collection-hero__content {
       min-height: calc(100svh - var(--header-height, 80px));
-      padding-top: calc(var(--header-height, 80px) + 32px);
+      padding-top: calc(var(--header-height, 80px) + 12px);
     }
 
     #{{ section_id }} .collection-hero__logo {
