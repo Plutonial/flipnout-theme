@@ -132,12 +132,10 @@
     position: relative;
     z-index: 2;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-start;
     min-height: 75vw;
-    padding: clamp(48px, 10vw, 80px) var(--page-margin, 16px);
-    max-width: var(--page-width, 1200px);
-    margin-inline: auto;
+    padding: calc(var(--header-height, 60px) + 24px) var(--page-margin, 16px) clamp(48px, 10vw, 80px);
     width: 100%;
   }
 
@@ -227,6 +225,7 @@
 
     #{{ section_id }} .collection-hero__content {
       min-height: calc(100svh - var(--header-height, 80px));
+      padding-top: calc(var(--header-height, 80px) + 32px);
     }
 
     #{{ section_id }} .collection-hero__logo {
