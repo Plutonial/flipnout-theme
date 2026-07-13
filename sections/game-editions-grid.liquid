@@ -8,25 +8,7 @@
     Products missing the metafield are appended last.
   endcomment
 
-  assign editions = '' | split: ''
-  assign unordered = '' | split: ''
-  for i in (1..10)
-    for product in collection.products
-      assign edition_order = product.metafields.custom.edition_order.value | plus: 0
-      if edition_order == i
-        assign one_item = product | split: '|||NEVER_MATCH|||'
-        assign editions = editions | concat: one_item
-      endif
-    endfor
-  endfor
-  for product in collection.products
-    assign edition_order = product.metafields.custom.edition_order.value
-    if edition_order == blank
-      assign one_item = product | split: '|||NEVER_MATCH|||'
-      assign unordered = unordered | concat: one_item
-    endif
-  endfor
-  assign editions = editions | concat: unordered
+  assign editions = collection.products | sort: 'metafields.custom.edition_order.value'
 
   assign products_count = collection.products.size
 -%}
