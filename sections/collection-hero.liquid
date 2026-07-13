@@ -12,6 +12,7 @@
   assign bg_color = section.settings.background_color | default: '#1a1a2e'
   assign cta_text = section.settings.cta_text | default: 'Shop Editions'
   assign cta_target = section.settings.cta_target | default: '#editions'
+  assign subtitle = section.settings.subtitle
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
@@ -43,23 +44,15 @@
           width="800"
           height="400"
         />
-        <h1 class="visually-hidden">{{ collection.title }}</h1>
-      {%- else -%}
-        <h1 class="collection-hero__title">{{ collection.title }}</h1>
       {%- endif -%}
 
-      {%- if manufacturer_ref and manufacturer_ref.metafields.custom.logo != blank -%}
-        <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr" aria-label="{{ manufacturer_ref.title }}">
-          <span class="collection-hero__mfr-by">by</span>
-          <img
-            class="collection-hero__mfr-logo"
-            src="{{ manufacturer_ref.metafields.custom.logo | image_url: width: 300 }}"
-            alt="{{ manufacturer_ref.title }}"
-            loading="eager"
-            width="300"
-            height="100"
-          />
-        </a>
+      <h1 class="collection-hero__h1">
+        {{- collection.title }} Pinball Machine
+        {%- if manufacturer_ref %} by <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr-link">{{ manufacturer_ref.title }}</a>{%- endif -%}
+      </h1>
+
+      {%- if subtitle != blank -%}
+        <p class="collection-hero__subtitle">{{ subtitle }}</p>
       {%- endif -%}
 
       {%- if cta_text != blank -%}
@@ -152,48 +145,41 @@
     text-shadow: 0 2px 6px rgb(0 0 0 / 50%);
   }
 
-  #{{ section_id }} .collection-hero__title {
+  {% comment %} ── H1: real text for SEO ── {% endcomment %}
+  #{{ section_id }} .collection-hero__h1 {
     color: white;
-    font-size: clamp(36px, 6vw, 72px);
-    line-height: 1.05;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: clamp(18px, 3.5vw, 28px);
+    line-height: 1.3;
+    font-weight: 600;
     margin: 0;
     text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+    flex-basis: 100%;
   }
 
-  {% comment %} ── Manufacturer credit: inline "by [logo]", no pill ── {% endcomment %}
-  #{{ section_id }} .collection-hero__mfr {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
+  #{{ section_id }} .collection-hero__mfr-link {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
     transition: opacity 0.2s ease;
   }
 
-  #{{ section_id }} .collection-hero__mfr:hover {
+  #{{ section_id }} .collection-hero__mfr-link:hover {
     opacity: 0.8;
   }
 
-  #{{ section_id }} .collection-hero__mfr-by {
-    color: rgb(255 255 255 / 0.75);
-    font-size: 14px;
-    font-weight: 500;
-    text-transform: lowercase;
-    text-shadow: 0 1px 4px rgb(0 0 0 / 50%);
-  }
-
-  {% comment %} ── Manufacturer logo: small, real colors, no filter ── {% endcomment %}
-  #{{ section_id }} .collection-hero__mfr-logo {
-    height: clamp(24px, 4vw, 40px);
-    width: auto;
-    max-width: 140px;
-    object-fit: contain;
-    filter: drop-shadow(0 1px 4px rgb(0 0 0 / 50%));
+  {% comment %} ── Optional subtitle ── {% endcomment %}
+  #{{ section_id }} .collection-hero__subtitle {
+    color: rgb(255 255 255 / 0.85);
+    font-size: clamp(14px, 2vw, 16px);
+    line-height: 1.5;
+    font-weight: 400;
+    margin: 0;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+    flex-basis: 100%;
   }
 
   #{{ section_id }} .collection-hero__cta {
-    flex-basis: 100%;
     display: inline-block;
     margin-top: 8px;
     padding: 14px 32px;
@@ -228,10 +214,6 @@
       max-width: 560px;
     }
 
-    #{{ section_id }} .collection-hero__mfr-logo {
-      height: clamp(32px, 3.5vw, 48px);
-      max-width: 180px;
-    }
   }
 
   {% comment %} ── Visually hidden utility ── {% endcomment %}
@@ -263,6 +245,12 @@
       "id": "cta_target",
       "label": "CTA scroll target (anchor)",
       "default": "#editions"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle text",
+      "info": "Optional short line below the H1 for extra keywords. Leave empty to hide."
     },
     {
       "type": "color",
