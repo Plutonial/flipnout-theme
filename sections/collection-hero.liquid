@@ -12,7 +12,7 @@
   assign bg_color = section.settings.background_color | default: '#1a1a2e'
   assign cta_text = section.settings.cta_text | default: 'Shop Editions'
   assign cta_target = section.settings.cta_target | default: '#editions'
-  assign subtitle = section.settings.subtitle
+  assign subtitle = collection.metafields.custom.subtitle
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
@@ -245,12 +245,6 @@
       "id": "cta_target",
       "label": "CTA scroll target (anchor)",
       "default": "#editions"
-    },
-    {
-      "type": "text",
-      "id": "subtitle",
-      "label": "Subtitle text",
-      "info": "Optional short line below the H1 for extra keywords. Leave empty to hide."
     },
     {
       "type": "color",

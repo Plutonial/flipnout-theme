@@ -12,6 +12,10 @@
     <div class="game-lore__body rte">
       {{ collection.description }}
     </div>
+
+    {%- if collection.metafields.custom.credits != blank -%}
+      <p class="game-lore__credits">Credits: {{ collection.metafields.custom.credits }}</p>
+    {%- endif -%}
   </section>
 {%- endif -%}
 
@@ -42,6 +46,14 @@
 
   #{{ section_id }} .game-lore__body > *:last-child {
     margin-bottom: 0;
+  }
+
+  #{{ section_id }} .game-lore__credits {
+    font-size: 13px;
+    color: var(--color-foreground-secondary, #888);
+    margin: clamp(24px, 3vw, 40px) auto 0;
+    max-width: 780px;
+    line-height: 1.5;
   }
 {% endstyle %}
 
