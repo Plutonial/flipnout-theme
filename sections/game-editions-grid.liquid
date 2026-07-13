@@ -3,17 +3,30 @@
   assign heading = section.settings.heading | default: 'Editions'
 
   comment
-    Sort products by custom.edition_order (ascending).
-    Build an array of [order:index] pairs, sort lexically, then map back to products.
+    Sort products by custom.edition_order metafield (ascending).
+    Iterate expected positions 1–10, match products by metafield value.
+    Products missing the metafield are appended last.
   endcomment
 
-  assign ordered = ''
-  for product in collection.products
-    assign order_val = product.metafields.custom.edition_order.value | default: 999
-    assign ordered = ordered | append: order_val | append: ':' | append: forloop.index0 | append: ','
+  assign editions = '' | split: ''
+  assign unordered = '' | split: ''
+  for i in (1..10)
+    for product in collection.products
+      assign edition_order = product.metafields.custom.edition_order.value | plus: 0
+      if edition_order == i
+        assign one_item = product | split: '|||NEVER_MATCH|||'
+        assign editions = editions | concat: one_item
+      endif
+    endfor
   endfor
-  assign ordered = ordered | split: ','
-  assign ordered_sorted = ordered | sort
+  for product in collection.products
+    assign edition_order = product.metafields.custom.edition_order.value
+    if edition_order == blank
+      assign one_item = product | split: '|||NEVER_MATCH|||'
+      assign unordered = unordered | concat: one_item
+    endif
+  endfor
+  assign editions = editions | concat: unordered
 
   assign products_count = collection.products.size
 -%}
@@ -24,12 +37,7 @@
   {%- endif -%}
 
   <div class="editions-grid">
-    {%- for entry in ordered_sorted -%}
-      {%- if entry == blank -%}{%- continue -%}{%- endif -%}
-      {%- assign parts = entry | split: ':' -%}
-      {%- assign idx = parts[1] | plus: 0 -%}
-      {%- assign product = collection.products[idx] -%}
-
+    {%- for product in editions -%}
       {%- liquid
         assign card_image = product.metafields.custom.backglass
         unless card_image
