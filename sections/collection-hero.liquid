@@ -15,10 +15,23 @@
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
-  {% comment %} Desktop: full-bleed with overlay. Mobile: content first, image below. {% endcomment %}
+  {% comment %} Single overlay hero: image fills, content centered on top {% endcomment %}
+
+  <div class="collection-hero__media">
+    {%- if hero_image -%}
+      {{ hero_image | image_url: width: 2400 | image_tag:
+        loading: 'eager',
+        fetchpriority: 'high',
+        class: 'collection-hero__img',
+        sizes: '100vw',
+        widths: '800,1200,1600,2000,2400'
+      }}
+    {%- endif -%}
+  </div>
+
+  <div class="collection-hero__scrim" aria-hidden="true"></div>
 
   <div class="collection-hero__content">
-    <div class="collection-hero__scrim" aria-hidden="true"></div>
     <div class="collection-hero__stack">
       {%- if game_logo != blank -%}
         <img
@@ -54,18 +67,6 @@
       {%- endif -%}
     </div>
   </div>
-
-  <div class="collection-hero__media">
-    {%- if hero_image -%}
-      {{ hero_image | image_url: width: 2400 | image_tag:
-        loading: 'eager',
-        fetchpriority: 'high',
-        class: 'collection-hero__img',
-        sizes: '100vw',
-        widths: '800,1200,1600,2000,2400'
-      }}
-    {%- endif -%}
-  </div>
 </section>
 
 <script>
@@ -92,22 +93,50 @@
     --_hero-position: {{ hero_position }};
     position: relative;
     width: 100%;
+    min-height: 75vw;
     background: var(--_bg-color);
+    overflow: hidden;
   }
 
-  {% comment %} ── Mobile: stacked, content first ── {% endcomment %}
+  {% comment %} ── Background image ── {% endcomment %}
+  #{{ section_id }} .collection-hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  #{{ section_id }} .collection-hero__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--_hero-position) center;
+  }
+
+  {% comment %} ── Subtle scrim for legibility ── {% endcomment %}
+  #{{ section_id }} .collection-hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(to bottom,
+        rgb(0 0 0 / 0.35) 0%,
+        rgb(0 0 0 / 0.08) 40%,
+        rgb(0 0 0 / 0.08) 60%,
+        rgb(0 0 0 / 0.30) 100%
+      );
+    pointer-events: none;
+  }
+
+  {% comment %} ── Content overlay ── {% endcomment %}
   #{{ section_id }} .collection-hero__content {
     position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 75vw;
     padding: clamp(48px, 10vw, 80px) var(--page-margin, 16px);
-    z-index: 2;
-    background: var(--_bg-color);
-  }
-
-  #{{ section_id }} .collection-hero__scrim {
-    display: none;
   }
 
   #{{ section_id }} .collection-hero__stack {
@@ -119,11 +148,14 @@
     max-width: 700px;
   }
 
+  {% comment %} ── Game logo: medium, height-constrained ── {% endcomment %}
   #{{ section_id }} .collection-hero__logo {
-    max-width: min(80vw, 500px);
-    height: auto;
+    height: clamp(80px, 14vw, 140px);
+    width: auto;
+    max-width: min(85vw, 500px);
     object-fit: contain;
     filter: drop-shadow(0 2px 8px rgb(0 0 0 / 40%));
+    text-shadow: 0 2px 6px rgb(0 0 0 / 50%);
   }
 
   #{{ section_id }} .collection-hero__title {
@@ -136,35 +168,34 @@
     text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
   }
 
+  {% comment %} ── Manufacturer credit: inline "by [logo]", no pill ── {% endcomment %}
   #{{ section_id }} .collection-hero__mfr {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     text-decoration: none;
-    background: rgb(0 0 0 / 0.45);
-    padding: 8px 16px;
-    border-radius: 8px;
-    transition: opacity 0.2s ease, background 0.2s ease;
+    transition: opacity 0.2s ease;
   }
 
   #{{ section_id }} .collection-hero__mfr:hover {
-    background: rgb(0 0 0 / 0.6);
+    opacity: 0.8;
   }
 
   #{{ section_id }} .collection-hero__mfr-by {
-    color: rgb(255 255 255 / 0.8);
-    font-size: 15px;
+    color: rgb(255 255 255 / 0.75);
+    font-size: 14px;
     font-weight: 500;
     text-transform: lowercase;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 50%);
   }
 
+  {% comment %} ── Manufacturer logo: small, real colors, no filter ── {% endcomment %}
   #{{ section_id }} .collection-hero__mfr-logo {
-    max-width: 160px;
-    max-height: 52px;
+    height: clamp(24px, 4vw, 40px);
     width: auto;
-    height: auto;
+    max-width: 140px;
     object-fit: contain;
-    filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgb(0 0 0 / 30%));
+    filter: drop-shadow(0 1px 4px rgb(0 0 0 / 50%));
   }
 
   #{{ section_id }} .collection-hero__cta {
@@ -186,84 +217,24 @@
     box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
   }
 
-  #{{ section_id }} .collection-hero__media {
-    position: relative;
-    width: 100%;
-    min-height: 50vw;
-    overflow: hidden;
-  }
-
-  #{{ section_id }} .collection-hero__media::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    background: linear-gradient(to bottom, var(--_bg-color), transparent);
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  #{{ section_id }} .collection-hero__img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 50vw;
-    object-fit: cover;
-    object-position: var(--_hero-position) center;
-  }
-
-  {% comment %} ── Desktop: full-bleed overlay ── {% endcomment %}
+  {% comment %} ── Desktop adjustments ── {% endcomment %}
   @media (min-width: 750px) {
     #{{ section_id }} {
-      position: relative;
-      display: block;
       min-height: calc(100svh - var(--header-height, 80px));
-    }
-
-    #{{ section_id }} .collection-hero__media {
-      position: absolute;
-      inset: 0;
-      min-height: 100%;
-    }
-
-    #{{ section_id }} .collection-hero__media::before {
-      display: none;
-    }
-
-    #{{ section_id }} .collection-hero__img {
-      position: absolute;
-      inset: 0;
-      min-height: 100%;
     }
 
     #{{ section_id }} .collection-hero__content {
-      position: relative;
       min-height: calc(100svh - var(--header-height, 80px));
-      background: none;
-    }
-
-    #{{ section_id }} .collection-hero__scrim {
-      display: block;
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        ellipse at center,
-        rgb(0 0 0 / 55%) 0%,
-        rgb(0 0 0 / 25%) 70%,
-        transparent 100%
-      );
-      pointer-events: none;
     }
 
     #{{ section_id }} .collection-hero__logo {
-      max-width: 500px;
+      height: clamp(120px, 12vw, 180px);
+      max-width: 560px;
     }
 
     #{{ section_id }} .collection-hero__mfr-logo {
+      height: clamp(32px, 3.5vw, 48px);
       max-width: 180px;
-      max-height: 60px;
     }
   }
 
