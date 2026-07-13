@@ -15,7 +15,7 @@
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
-  {% comment %} Single overlay hero: image fills, content centered on top {% endcomment %}
+  {% comment %} Left-aligned overlay hero: image fills, content left-anchored with lateral gradient {% endcomment %}
 
   <div class="collection-hero__media">
     {%- if hero_image -%}
@@ -113,39 +113,41 @@
     object-position: var(--_hero-position) center;
   }
 
-  {% comment %} ── Subtle scrim for legibility ── {% endcomment %}
+  {% comment %} ── Lateral gradient scrim: dark left, clear right ── {% endcomment %}
   #{{ section_id }} .collection-hero__scrim {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background:
-      linear-gradient(to bottom,
-        rgb(0 0 0 / 0.55) 0%,
-        rgb(0 0 0 / 0.25) 35%,
-        rgb(0 0 0 / 0.25) 65%,
-        rgb(0 0 0 / 0.50) 100%
-      );
+    background: linear-gradient(to right,
+      rgba(16, 17, 32, 0.82) 0%,
+      rgba(16, 17, 32, 0.55) 32%,
+      rgba(16, 17, 32, 0.05) 62%,
+      rgba(16, 17, 32, 0) 100%
+    );
     pointer-events: none;
   }
 
-  {% comment %} ── Content overlay ── {% endcomment %}
+  {% comment %} ── Content overlay: left-aligned ── {% endcomment %}
   #{{ section_id }} .collection-hero__content {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     min-height: 75vw;
     padding: clamp(48px, 10vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    width: 100%;
   }
 
   #{{ section_id }} .collection-hero__stack {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-4, 16px);
-    text-align: center;
-    max-width: 700px;
+    text-align: left;
+    max-width: 560px;
   }
 
   {% comment %} ── Game logo: medium, height-constrained ── {% endcomment %}
