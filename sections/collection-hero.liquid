@@ -113,20 +113,12 @@
     object-position: var(--_hero-position) center;
   }
 
-  {% comment %} ── Soft lateral scrim: dark left, transparent right ── {% endcomment %}
+  {% comment %} ── Scrim now lives on the content container, not the full-bleed image ── {% endcomment %}
   #{{ section_id }} .collection-hero__scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(to right,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.35) 30%,
-      rgba(0, 0, 0, 0) 65%
-    );
-    pointer-events: none;
+    display: none;
   }
 
-  {% comment %} ── Content overlay: left-aligned ── {% endcomment %}
+  {% comment %} ── Content overlay: left-aligned, with scrim pseudo-element ── {% endcomment %}
   #{{ section_id }} .collection-hero__content {
     position: relative;
     z-index: 2;
@@ -138,6 +130,26 @@
     width: 100%;
     max-width: var(--page-width, 1200px);
     margin-inline: auto;
+  }
+
+  {% comment %} ── Scrim: anchored to content, bleeds left to viewport edge ── {% endcomment %}
+  #{{ section_id }} .collection-hero__content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    /* Extend left to the viewport edge */
+    left: calc(-1 * (50vw - 50%));
+    /* Extend right past the content, then fade */
+    right: -10%;
+    z-index: -1;
+    background: linear-gradient(to right,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.45) 40%,
+      rgba(0, 0, 0, 0.20) 70%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    pointer-events: none;
   }
 
   #{{ section_id }} .collection-hero__stack {
