@@ -113,9 +113,17 @@
     object-position: var(--_hero-position) center;
   }
 
-  {% comment %} ── Scrim removed; text-shadow provides legibility ── {% endcomment %}
+  {% comment %} ── Soft lateral scrim: dark left, transparent right ── {% endcomment %}
   #{{ section_id }} .collection-hero__scrim {
-    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(to right,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.35) 30%,
+      rgba(0, 0, 0, 0) 65%
+    );
+    pointer-events: none;
   }
 
   {% comment %} ── Content overlay: left-aligned ── {% endcomment %}
@@ -156,7 +164,7 @@
   #{{ section_id }} .collection-hero__h1 {
     color: white;
     font-family: "Phosphate", var(--font-h1--family), sans-serif;
-    font-size: var(--font-size--6xl);
+    font-size: var(--font-size--4xl);
     line-height: 1.1;
     font-weight: 600;
     margin: 0;
@@ -166,21 +174,20 @@
 
   #{{ section_id }} .collection-hero__mfr-link {
     color: inherit;
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
+    text-decoration: none;
     transition: opacity 0.2s ease;
   }
 
   #{{ section_id }} .collection-hero__mfr-link:hover {
     opacity: 0.8;
+    text-decoration: underline;
   }
 
   {% comment %} ── Optional subtitle ── {% endcomment %}
   #{{ section_id }} .collection-hero__subtitle {
-    color: var(--color-foreground, #1a1a1a);
+    color: rgba(255, 255, 255, 0.92);
     font-family: var(--font-paragraph--family), sans-serif;
-    font-size: var(--font-size--xl);
+    font-size: var(--font-size--2xl);
     line-height: 1.5;
     font-weight: 400;
     margin: 0;
