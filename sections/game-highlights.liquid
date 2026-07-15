@@ -1,0 +1,131 @@
+{%- liquid
+  assign section_id = 'game-highlights-' | append: section.id
+  assign highlights = collection.metafields.custom.highlights.value
+-%}
+
+{%- if highlights != blank and highlights.size > 0 -%}
+  <section id="{{ section_id }}" class="game-highlights">
+    <h2 class="game-highlights__heading">Highlights</h2>
+
+    <div class="game-highlights__grid">
+      {%- for feature in highlights -%}
+        {%- liquid
+          assign feat_name = feature.name
+          assign feat_desc = feature.description
+          assign feat_image = feature.image
+        -%}
+
+        {%- if feat_name != blank or feat_desc != blank -%}
+          <div class="game-highlights__item">
+            {%- if feat_image != blank -%}
+              <div class="game-highlights__image-wrap">
+                {{ feat_image | image_url: width: 800 | image_tag:
+                  loading: 'lazy',
+                  class: 'game-highlights__img',
+                  sizes: '(min-width: 750px) 33vw, 100vw',
+                  widths: '400,600,800'
+                }}
+              </div>
+            {%- endif -%}
+
+            <div class="game-highlights__text">
+              {%- if feat_name != blank -%}
+                <h3 class="game-highlights__name">{{ feat_name }}</h3>
+              {%- endif -%}
+              {%- if feat_desc != blank -%}
+                <p class="game-highlights__desc">{{ feat_desc }}</p>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-highlights__heading {
+    font-size: var(--font-size--3xl);
+    font-weight: 700;
+    margin: 0 0 var(--gap-2xl, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-highlights__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--gap-2xl, 32px);
+  }
+
+  #{{ section_id }} .game-highlights__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md, 16px);
+  }
+
+  #{{ section_id }} .game-highlights__image-wrap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-sm, 8px);
+  }
+
+  #{{ section_id }} .game-highlights__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  #{{ section_id }} .game-highlights__name {
+    font-size: var(--font-size--lg);
+    font-weight: 600;
+    margin: 0;
+  }
+
+  #{{ section_id }} .game-highlights__desc {
+    font-size: var(--font-size--sm);
+    line-height: 1.6;
+    margin: 0;
+    color: var(--color-foreground-secondary, #555);
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} .game-highlights__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game highlights",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

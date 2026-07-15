@@ -1,0 +1,70 @@
+{%- liquid
+  assign section_id = 'game-rules-' | append: section.id
+  assign rules_image = collection.metafields.custom.rules_flowchart
+-%}
+
+{%- if rules_image != blank -%}
+  <section id="{{ section_id }}" class="game-rules">
+    <h2 class="game-rules__heading">Rules Flowchart</h2>
+
+    <div class="game-rules__image-wrap">
+      {{ rules_image | image_url: width: 1600 | image_tag:
+        loading: 'lazy',
+        class: 'game-rules__img',
+        sizes: '(min-width: 750px) 80vw, 95vw',
+        widths: '600,800,1000,1200,1600'
+      }}
+    </div>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-rules__heading {
+    font-size: var(--font-size--3xl);
+    font-weight: 700;
+    margin: 0 0 var(--gap-2xl, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-rules__img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-sm, 8px);
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game rules flowchart",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

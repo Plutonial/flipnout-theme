@@ -1,0 +1,83 @@
+{%- liquid
+  assign section_id = 'game-features-' | append: section.id
+  assign base_features = collection.metafields.custom.base_features.value
+-%}
+
+{%- if base_features != blank and base_features.size > 0 -%}
+  <section id="{{ section_id }}" class="game-features">
+    <h2 class="game-features__heading">Game Features</h2>
+
+    <ul class="game-features__list">
+      {%- for feature in base_features -%}
+        {%- if feature != blank -%}
+          <li class="game-features__item">{{ feature }}</li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-features__heading {
+    font-size: var(--font-size--3xl);
+    font-weight: 700;
+    margin: 0 0 var(--gap-2xl, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-features__list {
+    columns: 2;
+    column-gap: var(--gap-2xl, 32px);
+    list-style: disc;
+    padding-left: 1.25em;
+    margin: 0;
+  }
+
+  #{{ section_id }} .game-features__item {
+    font-size: var(--font-size--md);
+    line-height: 1.7;
+    break-inside: avoid;
+    padding-block: 4px;
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} .game-features__list {
+      columns: 1;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game features",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

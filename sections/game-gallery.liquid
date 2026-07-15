@@ -1,0 +1,104 @@
+{%- liquid
+  assign section_id = 'game-gallery-' | append: section.id
+  assign gallery = collection.metafields.custom.gallery.value
+-%}
+
+{%- if gallery != blank and gallery.size > 0 -%}
+  <section id="{{ section_id }}" class="game-gallery">
+    <h2 class="game-gallery__heading">Gallery</h2>
+
+    {%- capture slides -%}
+      {%- for image in gallery -%}
+        {%- capture slide_content -%}
+          <div class="game-gallery__slide-inner">
+            {{ image | image_url: width: 1200 | image_tag:
+              loading: 'lazy',
+              class: 'game-gallery__img',
+              sizes: '(min-width: 750px) 70vw, 95vw',
+              widths: '400,600,800,1000,1200'
+            }}
+          </div>
+        {%- endcapture -%}
+        {%- render 'slideshow-slide', children: slide_content, index: forloop.index0, media_fit: 'contain' -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+
+    {%- capture controls -%}
+      {%- render 'slideshow-controls', style: 'dots', item_count: gallery.size, show_arrows: true, icon_style: 'chevron' -%}
+    {%- endcapture -%}
+
+    {%- render 'slideshow',
+      slides: slides,
+      slide_count: gallery.size,
+      controls: controls,
+      show_arrows: true,
+      icon_style: 'chevron',
+      class: 'game-gallery__slideshow'
+    -%}
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-gallery__heading {
+    font-size: var(--font-size--3xl);
+    font-weight: 700;
+    margin: 0 0 var(--gap-2xl, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-gallery__slideshow {
+    --slideshow-gap: 0;
+  }
+
+  #{{ section_id }} .game-gallery__slide-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: clamp(400px, 60vw, 700px);
+    overflow: hidden;
+  }
+
+  #{{ section_id }} .game-gallery__img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-sm, 8px);
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game gallery",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

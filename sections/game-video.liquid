@@ -1,0 +1,100 @@
+{%- liquid
+  assign section_id = 'game-video-' | append: section.id
+  assign video_url = collection.metafields.custom.video | strip
+  assign youtube_id = ''
+
+  if video_url != blank
+    comment
+      Extract YouTube video ID from common URL formats:
+      - https://www.youtube.com/watch?v=XXXXXXXXXXX
+      - https://youtu.be/XXXXXXXXXXX
+      - https://www.youtube.com/embed/XXXXXXXXXXX
+    endcomment
+
+    if video_url contains 'watch?v='
+      assign youtube_id = video_url | split: 'watch?v=' | last | split: '&' | first
+    elsif video_url contains 'youtu.be/'
+      assign youtube_id = video_url | split: 'youtu.be/' | last | split: '?' | first
+    elsif video_url contains '/embed/'
+      assign youtube_id = video_url | split: '/embed/' | last | split: '?' | first
+    endif
+  endif
+-%}
+
+{%- if youtube_id != blank -%}
+  <section id="{{ section_id }}" class="game-video">
+    <h2 class="game-video__heading">Video</h2>
+
+    <div class="game-video__wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/{{ youtube_id }}"
+        title="{{ collection.title }} video"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        loading="lazy"
+        class="game-video__iframe"
+      ></iframe>
+    </div>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-video__heading {
+    font-size: var(--font-size--3xl);
+    font-weight: 700;
+    margin: 0 0 var(--gap-2xl, 32px);
+    text-align: center;
+  }
+
+  #{{ section_id }} .game-video__wrapper {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-sm, 8px);
+  }
+
+  #{{ section_id }} .game-video__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Game video",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
