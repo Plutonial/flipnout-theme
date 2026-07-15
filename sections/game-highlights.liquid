@@ -4,7 +4,7 @@
 -%}
 
 {%- if highlights != blank and highlights.size > 0 -%}
-  <section id="{{ section_id }}" class="game-highlights">
+  <section id="{{ section_id }}" class="game-highlights" style="--columns: {{ section.settings.columns }}">
     <h2 class="game-highlights__heading">Highlights</h2>
 
     <div class="game-highlights__grid">
@@ -59,8 +59,20 @@
 
   #{{ section_id }} .game-highlights__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--gap-2xl, 32px);
+  }
+
+  @media (min-width: 750px) {
+    #{{ section_id }} .game-highlights__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 990px) {
+    #{{ section_id }} .game-highlights__grid {
+      grid-template-columns: repeat(var(--columns, 3), 1fr);
+    }
   }
 
   #{{ section_id }} .game-highlights__item {
@@ -94,17 +106,21 @@
     color: var(--color-foreground-secondary, #555);
   }
 
-  @media (max-width: 749px) {
-    #{{ section_id }} .game-highlights__grid {
-      grid-template-columns: 1fr;
-    }
-  }
 {% endstyle %}
 
 {% schema %}
 {
   "name": "Game highlights",
   "settings": [
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns (desktop)",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
     {
       "type": "range",
       "id": "padding_top",
