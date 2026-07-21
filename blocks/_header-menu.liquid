@@ -638,6 +638,13 @@
     Decorate nav items with `background-image` ONLY.
   {% endcomment %}
 
+  {% comment %} Nav breathing room from logo (left-aligned layout) {% endcomment %}
+  header-menu {
+    @media screen and (min-width: 990px) {
+      padding-left: var(--header-nav-padding, 120px);
+    }
+  }
+
   {% comment %} Item spacing + red separator between nav items {% endcomment %}
   :root {
     --color-brand-red: #E31E24;
@@ -660,14 +667,13 @@
     background-position: right center;
   }
 
-  {% comment %} Three equal zones: dept | brand (2 sub-cols) | tiles.
+  {% comment %} Content-based column sizing: each zone sized to its content, uniform gutter.
      .mega-menu-sections and .mega-menu__grid both have display:contents (desktop),
-     so the effective grid children of .mega-menu-inner are:
-     .mega-menu__list (subgrid spanning 2 tracks) + .mega-menu-tiles (1 track).
-     Total = menu_column_count + 1 tracks, all 1fr. {% endcomment %}
+     so the effective grid children of .mega-menu-inner are the .mega-menu__column
+     elements + .mega-menu-tiles. {% endcomment %}
   .mega-menu-inner {
     display: grid;
-    column-gap: 48px;
+    column-gap: 32px;
     align-items: flex-start;
 
     @media screen and (max-width: 989px) {
@@ -685,21 +691,26 @@
     min-width: 0;
   }
 
-  {% comment %} Zone separators via box-shadow (no pseudo-elements).
+  {% comment %} Zone separators via border-left (box-shadow is clipped by overflow:hidden
+     on .menu-list__submenu-inner). border-left is part of the element's box.
      Only 2 lines: between zone 1–2 and zone 2–3. None between By Brand sub-columns.
-     Offset = half the 48px gutter so the line is centered. {% endcomment %}
+     padding-left = half the gutter so the line sits centred in the gap. {% endcomment %}
   .mega-menu__column + .mega-menu__column {
-    box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
+    @media screen and (min-width: 990px) {
+      border-left: 1px solid rgba(0,0,0,.12);
+      padding-left: 31px;
+    }
   }
   {% comment %} Mega-menu tile styles {% endcomment %}
   .mega-menu-tiles {
     display: none;
-    box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
 
     @media screen and (min-width: 990px) {
       display: flex;
       flex-direction: row;
       gap: 24px;
+      border-left: 1px solid rgba(0,0,0,.12);
+      padding-left: 31px;
     }
   }
 
@@ -803,7 +814,17 @@
     }
   }
 
-  {% comment %} Align mega-menu content to page container edge (derived from --page-width) {% endcomment %}
+  {% comment %} Align mega-menu content to nav start, not page container edge.
+     The submenu panel is full-bleed (left:0, width:100%) and its content is padded
+     by --section-padding-inline (= page margin). Override the left padding to:
+     page-margin + logo-width + column-gap + nav-padding, so the first column
+     starts under "SHOP". If the logo height setting changes, --header-nav-offset
+     recalculates and both nav and panel move together. {% endcomment %}
+  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .menu-list__submenu-inner {
+    @media screen and (min-width: 990px) {
+      padding-inline-start: calc(var(--page-margin, 40px) + var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 120px));
+    }
+  }
 
   {% comment %} Column span classes — neutralized; each column is a direct grid child
      of .mega-menu-inner via display:contents on sections+grid {% endcomment %}

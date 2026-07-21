@@ -268,8 +268,9 @@
 
 {% liquid
   comment
-    Total zones for .mega-menu-inner = list columns + 1 (tiles).
-    Each zone gets 1fr so they are equal width.
+    Build a content-based track list for .mega-menu-inner.
+    Each list column gets `auto` (sized to content) and the tiles zone gets `auto`.
+    This avoids equal-width zones that create uneven visual gaps.
   endcomment
   assign total_zones = grid_columns_count | plus: 1
 %}
@@ -295,10 +296,10 @@
     {% endif %}
   }
 
-  {% comment %} Set the zone grid on .mega-menu-inner: list columns + 1 for tiles, all equal {% endcomment %}
+  {% comment %} Set the zone grid on .mega-menu-inner: content-based sizing for all zones {% endcomment %}
   .mega-menu-inner:has([data-menu-grid-id="{{ id }}"]) {
     @media screen and (min-width: 990px) {
-      grid-template-columns: repeat({{ total_zones }}, 1fr);
+      grid-template-columns: repeat({{ total_zones }}, auto);
     }
   }
 {% endstyle %}
