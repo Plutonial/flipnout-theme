@@ -117,13 +117,23 @@
                         class="mega-menu__grid"
                         data-menu-grid-id="{{ list_id }}"
                       >
+                        {% comment %} Count top-level columns: each child with sub-links becomes a column.
+                           Children without sub-links are grouped into the preceding column
+                           by the span logic in mega-menu-list.liquid. {% endcomment %}
+                        {% assign menu_column_count = 0 %}
+                        {% for child_link in link.links %}
+                          {% if child_link.links != blank %}
+                            {% assign menu_column_count = menu_column_count | plus: 1 %}
+                          {% endif %}
+                        {% endfor %}
+                        {% assign menu_column_count = menu_column_count | at_least: 1 %}
                         {% render 'mega-menu-list',
                           parent_link: link,
                           id: list_id,
                           section: section,
-                          grid_columns_count: 8,
-                          grid_columns_count_tablet: 4,
-                          grid_columns_count_collection_images: 8,
+                          grid_columns_count: menu_column_count,
+                          grid_columns_count_tablet: menu_column_count,
+                          grid_columns_count_collection_images: menu_column_count,
                           menu_content_type: menu_content_type,
                           content_aspect_ratio: ratio,
                           image_border_radius: image_border_radius
@@ -650,10 +660,13 @@
     background-position: right center;
   }
 
-  {% comment %} Three equal zones: dept | brand (2 sub-cols) | tiles {% endcomment %}
+  {% comment %} Three equal zones: dept | brand (2 sub-cols) | tiles.
+     .mega-menu-sections and .mega-menu__grid both have display:contents (desktop),
+     so the effective grid children of .mega-menu-inner are:
+     .mega-menu__list (subgrid spanning 2 tracks) + .mega-menu-tiles (1 track).
+     Total = menu_column_count + 1 tracks, all 1fr. {% endcomment %}
   .mega-menu-inner {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
     column-gap: 48px;
     align-items: flex-start;
 
@@ -675,14 +688,13 @@
   {% comment %} Zone separators via box-shadow (no pseudo-elements).
      Only 2 lines: between zone 1–2 and zone 2–3. None between By Brand sub-columns.
      Offset = half the 48px gutter so the line is centered. {% endcomment %}
-  .mega-menu-inner > .mega-menu-tiles,
-  .mega-menu-inner > .mega-menu-sections > .mega-menu__grid > .mega-menu__column + .mega-menu__column {
+  .mega-menu__column + .mega-menu__column {
     box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
   }
-
   {% comment %} Mega-menu tile styles {% endcomment %}
   .mega-menu-tiles {
     display: none;
+    box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
 
     @media screen and (min-width: 990px) {
       display: flex;

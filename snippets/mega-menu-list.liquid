@@ -266,6 +266,14 @@
   endif
 %}
 
+{% liquid
+  comment
+    Total zones for .mega-menu-inner = list columns + 1 (tiles).
+    Each zone gets 1fr so they are equal width.
+  endcomment
+  assign total_zones = grid_columns_count | plus: 1
+%}
+
 {% style %}
   [data-menu-grid-id="{{ id }}"] {
     {% if menu_content_type == 'collection_images' and parent_link.links.size < 5 %}
@@ -285,6 +293,13 @@
       --menu-columns-desktop: {{ max_menu_columns }};
       --menu-columns-tablet: {{ max_menu_columns_tablet }};
     {% endif %}
+  }
+
+  {% comment %} Set the zone grid on .mega-menu-inner: list columns + 1 for tiles, all equal {% endcomment %}
+  .mega-menu-inner:has([data-menu-grid-id="{{ id }}"]) {
+    @media screen and (min-width: 990px) {
+      grid-template-columns: repeat({{ total_zones }}, 1fr);
+    }
   }
 {% endstyle %}
 
