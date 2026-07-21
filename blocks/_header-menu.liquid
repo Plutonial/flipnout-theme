@@ -576,7 +576,7 @@
     width: 100%;
 
     @media screen and (min-width: 990px) {
-      grid-template-columns: repeat(var(--menu-columns-desktop), minmax(auto, 1fr));
+      grid-template-columns: 1fr 1fr;
       column-gap: 48px;
       row-gap: 8px;
     }
@@ -627,26 +627,27 @@
   }
 
   .menu-list__list-item {
-    margin-inline: 20px;
+    margin-inline: 0;
+    padding-inline: 20px;
   }
   .menu-list__list-item:first-child {
-    margin-left: 0;
+    padding-left: 0;
   }
   .menu-list__list-item:last-child {
-    margin-right: 0;
+    padding-right: 0;
   }
   .menu-list__list-item:not(:last-child) {
     background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
     background-repeat: no-repeat;
     background-size: 2px 18px;
-    background-position: calc(100% + 20px) center;
+    background-position: right center;
   }
 
-  {% comment %} Three equal zones: sections (dept + brand) + tiles {% endcomment %}
+  {% comment %} Three equal zones: sections (2/3) + tiles (1/3) {% endcomment %}
   .mega-menu-inner {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 32px;
+    grid-template-columns: 2fr 1fr;
+    gap: 48px;
     align-items: flex-start;
 
     @media screen and (max-width: 989px) {
@@ -657,16 +658,7 @@
   }
 
   .mega-menu-sections {
-    display: contents;
-  }
-
-  {% comment %} Each mega-menu__column becomes a zone; brand keeps 2 sub-columns inside {% endcomment %}
-  .mega-menu__grid {
-    display: contents;
-
-    @media screen and (max-width: 989px) {
-      display: grid;
-    }
+    min-width: 0;
   }
 
   .mega-menu__column {
@@ -675,7 +667,7 @@
 
   {% comment %} Zone separators via box-shadow (no pseudo-elements) {% endcomment %}
   .mega-menu__column + .mega-menu__column {
-    box-shadow: -16px 0 0 -15px rgba(0,0,0,.12);
+    box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
   }
 
   {% comment %} Mega-menu tile styles {% endcomment %}
@@ -686,7 +678,7 @@
       display: flex;
       flex-direction: row;
       gap: 24px;
-      box-shadow: -16px 0 0 -15px rgba(0,0,0,.12);
+      box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
     }
   }
 
@@ -792,16 +784,15 @@
 
   {% comment %} Align mega-menu content to page container edge (derived from --page-width) {% endcomment %}
 
-  {% comment %} Column span classes — neutralized because .mega-menu__grid uses display:contents
-     and each column is a direct child of the 3-zone grid {% endcomment %}
+  {% comment %} Column span classes — each column takes 1 column in the 2-col sections grid {% endcomment %}
   .mega-menu__column {
-    grid-column: auto;
+    grid-column: span 1;
   }
 
   .mega-menu__column--span-2,
   .mega-menu__column--span-3,
   .mega-menu__column--span-4 {
-    grid-column: auto;
+    grid-column: span 1;
   }
 
   .mega-menu__column--wide-collection-image {
