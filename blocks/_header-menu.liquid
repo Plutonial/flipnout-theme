@@ -633,7 +633,7 @@
   {% comment %} Nav breathing room from logo (left-aligned layout) {% endcomment %}
   header-menu {
     @media screen and (min-width: 990px) {
-      padding-left: var(--header-nav-padding, 120px);
+      padding-left: var(--header-nav-padding, 40px);
     }
   }
 
@@ -669,7 +669,7 @@
     align-items: flex-start;
 
     @media screen and (min-width: 990px) {
-      padding-left: calc(var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 40px));
+      padding-left: var(--header-nav-inset);
     }
 
     @media screen and (max-width: 989px) {
@@ -811,9 +811,11 @@
   }
 
   {% comment %} Align mega-menu content to nav start, not page container edge.
-     padding-left on .mega-menu-inner is set above (in the main rule) as:
-     header-nav-offset + gap-xl + header-nav-padding. Changing --header-nav-padding
-     moves both the header gap and the panel's first column together. {% endcomment %}
+     padding-left on .mega-menu-inner consumes --header-nav-inset, a single CSS
+     custom property defined on the header component as:
+     calc(--header-nav-offset + --gap-xl + --header-nav-padding).
+     Changing --header-nav-padding moves both the header gap and the panel's
+     first column together — one variable, both places. {% endcomment %}
 
   {% comment %} Column span classes — neutralized; each column is a direct grid child
      of .mega-menu-inner via display:contents on sections+grid {% endcomment %}

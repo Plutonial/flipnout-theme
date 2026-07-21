@@ -316,6 +316,7 @@
     %}
     --header-nav-offset: {{ nav_logo_width }}px;
     --header-nav-padding: 40px;
+    --header-nav-inset: calc(var(--header-nav-offset) + var(--gap-xl, 1.25rem) + var(--header-nav-padding));
     {% if section.settings.actions_display_style == 'text' %}
       --header-actions-font-size: {{ section.settings.actions_font_size | default: '1rem' }};
       --header-actions-font-family: var(--font-{{ section.settings.actions_font | default: 'heading' }}--family);
