@@ -517,13 +517,12 @@
   }
 
   .mega-menu__link--parent {
-    font-family: var(--menu-parent-font-family);
-    font-style: var(--menu-parent-font-style);
-    font-weight: var(--menu-parent-font-weight);
-    font-size: var(--menu-parent-font-size);
-    line-height: var(--menu-parent-font-line-height);
-    text-transform: var(--menu-parent-font-case);
-    color: var(--menu-parent-font-color);
+    font-family: var(--font-accent--family);
+    font-size: var(--font-size--lg);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #000;
 
     &:hover {
       color: var(--menu-parent-active-font-color);
@@ -815,14 +814,14 @@
   }
 
   {% comment %} Align mega-menu content to nav start, not page container edge.
-     The submenu panel is full-bleed (left:0, width:100%) and its content is padded
-     by --section-padding-inline (= page margin). Override the left padding to:
-     page-margin + logo-width + column-gap + nav-padding, so the first column
-     starts under "SHOP". If the logo height setting changes, --header-nav-offset
-     recalculates and both nav and panel move together. {% endcomment %}
-  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .menu-list__submenu-inner {
+     .mega-menu-inner sits in grid-column 2 of the page grid (already page-width).
+     Add padding-left = logo-width + header-grid-gap + nav-padding so the first
+     column starts under "SHOP". Changing --header-nav-padding moves both the
+     header gap and the panel's first column together. Uses padding (not margin
+     or transform) so the right edge stays put and content doesn't overflow. {% endcomment %}
+  .mega-menu-inner {
     @media screen and (min-width: 990px) {
-      padding-inline-start: calc(var(--page-margin, 40px) + var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 120px));
+      padding-left: calc(var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 40px));
     }
   }
 
