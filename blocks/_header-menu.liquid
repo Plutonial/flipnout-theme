@@ -576,9 +576,7 @@
     width: 100%;
 
     @media screen and (min-width: 990px) {
-      grid-template-columns: 1fr 1fr;
-      column-gap: 48px;
-      row-gap: 8px;
+      display: contents;
     }
   }
 
@@ -621,6 +619,15 @@
     text-transform: uppercase;
   }
 
+  {% comment %}
+    ⚠️ STANDING RULE — Nav item decoration constraints:
+    Never set `position` on `.menu-list__list-item` — it makes the <li> the containing
+    block for `.menu-list__submenu` (position: absolute) and collapses the mega menu.
+    Never use ::before/::after on `.menu-list__list-item` or `.menu-list__link` — both
+    are display:flex column, so pseudo-elements stack vertically above the label.
+    Decorate nav items with `background-image` ONLY.
+  {% endcomment %}
+
   {% comment %} Item spacing + red separator between nav items {% endcomment %}
   :root {
     --color-brand-red: #E31E24;
@@ -636,18 +643,18 @@
   .menu-list__list-item:last-child {
     padding-right: 0;
   }
-  .menu-list__list-item:not(:last-child) {
+  .menu-list__list-item:not(:last-child):not([slot='more']):not([slot='overflow']):not(:has(+ [slot='more'])):not(:has(+ [slot='overflow'])) {
     background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
     background-repeat: no-repeat;
     background-size: 2px 18px;
     background-position: right center;
   }
 
-  {% comment %} Three equal zones: sections (2/3) + tiles (1/3) {% endcomment %}
+  {% comment %} Three equal zones: dept | brand (2 sub-cols) | tiles {% endcomment %}
   .mega-menu-inner {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 48px;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 48px;
     align-items: flex-start;
 
     @media screen and (max-width: 989px) {
@@ -658,15 +665,18 @@
   }
 
   .mega-menu-sections {
-    min-width: 0;
+    display: contents;
   }
 
   .mega-menu__column {
     min-width: 0;
   }
 
-  {% comment %} Zone separators via box-shadow (no pseudo-elements) {% endcomment %}
-  .mega-menu__column + .mega-menu__column {
+  {% comment %} Zone separators via box-shadow (no pseudo-elements).
+     Only 2 lines: between zone 1–2 and zone 2–3. None between By Brand sub-columns.
+     Offset = half the 48px gutter so the line is centered. {% endcomment %}
+  .mega-menu-inner > .mega-menu-tiles,
+  .mega-menu-inner > .mega-menu-sections > .mega-menu__grid > .mega-menu__column + .mega-menu__column {
     box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
   }
 
@@ -678,7 +688,6 @@
       display: flex;
       flex-direction: row;
       gap: 24px;
-      box-shadow: -24px 0 0 -23px rgba(0,0,0,.12);
     }
   }
 
@@ -784,15 +793,16 @@
 
   {% comment %} Align mega-menu content to page container edge (derived from --page-width) {% endcomment %}
 
-  {% comment %} Column span classes — each column takes 1 column in the 2-col sections grid {% endcomment %}
+  {% comment %} Column span classes — neutralized; each column is a direct grid child
+     of .mega-menu-inner via display:contents on sections+grid {% endcomment %}
   .mega-menu__column {
-    grid-column: span 1;
+    grid-column: auto;
   }
 
   .mega-menu__column--span-2,
   .mega-menu__column--span-3,
   .mega-menu__column--span-4 {
-    grid-column: span 1;
+    grid-column: auto;
   }
 
   .mega-menu__column--wide-collection-image {
