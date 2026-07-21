@@ -304,7 +304,7 @@
   }
 
   .menu-list__link-title {
-    padding-inline: calc(var(--gap-xl) / 2);
+    padding-inline: 0;
   }
   [slot='overflow'] .menu-list__link-title {
     padding-inline: 0;
@@ -348,7 +348,7 @@
     --focus-outline-size: calc(var(--focus-outline-offset) + var(--focus-outline-width));
 
     gap: 0;
-    margin-inline: calc(-1 * var(--menu-horizontal-gap) / 2);
+    margin-inline: 0;
   }
 
   .overflow-menu {
@@ -611,35 +611,71 @@
     letter-spacing: 0.08em;
   }
 
-  {% comment %} Uppercase top-level main nav items only {% endcomment %}
+  {% comment %} Primary nav: Oswald 18px/600, uppercase, 1px tracking, full black {% endcomment %}
   .menu-list__link {
+    font-family: var(--font-accent--family);
+    font-size: var(--font-size--lg);
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #000;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.9em;
   }
 
-  {% comment %} Flex wrapper: menu sections + tiles side by side {% endcomment %}
+  {% comment %} Item spacing + red separator between nav items {% endcomment %}
+  :root {
+    --color-brand-red: #E31E24;
+  }
+
+  .menu-list__list-item {
+    margin-inline: 20px;
+  }
+  .menu-list__list-item:first-child {
+    margin-left: 0;
+  }
+  .menu-list__list-item:last-child {
+    margin-right: 0;
+  }
+  .menu-list__list-item:not(:last-child) {
+    background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
+    background-repeat: no-repeat;
+    background-size: 2px 18px;
+    background-position: calc(100% + 20px) center;
+  }
+
+  {% comment %} Three equal zones: sections (dept + brand) + tiles {% endcomment %}
   .mega-menu-inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 32px;
     align-items: flex-start;
 
     @media screen and (max-width: 989px) {
+      display: flex;
       flex-direction: column;
       gap: 0;
     }
   }
 
   .mega-menu-sections {
-    flex: 1;
+    display: contents;
+  }
+
+  {% comment %} Each mega-menu__column becomes a zone; brand keeps 2 sub-columns inside {% endcomment %}
+  .mega-menu__grid {
+    display: contents;
+
+    @media screen and (max-width: 989px) {
+      display: grid;
+    }
+  }
+
+  .mega-menu__column {
     min-width: 0;
   }
 
-  {% comment %} Extra visual gap between Department (col 1) and Brand columns {% endcomment %}
-  .mega-menu__column:first-child {
-    @media screen and (min-width: 990px) {
-      margin-right: 32px;
-    }
+  {% comment %} Zone separators via box-shadow (no pseudo-elements) {% endcomment %}
+  .mega-menu__column + .mega-menu__column {
+    box-shadow: -16px 0 0 -15px rgba(0,0,0,.12);
   }
 
   {% comment %} Mega-menu tile styles {% endcomment %}
@@ -649,16 +685,16 @@
     @media screen and (min-width: 990px) {
       display: flex;
       flex-direction: row;
-      flex-shrink: 0;
-      width: auto;
       gap: 24px;
+      box-shadow: -16px 0 0 -15px rgba(0,0,0,.12);
     }
   }
 
   .mega-menu-tile {
     display: flex;
     flex-direction: column;
-    width: 220px;
+    flex: 1;
+    min-width: 0;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -754,27 +790,18 @@
     }
   }
 
-  {% comment %} Align mega-menu inner content with nav start position, not logo/container edge {% endcomment %}
-  .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu .mega-menu-inner {
-    @media screen and (min-width: 990px) {
-      padding-left: calc(var(--header-nav-offset, 0px) + var(--gap-xl));
-    }
-  }
+  {% comment %} Align mega-menu content to page container edge (derived from --page-width) {% endcomment %}
 
+  {% comment %} Column span classes — neutralized because .mega-menu__grid uses display:contents
+     and each column is a direct child of the 3-zone grid {% endcomment %}
   .mega-menu__column {
-    grid-column: span 1;
+    grid-column: auto;
   }
 
-  .mega-menu__column--span-2 {
-    grid-column: span 2;
-  }
-
-  .mega-menu__column--span-3 {
-    grid-column: span 3;
-  }
-
+  .mega-menu__column--span-2,
+  .mega-menu__column--span-3,
   .mega-menu__column--span-4 {
-    grid-column: span 4;
+    grid-column: auto;
   }
 
   .mega-menu__column--wide-collection-image {
