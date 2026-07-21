@@ -610,13 +610,6 @@
     white-space: nowrap;
   }
 
-  {% comment %} Bold mega-menu section headings (By Department, By Brand) {% endcomment %}
-  .mega-menu__link--parent {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.08em;
-  }
 
   {% comment %} Primary nav: Oswald 18px/600, uppercase, 1px tracking, full black {% endcomment %}
   .menu-list__link {
@@ -674,6 +667,10 @@
     display: grid;
     column-gap: 32px;
     align-items: flex-start;
+
+    @media screen and (min-width: 990px) {
+      padding-left: calc(var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 40px));
+    }
 
     @media screen and (max-width: 989px) {
       display: flex;
@@ -814,16 +811,9 @@
   }
 
   {% comment %} Align mega-menu content to nav start, not page container edge.
-     .mega-menu-inner sits in grid-column 2 of the page grid (already page-width).
-     Add padding-left = logo-width + header-grid-gap + nav-padding so the first
-     column starts under "SHOP". Changing --header-nav-padding moves both the
-     header gap and the panel's first column together. Uses padding (not margin
-     or transform) so the right edge stays put and content doesn't overflow. {% endcomment %}
-  .mega-menu-inner {
-    @media screen and (min-width: 990px) {
-      padding-left: calc(var(--header-nav-offset, 120px) + var(--gap-xl, 1.25rem) + var(--header-nav-padding, 40px));
-    }
-  }
+     padding-left on .mega-menu-inner is set above (in the main rule) as:
+     header-nav-offset + gap-xl + header-nav-padding. Changing --header-nav-padding
+     moves both the header gap and the panel's first column together. {% endcomment %}
 
   {% comment %} Column span classes — neutralized; each column is a direct grid child
      of .mega-menu-inner via display:contents on sections+grid {% endcomment %}
