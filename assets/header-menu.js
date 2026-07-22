@@ -29,17 +29,39 @@ class HeaderMenu extends Component {
 
   #HIDE_DELAY = 400;
 
+  /**
+   * Bound handler for pointermove on the document — while a panel is open,
+   * cancels the close timer whenever the pointer is inside the open submenu.
+   * @param {PointerEvent} event
+   */
+  #panelGuardListener = (event) => {
+    if (!this.#state.activeItem) return;
+    const openSubmenu = findSubmenu(this.#state.activeItem);
+    if (!openSubmenu) return;
+    const rect = openSubmenu.getBoundingClientRect();
+    if (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    ) {
+      this.#cancelCloseTimer();
+    }
+  };
+
   connectedCallback() {
     super.connectedCallback();
 
     onDocumentLoaded(this.#preloadImages);
     window.addEventListener('resize', this.#resizeListener);
+    document.addEventListener('pointermove', this.#panelGuardListener);
     this.overflowMenu?.addEventListener('pointerleave', this.#overflowSubmenuListener);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('resize', this.#resizeListener);
+    document.removeEventListener('pointermove', this.#panelGuardListener);
     this.overflowMenu?.removeEventListener('pointerleave', this.#overflowSubmenuListener);
     this.#cleanupMutationObserver();
     this.#cancelCloseTimer();
@@ -96,6 +118,24 @@ class HeaderMenu extends Component {
     let item = findMenuItem(event.target);
 
     if (!item || item == this.#state.activeItem) return;
+
+    // Hover-intent: when a panel is already open and the pointer enters a
+    // *different* nav item, suppress the switch if the pointer is still inside
+    // the open panel's bounding box (diagonal traversal from trigger to panel).
+    if (this.#state.activeItem && event instanceof PointerEvent) {
+      const openSubmenu = findSubmenu(this.#state.activeItem);
+      if (openSubmenu) {
+        const rect = openSubmenu.getBoundingClientRect();
+        if (
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom
+        ) {
+          return; // pointer is inside the open panel — ignore sibling activation
+        }
+      }
+    }
 
     const isDefaultSlot = event.target.slot === '';
 
