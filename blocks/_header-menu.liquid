@@ -526,13 +526,6 @@
       color: rgba(0,0,0,.6);
       cursor: default;
     }
-    {% comment %} Heading labels stay permanent grey in ALL states — matches Horizon's
-       .menu-list:where(:has(...)) .menu-list__link (0,2,0) specificity and wins by
-       source order + higher class specificity on --parent. No :hover rule needed. {% endcomment %}
-    .menu-list .mega-menu__link--parent,
-    .menu-list:where(:has(.menu-list__list-item:hover)) .mega-menu__link--parent {
-      color: rgba(0,0,0,.6);
-    }
   }
 
   @media screen and (max-width: 989px) {
@@ -657,14 +650,14 @@
       color: var(--color-logo-red);
     }
 
-    {% comment %} Active (current-page) nav item — same logo red.
-       Must beat Horizon's .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link--active
-       (specificity 0,4,0) in BOTH hover and non-hover states. {% endcomment %}
-    .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link--active,
-    .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link[aria-current="page"],
-    .menu-list:where(:has(.menu-list__list-item:hover)) .menu-list__link--active,
-    .menu-list:where(:has(.menu-list__list-item:hover)) .menu-list__link[aria-current="page"] {
-      color: var(--color-logo-red);
+    {% comment %} Active (current-page) nav item — override the CSS variables that
+       Horizon's own rules read, so every :has()/:not(:has()) variant picks up the
+       red automatically. No specificity war needed. {% endcomment %}
+    .menu-list__list-item:has(.menu-list__link--active),
+    .menu-list__list-item:has([aria-current="page"]) {
+      --menu-top-level-font-color: var(--color-logo-red);
+      --menu-top-level-font-color-rgb: 255 0 0;
+      --opacity-subdued-text: 1;
     }
   }
 
