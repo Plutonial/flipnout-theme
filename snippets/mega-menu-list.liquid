@@ -214,7 +214,8 @@
             <li>
               <a
                 href="{{ childLink.url }}"
-                class="mega-menu__link"
+                class="mega-menu__link{% if childLink.current %} mega-menu__link--active{% endif %}"
+                {% if childLink.current %}aria-current="page"{% endif %}
               >
                 <span class="wrap-text">{{- childLink.title -}}</span>
               </a>
