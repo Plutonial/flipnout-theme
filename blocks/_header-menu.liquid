@@ -526,9 +526,11 @@
       color: rgba(0,0,0,.6);
       cursor: default;
     }
-    {% comment %} Heading labels stay permanent grey — neutralize Horizon's hover-dim {% endcomment %}
-    .mega-menu__link--parent:hover,
-    .menu-list:where(:has(:hover)) .mega-menu__link--parent {
+    {% comment %} Heading labels stay permanent grey in ALL states — matches Horizon's
+       .menu-list:where(:has(...)) .menu-list__link (0,2,0) specificity and wins by
+       source order + higher class specificity on --parent. No :hover rule needed. {% endcomment %}
+    .menu-list .mega-menu__link--parent,
+    .menu-list:where(:has(.menu-list__list-item:hover)) .mega-menu__link--parent {
       color: rgba(0,0,0,.6);
     }
   }
@@ -655,9 +657,13 @@
       color: var(--color-logo-red);
     }
 
-    {% comment %} Active (current-page) nav item — same logo red {% endcomment %}
-    .menu-list__link--active,
-    .menu-list__link[aria-current="page"] {
+    {% comment %} Active (current-page) nav item — same logo red.
+       Must beat Horizon's .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link--active
+       (specificity 0,4,0) in BOTH hover and non-hover states. {% endcomment %}
+    .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link--active,
+    .menu-list:not(:has(.menu-list__list-item:hover)) .menu-list__link[aria-current="page"],
+    .menu-list:where(:has(.menu-list__list-item:hover)) .menu-list__link--active,
+    .menu-list:where(:has(.menu-list__list-item:hover)) .menu-list__link[aria-current="page"] {
       color: var(--color-logo-red);
     }
   }
