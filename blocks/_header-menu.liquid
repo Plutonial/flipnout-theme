@@ -215,7 +215,7 @@
     min-height: var(--header-drawer-min-height);
   }
 
-  @media screen and (min-width: 750px) {
+  @media screen and (min-width: 990px) {
     #header-component[data-menu-style='menu'] .header__drawer {
       display: none;
       min-height: 0;
@@ -516,16 +516,15 @@
     }
   }
 
-  .mega-menu__link--parent {
-    font-family: var(--font-accent--family);
-    font-size: var(--font-size--lg);
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #000;
-
-    &:hover {
-      color: var(--menu-parent-active-font-color);
+  @media screen and (min-width: 990px) {
+    .mega-menu__link--parent {
+      font-family: var(--font-accent--family);
+      font-size: var(--font-size--lg);
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #000;
+      cursor: default;
     }
   }
 
@@ -611,14 +610,34 @@
   }
 
 
-  {% comment %} Primary nav: Oswald 18px/600, uppercase, 1px tracking, full black {% endcomment %}
-  .menu-list__link {
-    font-family: var(--font-accent--family);
-    font-size: var(--font-size--lg);
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #000;
-    text-transform: uppercase;
+  {% comment %} Primary nav: Oswald 18px/600, uppercase, 1px tracking, full black.
+     Scoped to ≥990px — below that the drawer takes over. {% endcomment %}
+  @media screen and (min-width: 990px) {
+    .menu-list__link {
+      font-family: var(--font-accent--family);
+      font-size: var(--font-size--lg);
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    {% comment %} Nav hover + active colors.
+       Override Horizon's dim-the-others effect: all items stay black, only the
+       hovered/active item turns logo red. No !important — specificity matches
+       Horizon's .menu-list .menu-list__list-item:where(:hover) .menu-list__link
+       (0,3,0) and wins by source order. {% endcomment %}
+    .menu-list:where(:has(.menu-list__list-item:hover)) .menu-list__link,
+    .menu-list:where(:has(.menu-list__list-item:focus-within)) .menu-list__link,
+    .menu-list:where(:has(.menu-list__list-item:not([aria-hidden='true']) .menu-list__link--active)) .menu-list__link {
+      color: #000;
+    }
+    .menu-list .menu-list__list-item:where(:hover, :focus-within) .menu-list__link {
+      color: var(--color-logo-red);
+    }
+    .menu-list .menu-list__list-item:has([aria-expanded="true"]) .menu-list__link {
+      color: var(--color-logo-red);
+    }
   }
 
   {% comment %}
@@ -640,23 +659,26 @@
   {% comment %} Item spacing + red separator between nav items {% endcomment %}
   :root {
     --color-brand-red: #E31E24;
+    --color-logo-red: #FF0000;
   }
 
-  .menu-list__list-item {
-    margin-inline: 0;
-    padding-inline: 20px;
-  }
-  .menu-list__list-item:first-child {
-    padding-left: 0;
-  }
-  .menu-list__list-item:last-child {
-    padding-right: 0;
-  }
-  .menu-list__list-item:not(:last-child):not([slot='more']):not([slot='overflow']):not(:has(+ [slot='more'])):not(:has(+ [slot='overflow'])) {
-    background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
-    background-repeat: no-repeat;
-    background-size: 2px 18px;
-    background-position: right center;
+  @media screen and (min-width: 990px) {
+    .menu-list__list-item {
+      margin-inline: 0;
+      padding-inline: 20px;
+    }
+    .menu-list__list-item:first-child {
+      padding-left: 0;
+    }
+    .menu-list__list-item:last-child {
+      padding-right: 0;
+    }
+    .menu-list__list-item:not(:last-child):not([slot='more']):not([slot='overflow']):not(:has(+ [slot='more'])):not(:has(+ [slot='overflow'])) {
+      background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
+      background-repeat: no-repeat;
+      background-size: 2px 18px;
+      background-position: right center;
+    }
   }
 
   {% comment %} Content-based column sizing: each zone sized to its content, uniform gutter.
@@ -707,6 +729,7 @@
       gap: 24px;
       border-left: 1px solid rgba(0,0,0,.12);
       padding-left: 31px;
+      width: fit-content;
     }
   }
 

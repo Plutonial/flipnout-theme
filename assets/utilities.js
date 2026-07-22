@@ -708,7 +708,8 @@ export function setHeaderMenuStyle() {
     window.requestAnimationFrame(() => {
       const overflowList = headerComponent?.querySelector('overflow-list');
       const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
-      headerComponent.dataset.menuStyle = isTouchDevice() || hasReachedMinimum ? 'drawer' : 'menu';
+      const belowDesktop = window.innerWidth < 990;
+      headerComponent.dataset.menuStyle = isTouchDevice() || hasReachedMinimum || belowDesktop ? 'drawer' : 'menu';
     });
   }
 }
