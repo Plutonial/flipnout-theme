@@ -88,12 +88,17 @@
     font-display: swap;
   }
 
+  {% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
+  {% comment %} NOTE: hero_image is currently hero-bg-placeholder.jpg — replace with real art
+     via custom.hero_image in the Shopify admin (data task, not theme code). {% endcomment %}
   #{{ section_id }} {
     --_bg-color: {{ bg_color }};
     --_hero-position: {{ hero_position }};
     position: relative;
     width: 100%;
-    min-height: 75vw;
+    aspect-ratio: 4 / 5;
+    min-height: 420px;
+    max-height: min(560px, 62svh);
     background: var(--_bg-color);
     overflow: hidden;
   }
@@ -125,14 +130,14 @@
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    min-height: 75vw;
-    padding: calc(var(--header-height, 60px) + 8px) var(--page-margin, 16px) clamp(48px, 10vw, 80px);
+    height: 100%;
+    padding: calc(var(--header-height, 60px) + 8px) var(--page-margin, 16px) clamp(32px, 6vw, 56px);
     width: 100%;
     max-width: var(--page-width, 1200px);
     margin-inline: auto;
   }
 
-  {% comment %} ── Scrim: radial halo centered on content, feathered all directions ── {% endcomment %}
+  {% comment %} ── Scrim: radial halo centered on content, tightened for shorter band ── {% endcomment %}
   #{{ section_id }} .collection-hero__content::before {
     content: '';
     position: absolute;
@@ -140,12 +145,12 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 140%;
-    height: 140%;
+    height: 160%;
     z-index: -1;
     background: radial-gradient(ellipse at center,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.35) 35%,
-      rgba(0, 0, 0, 0) 70%
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0.4) 40%,
+      rgba(0, 0, 0, 0) 75%
     );
     pointer-events: none;
   }
@@ -224,22 +229,32 @@
     box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
   }
 
-  {% comment %} ── Desktop adjustments ── {% endcomment %}
-  @media (min-width: 750px) {
+  {% comment %} ── Tablet: 16:9 band ── {% endcomment %}
+  @media (min-width: 701px) {
     #{{ section_id }} {
-      min-height: calc(100svh - var(--header-height, 80px));
+      aspect-ratio: 16 / 9;
+      min-height: 340px;
     }
 
     #{{ section_id }} .collection-hero__content {
-      min-height: calc(100svh - var(--header-height, 80px));
       padding-top: calc(var(--header-height, 80px) + 12px);
     }
 
     #{{ section_id }} .collection-hero__logo {
-      height: clamp(120px, 12vw, 180px);
+      height: clamp(100px, 10vw, 150px);
       max-width: 560px;
     }
+  }
 
+  {% comment %} ── Desktop: 4.2:1 cinematic band ── {% endcomment %}
+  @media (min-width: 1025px) {
+    #{{ section_id }} {
+      aspect-ratio: 4.2 / 1;
+    }
+
+    #{{ section_id }} .collection-hero__logo {
+      height: clamp(120px, 12vw, 180px);
+    }
   }
 
   {% comment %} ── Visually hidden utility ── {% endcomment %}

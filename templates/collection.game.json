@@ -3,8 +3,8 @@
     "collection-hero": {
       "type": "collection-hero",
       "settings": {
-        "cta_text": "Shop Editions",
-        "cta_target": "#editions",
+        "cta_text": "",
+        "cta_target": "",
         "background_color": "#1a1a2e",
         "padding_top": 0,
         "padding_bottom": 0
@@ -64,8 +64,8 @@
   },
   "order": [
     "collection-hero",
-    "game-highlights",
     "game-editions-grid",
+    "game-highlights",
     "game-features",
     "game-gallery",
     "game-video",
