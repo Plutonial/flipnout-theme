@@ -523,8 +523,13 @@
       font-weight: 600;
       letter-spacing: 1px;
       text-transform: uppercase;
-      color: #000;
+      color: rgba(0,0,0,.6);
       cursor: default;
+    }
+    {% comment %} Heading labels stay permanent grey — neutralize Horizon's hover-dim {% endcomment %}
+    .mega-menu__link--parent:hover,
+    .menu-list:where(:has(:hover)) .mega-menu__link--parent {
+      color: rgba(0,0,0,.6);
     }
   }
 
@@ -609,6 +614,17 @@
     white-space: nowrap;
   }
 
+  {% comment %} Mega menu child link hover + active: logo red, excluding heading labels {% endcomment %}
+  @media screen and (min-width: 990px) {
+    .mega-menu__link:not(.mega-menu__link--parent):hover {
+      color: var(--color-logo-red);
+    }
+    .mega-menu__link:not(.mega-menu__link--parent).mega-menu__link--active,
+    .mega-menu__link:not(.mega-menu__link--parent)[aria-current="page"] {
+      color: var(--color-logo-red);
+    }
+  }
+
 
   {% comment %} Primary nav: Oswald 18px/600, uppercase, 1px tracking, full black.
      Scoped to ≥990px — below that the drawer takes over. {% endcomment %}
@@ -636,6 +652,12 @@
       color: var(--color-logo-red);
     }
     .menu-list .menu-list__list-item:has([aria-expanded="true"]) .menu-list__link {
+      color: var(--color-logo-red);
+    }
+
+    {% comment %} Active (current-page) nav item — same logo red {% endcomment %}
+    .menu-list__link--active,
+    .menu-list__link[aria-current="page"] {
       color: var(--color-logo-red);
     }
   }
