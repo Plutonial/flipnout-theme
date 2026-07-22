@@ -10,17 +10,17 @@
         "padding_bottom": 0
       }
     },
-    "game-highlights": {
-      "type": "game-highlights",
-      "settings": {
-        "padding_top": 48,
-        "padding_bottom": 48
-      }
-    },
     "game-editions-grid": {
       "type": "game-editions-grid",
       "settings": {
         "heading": "Editions",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "game-gallery-lore": {
+      "type": "game-gallery-lore",
+      "settings": {
         "padding_top": 48,
         "padding_bottom": 48
       }
@@ -32,8 +32,8 @@
         "padding_bottom": 48
       }
     },
-    "game-gallery": {
-      "type": "game-gallery",
+    "game-highlights": {
+      "type": "game-highlights",
       "settings": {
         "padding_top": 48,
         "padding_bottom": 48
@@ -42,14 +42,6 @@
     "game-video": {
       "type": "game-video",
       "settings": {
-        "padding_top": 48,
-        "padding_bottom": 48
-      }
-    },
-    "game-lore": {
-      "type": "game-lore",
-      "settings": {
-        "heading": "About the Game",
         "padding_top": 48,
         "padding_bottom": 48
       }
@@ -65,11 +57,10 @@
   "order": [
     "collection-hero",
     "game-editions-grid",
-    "game-highlights",
+    "game-gallery-lore",
     "game-features",
-    "game-gallery",
+    "game-highlights",
     "game-video",
-    "game-lore",
     "game-rules-flowchart"
   ]
 }

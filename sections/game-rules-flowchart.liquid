@@ -4,17 +4,23 @@
 -%}
 
 {%- if rules_image != blank -%}
-<div class="game-section-band game-section-band--cream">
+<div class="game-section-band game-section-band--white">
   <section id="{{ section_id }}" class="game-rules">
     <h2 class="game-rules__heading game-section-heading">Rules Flowchart</h2>
 
-    <div class="game-rules__image-wrap">
-      {{ rules_image | image_url: width: 1600 | image_tag:
-        loading: 'lazy',
-        class: 'game-rules__img',
-        sizes: '(min-width: 750px) 80vw, 95vw',
-        widths: '600,800,1000,1200,1600'
-      }}
+    <div class="game-rules__image-wrap" uk-lightbox="animation: fade">
+      <a
+        href="{{ rules_image | image_url: width: 2400 }}"
+        data-caption="{{ collection.title }} Rules Flowchart"
+        data-type="image"
+      >
+        {{ rules_image | image_url: width: 1600 | image_tag:
+          loading: 'lazy',
+          class: 'game-rules__img',
+          sizes: '(min-width: 750px) 80vw, 95vw',
+          widths: '600,800,1000,1200,1600'
+        }}
+      </a>
     </div>
   </section>
 </div>
@@ -27,6 +33,11 @@
     margin-inline: auto;
   }
 
+
+  #{{ section_id }} .game-rules__image-wrap a {
+    display: block;
+    cursor: zoom-in;
+  }
 
   #{{ section_id }} .game-rules__img {
     width: 100%;

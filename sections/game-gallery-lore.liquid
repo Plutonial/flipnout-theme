@@ -1,0 +1,193 @@
+{%- liquid
+  assign section_id = 'game-gallery-lore-' | append: section.id
+  assign gallery = collection.metafields.custom.gallery.value
+  assign has_gallery = false
+  if gallery != blank and gallery.size > 0
+    assign has_gallery = true
+  endif
+  assign has_lore = false
+  if collection.description != blank
+    assign has_lore = true
+  endif
+-%}
+
+{%- if has_gallery or has_lore -%}
+<div class="game-section-band game-section-band--white">
+  <section id="{{ section_id }}" class="game-gallery-lore">
+    <div class="game-gallery-lore__grid">
+
+      {% comment %} ── Left column: Gallery as UIkit Slider + Lightbox ── {% endcomment %}
+      {%- if has_gallery -%}
+        <div class="game-gallery-lore__gallery">
+          <div uk-lightbox="animation: fade">
+            <div uk-slider="finite: true">
+              <div class="uk-position-relative">
+                <div class="uk-slider-container">
+                  <ul class="uk-slider-items uk-grid uk-grid-collapse">
+                    {%- for image in gallery -%}
+                      <li class="game-gallery-lore__slide">
+                        <a
+                          href="{{ image | image_url: width: 2400 }}"
+                          data-caption="{{ collection.title }} Gallery"
+                          data-type="image"
+                        >
+                          {{ image | image_url: width: 1200 | image_tag:
+                            loading: 'lazy',
+                            class: 'game-gallery-lore__img',
+                            sizes: '(min-width: 990px) 45vw, 95vw',
+                            widths: '400,600,800,1000,1200'
+                          }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+
+                {% comment %} Slidenav arrows {% endcomment %}
+                <a class="uk-position-center-left uk-position-small" href uk-slidenav-previous uk-slider-item="previous"></a>
+                <a class="uk-position-center-right uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
+              </div>
+
+              {% comment %} Dotnav {% endcomment %}
+              <ul class="uk-slider-nav uk-dotnav uk-flex-center uk-margin-small-top"></ul>
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+
+      {% comment %} ── Right column: About the Game (lore + credits) ── {% endcomment %}
+      {%- if has_lore -%}
+        <div class="game-gallery-lore__lore">
+          <h2 class="game-gallery-lore__heading game-section-heading">About the Game</h2>
+
+          <div class="game-gallery-lore__body rte">
+            {{ collection.description }}
+          </div>
+
+          {%- if collection.metafields.custom.credits != blank -%}
+            <p class="game-gallery-lore__credits">Credits: {{ collection.metafields.custom.credits }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+    </div>
+  </section>
+</div>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
+    max-width: var(--page-content-width, 1200px);
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .game-gallery-lore__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(32px, 4vw, 48px);
+  }
+
+  @media (min-width: 990px) {
+    #{{ section_id }} .game-gallery-lore__grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  {% comment %} ── Gallery slider: fixed-height viewport for consistent sizing ── {% endcomment %}
+  #{{ section_id }} .game-gallery-lore__slide {
+    width: 100%;
+    flex: 0 0 100%;
+  }
+
+  #{{ section_id }} .game-gallery-lore__slide a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: clamp(400px, 60vw, 700px);
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+
+  #{{ section_id }} .game-gallery-lore__img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-sm, 8px);
+  }
+
+  {% comment %} ── Lore column ── {% endcomment %}
+  #{{ section_id }} .game-gallery-lore__heading {
+    text-align: left;
+  }
+
+  #{{ section_id }} .game-gallery-lore__heading::after {
+    margin: 12px 0 0;
+  }
+
+  #{{ section_id }} .game-gallery-lore__body {
+    font-size: var(--font-size--md);
+    line-height: 1.7;
+  }
+
+  #{{ section_id }} .game-gallery-lore__body > *:first-child {
+    margin-top: 0;
+  }
+
+  #{{ section_id }} .game-gallery-lore__body > *:last-child {
+    margin-bottom: 0;
+  }
+
+  #{{ section_id }} .game-gallery-lore__credits {
+    font-size: var(--font-size--xs);
+    color: var(--color-foreground-secondary, #888);
+    margin-top: clamp(24px, 3vw, 40px);
+    line-height: 1.5;
+  }
+
+  {% comment %} ── UIkit overrides scoped to this section ── {% endcomment %}
+  #{{ section_id }} .uk-slidenav {
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  }
+
+  #{{ section_id }} .uk-dotnav > * > * {
+    background: var(--color-foreground-secondary, #888);
+  }
+
+  #{{ section_id }} .uk-dotnav > .uk-active > * {
+    background: var(--color-foreground, #333);
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Gallery + Lore",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

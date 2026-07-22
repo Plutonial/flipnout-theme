@@ -4,42 +4,64 @@
 -%}
 
 {%- if highlights != blank and highlights.size > 0 -%}
-<div class="game-section-band game-section-band--cream">
-  <section id="{{ section_id }}" class="game-highlights" style="--columns: {{ section.settings.columns }}">
+<div class="game-section-band game-section-band--white">
+  <section id="{{ section_id }}" class="game-highlights">
     <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
-    <div class="game-highlights__grid">
-      {%- for feature in highlights -%}
-        {%- liquid
-          assign feat_name = feature.name
-          assign feat_desc = feature.description
-          assign feat_image = feature.image
-        -%}
+    <div uk-lightbox="animation: fade">
+      <div uk-slider="center: true; autoplay: true; autoplay-interval: 7000; finite: false; pause-on-hover: true">
+        <div class="uk-position-relative">
+          <div class="uk-slider-container uk-light">
+            <ul class="uk-slider-items uk-grid uk-grid-small">
+              {%- for feature in highlights -%}
+                {%- liquid
+                  assign feat_name = feature.name
+                  assign feat_desc = feature.description
+                  assign feat_image = feature.image
+                -%}
 
-        {%- if feat_name != blank or feat_desc != blank -%}
-          <div class="game-highlights__item">
-            {%- if feat_image != blank -%}
-              <div class="game-highlights__image-wrap">
-                {{ feat_image | image_url: width: 800 | image_tag:
-                  loading: 'lazy',
-                  class: 'game-highlights__img',
-                  sizes: '(min-width: 750px) 33vw, 100vw',
-                  widths: '400,600,800'
-                }}
-              </div>
-            {%- endif -%}
+                {%- if feat_name != blank or feat_desc != blank -%}
+                  <li class="game-highlights__slide">
+                    <div class="game-highlights__card">
+                      {%- if feat_image != blank -%}
+                        <a
+                          href="{{ feat_image | image_url: width: 2400 }}"
+                          data-caption="{{ feat_name }}"
+                          data-type="image"
+                          class="game-highlights__image-wrap"
+                        >
+                          {{ feat_image | image_url: width: 800 | image_tag:
+                            loading: 'lazy',
+                            class: 'game-highlights__img',
+                            sizes: '(min-width: 990px) 33vw, 80vw',
+                            widths: '400,600,800'
+                          }}
+                        </a>
+                      {%- endif -%}
 
-            <div class="game-highlights__text">
-              {%- if feat_name != blank -%}
-                <h3 class="game-highlights__name">{{ feat_name }}</h3>
-              {%- endif -%}
-              {%- if feat_desc != blank -%}
-                <p class="game-highlights__desc">{{ feat_desc }}</p>
-              {%- endif -%}
-            </div>
+                      <div class="game-highlights__text">
+                        {%- if feat_name != blank -%}
+                          <h3 class="game-highlights__name">{{ feat_name }}</h3>
+                        {%- endif -%}
+                        {%- if feat_desc != blank -%}
+                          <p class="game-highlights__desc">{{ feat_desc }}</p>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
           </div>
-        {%- endif -%}
-      {%- endfor -%}
+
+          {% comment %} Slidenav arrows {% endcomment %}
+          <a class="uk-position-center-left-out uk-position-small" href uk-slidenav-previous uk-slider-item="previous"></a>
+          <a class="uk-position-center-right-out uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
+        </div>
+
+        {% comment %} Dotnav {% endcomment %}
+        <ul class="uk-slider-nav uk-dotnav uk-flex-center uk-margin-small-top"></ul>
+      </div>
     </div>
   </section>
 </div>
@@ -52,35 +74,37 @@
     margin-inline: auto;
   }
 
-
-  #{{ section_id }} .game-highlights__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--gap-2xl, 32px);
+  #{{ section_id }} .game-highlights__slide {
+    width: 80%;
+    flex: 0 0 80%;
   }
 
   @media (min-width: 750px) {
-    #{{ section_id }} .game-highlights__grid {
-      grid-template-columns: repeat(2, 1fr);
+    #{{ section_id }} .game-highlights__slide {
+      width: 40%;
+      flex: 0 0 40%;
     }
   }
 
   @media (min-width: 990px) {
-    #{{ section_id }} .game-highlights__grid {
-      grid-template-columns: repeat(var(--columns, 3), 1fr);
+    #{{ section_id }} .game-highlights__slide {
+      width: 30%;
+      flex: 0 0 30%;
     }
   }
 
-  #{{ section_id }} .game-highlights__item {
+  #{{ section_id }} .game-highlights__card {
     display: flex;
     flex-direction: column;
     gap: var(--gap-md, 16px);
   }
 
   #{{ section_id }} .game-highlights__image-wrap {
+    display: block;
     aspect-ratio: 4 / 3;
     overflow: hidden;
     border-radius: var(--radius-sm, 8px);
+    cursor: zoom-in;
   }
 
   #{{ section_id }} .game-highlights__img {
@@ -102,21 +126,24 @@
     color: var(--color-foreground-secondary, #555);
   }
 
+  {% comment %} ── UIkit overrides scoped to this section ── {% endcomment %}
+  #{{ section_id }} .uk-slidenav {
+    color: var(--color-foreground, #333);
+  }
+
+  #{{ section_id }} .uk-dotnav > * > * {
+    background: var(--color-foreground-secondary, #888);
+  }
+
+  #{{ section_id }} .uk-dotnav > .uk-active > * {
+    background: var(--color-foreground, #333);
+  }
 {% endstyle %}
 
 {% schema %}
 {
   "name": "Game highlights",
   "settings": [
-    {
-      "type": "range",
-      "id": "columns",
-      "label": "Columns (desktop)",
-      "min": 2,
-      "max": 4,
-      "step": 1,
-      "default": 3
-    },
     {
       "type": "range",
       "id": "padding_top",

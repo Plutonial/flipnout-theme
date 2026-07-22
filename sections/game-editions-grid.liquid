@@ -13,11 +13,9 @@
   assign products_count = collection.products.size
 -%}
 
-<div class="{{ section_id }}__band game-section-band game-section-band--white">
+<div class="{{ section_id }}__band game-section-band game-section-band--cream">
 <section id="editions" class="{{ section_id }}">
-  {%- if heading != blank -%}
-    <h2 class="editions-grid__heading game-section-heading">{{ heading }}</h2>
-  {%- endif -%}
+  <h2 class="editions-grid__heading game-section-heading">Shop {{ collection.title }} Pinball Editions</h2>
 
   <div class="editions-grid">
     {%- for product in editions -%}
@@ -30,7 +28,7 @@
         assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
       -%}
 
-      <a href="{{ product.url }}" class="editions-grid__card">
+      <div class="editions-grid__card">
         {%- if card_image -%}
           <div class="editions-grid__art">
             {{ card_image | image_url: width: 800 | image_tag:
@@ -48,8 +46,9 @@
           {%- endif -%}
           <h3 class="editions-grid__title">{{ product.title }}</h3>
           <span class="editions-grid__price">{{ product.price | money }}</span>
+          <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
         </div>
-      </a>
+      </div>
     {%- endfor -%}
   </div>
 </section>
@@ -158,6 +157,26 @@
     font-size: 15px;
     font-weight: 500;
     color: var(--color-foreground, #333);
+  }
+
+  .editions-grid__btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 12px 24px;
+    background: var(--color-logo-red, #FF0000);
+    color: #fff;
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    text-align: center;
+    border-radius: var(--radius-sm, 8px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .editions-grid__btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
   }
 
   @media (max-width: 749px) {
