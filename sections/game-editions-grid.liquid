@@ -13,9 +13,10 @@
   assign products_count = collection.products.size
 -%}
 
+<div class="{{ section_id }}__band game-section-band game-section-band--white">
 <section id="editions" class="{{ section_id }}">
   {%- if heading != blank -%}
-    <h2 class="editions-grid__heading">{{ heading }}</h2>
+    <h2 class="editions-grid__heading game-section-heading">{{ heading }}</h2>
   {%- endif -%}
 
   <div class="editions-grid">
@@ -52,20 +53,49 @@
     {%- endfor -%}
   </div>
 </section>
+</div>
 
 {% style %}
+  {% comment %} ── Shared game-section band tokens (defined once, used by all game sections) ── {% endcomment %}
+  .game-section-band {
+    --section-bg-cream: #F7F2EA;
+    --section-bg-dark: #111;
+    width: 100%;
+  }
+
+  .game-section-band--white { background: #fff; }
+  .game-section-band--cream { background: var(--section-bg-cream); }
+  .game-section-band--dark  { background: var(--section-bg-dark); color: #fff; }
+
+  {% comment %} ── Shared heading accent (red rule) ── {% endcomment %}
+  .game-section-heading {
+    font-family: var(--font-h1--family), sans-serif;
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0 0 clamp(24px, 4vw, 48px);
+  }
+
+  .game-section-heading::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    background: var(--color-logo-red, #FF0000);
+    margin: 12px auto 0;
+  }
+
+  .game-section-band--dark .game-section-heading {
+    color: #fff;
+  }
+
   #editions {
     padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
     max-width: var(--page-content-width, 1200px);
     margin-inline: auto;
   }
 
-  .editions-grid__heading {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 700;
-    margin: 0 0 clamp(24px, 4vw, 48px);
-    text-align: center;
-  }
 
   .editions-grid {
     display: grid;

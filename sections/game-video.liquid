@@ -22,8 +22,9 @@
 -%}
 
 {%- if youtube_id != blank -%}
+<div class="game-section-band game-section-band--cream">
   <section id="{{ section_id }}" class="game-video">
-    <h2 class="game-video__heading">Video</h2>
+    <h2 class="game-video__heading game-section-heading">Video</h2>
 
     <div class="game-video__wrapper">
       <iframe
@@ -37,6 +38,7 @@
       ></iframe>
     </div>
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -46,12 +48,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-video__heading {
-    font-size: var(--font-size--3xl);
-    font-weight: 700;
-    margin: 0 0 var(--gap-2xl, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-video__wrapper {
     position: relative;

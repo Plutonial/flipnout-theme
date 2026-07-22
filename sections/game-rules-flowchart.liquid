@@ -4,8 +4,9 @@
 -%}
 
 {%- if rules_image != blank -%}
+<div class="game-section-band game-section-band--cream">
   <section id="{{ section_id }}" class="game-rules">
-    <h2 class="game-rules__heading">Rules Flowchart</h2>
+    <h2 class="game-rules__heading game-section-heading">Rules Flowchart</h2>
 
     <div class="game-rules__image-wrap">
       {{ rules_image | image_url: width: 1600 | image_tag:
@@ -16,6 +17,7 @@
       }}
     </div>
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -25,12 +27,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-rules__heading {
-    font-size: var(--font-size--3xl);
-    font-weight: 700;
-    margin: 0 0 var(--gap-2xl, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-rules__img {
     width: 100%;

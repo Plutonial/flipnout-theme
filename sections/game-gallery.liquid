@@ -4,8 +4,9 @@
 -%}
 
 {%- if gallery != blank and gallery.size > 0 -%}
+<div class="game-section-band game-section-band--dark">
   <section id="{{ section_id }}" class="game-gallery">
-    <h2 class="game-gallery__heading">Gallery</h2>
+    <h2 class="game-gallery__heading game-section-heading">Gallery</h2>
 
     {%- capture slides -%}
       {%- for image in gallery -%}
@@ -36,6 +37,7 @@
       class: 'game-gallery__slideshow'
     -%}
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -45,12 +47,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-gallery__heading {
-    font-size: var(--font-size--3xl);
-    font-weight: 700;
-    margin: 0 0 var(--gap-2xl, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-gallery__slideshow {
     --slideshow-gap: 0;
@@ -71,6 +67,11 @@
     height: auto;
     object-fit: contain;
     border-radius: var(--radius-sm, 8px);
+  }
+
+  {% comment %} ── Slideshow controls: white on dark ── {% endcomment %}
+  .game-section-band--dark #{{ section_id }} [class*="slideshow"] {
+    color: #fff;
   }
 {% endstyle %}
 

@@ -4,8 +4,9 @@
 -%}
 
 {%- if base_features != blank and base_features.size > 0 -%}
+<div class="game-section-band game-section-band--white">
   <section id="{{ section_id }}" class="game-features">
-    <h2 class="game-features__heading">Game Features</h2>
+    <h2 class="game-features__heading game-section-heading">Game Features</h2>
 
     <ul class="game-features__list">
       {%- for feature in base_features -%}
@@ -15,6 +16,7 @@
       {%- endfor -%}
     </ul>
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -24,12 +26,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-features__heading {
-    font-size: var(--font-size--3xl);
-    font-weight: 700;
-    margin: 0 0 var(--gap-2xl, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-features__list {
     columns: 2;

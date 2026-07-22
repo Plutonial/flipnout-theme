@@ -4,8 +4,9 @@
 -%}
 
 {%- if highlights != blank and highlights.size > 0 -%}
+<div class="game-section-band game-section-band--cream">
   <section id="{{ section_id }}" class="game-highlights" style="--columns: {{ section.settings.columns }}">
-    <h2 class="game-highlights__heading">Highlights</h2>
+    <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
     <div class="game-highlights__grid">
       {%- for feature in highlights -%}
@@ -41,6 +42,7 @@
       {%- endfor -%}
     </div>
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -50,12 +52,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-highlights__heading {
-    font-size: var(--font-size--3xl);
-    font-weight: 700;
-    margin: 0 0 var(--gap-2xl, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-highlights__grid {
     display: grid;

@@ -4,9 +4,10 @@
 -%}
 
 {%- if collection.description != blank -%}
+<div class="game-section-band game-section-band--white">
   <section id="{{ section_id }}" class="game-lore">
     {%- if heading != blank -%}
-      <h2 class="game-lore__heading">{{ heading }}</h2>
+      <h2 class="game-lore__heading game-section-heading">{{ heading }}</h2>
     {%- endif -%}
 
     <div class="game-lore__body rte">
@@ -17,6 +18,7 @@
       <p class="game-lore__credits">Credits: {{ collection.metafields.custom.credits }}</p>
     {%- endif -%}
   </section>
+</div>
 {%- endif -%}
 
 {% style %}
@@ -26,12 +28,6 @@
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-lore__heading {
-    font-size: clamp(24px, 4vw, 40px);
-    font-weight: 700;
-    margin: 0 0 clamp(16px, 3vw, 32px);
-    text-align: center;
-  }
 
   #{{ section_id }} .game-lore__body {
     font-size: clamp(16px, 1.8vw, 18px);
