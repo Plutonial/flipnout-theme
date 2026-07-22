@@ -3,10 +3,12 @@
   The full UIkit CSS is deliberately NOT loaded because it isn't scope-gated and would
   override Horizon's global styles. Only component-specific CSS is included.
   
-  Currently loaded on all product pages. V2 may scope further if needed.
+  Loaded on product pages (edition pages) and the game collection template
+  (collection.game.json, template.suffix == 'game'), where the restructure uses
+  Slider/Lightbox. V2 may scope further if needed.
 {% endcomment %}
 
-{% if template.name == 'product' %}
+{% if template.name == 'product' or template.suffix == 'game' %}
   {{ 'fnop-uikit-components.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'fnop-uikit.min.js' | asset_url }}" defer></script>
   <script src="{{ 'fnop-uikit-icons.min.js' | asset_url }}" defer></script>
