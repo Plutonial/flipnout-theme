@@ -352,19 +352,20 @@
       endfor
     %}
 
-    /* Hardcoded font sizes */
+    /* Fluid font-size tokens — interpolate between mobile (390px) and desktop (1440px).
+       3xs–md are fixed (at or below the 16px legibility floor). lg–6xl scale down on mobile. */
     --font-size--3xs: 0.625rem;
     --font-size--2xs: 0.75rem;
     --font-size--xs: 0.8125rem;
     --font-size--sm: 0.875rem;
     --font-size--md: 1rem;
-    --font-size--lg: 1.125rem;
-    --font-size--xl: 1.25rem;
-    --font-size--2xl: 1.5rem;
-    --font-size--3xl: 2rem;
-    --font-size--4xl: 2.5rem;
-    --font-size--5xl: 3rem;
-    --font-size--6xl: 3.5rem;
+    --font-size--lg: clamp(1rem, 0.9536rem + 0.1905vw, 1.125rem);
+    --font-size--xl: clamp(1.0625rem, 0.9929rem + 0.2857vw, 1.25rem);
+    --font-size--2xl: clamp(1.1875rem, 1.0714rem + 0.4762vw, 1.5rem);
+    --font-size--3xl: clamp(1.5rem, 1.3143rem + 0.7619vw, 2rem);
+    --font-size--4xl: clamp(1.75rem, 1.4714rem + 1.1429vw, 2.5rem);
+    --font-size--5xl: clamp(2rem, 1.6286rem + 1.5238vw, 3rem);
+    --font-size--6xl: clamp(2.25rem, 1.7857rem + 1.9048vw, 3.5rem);
 
     /* Menu font sizes */
     --menu-font-sm--size: 0.875rem;

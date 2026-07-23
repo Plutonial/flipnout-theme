@@ -11,10 +11,14 @@ Forked from Shopify **Horizon** (v3.4.0). Built by Plutonial Inc.
 
 ## CRITICAL RULES — these are violated most often, check them every task
 
-1. **NEVER hardcode font sizes in px or clamp().** Use the theme's fluid tokens ONLY:
-   `var(--font-size--3xs)` … `var(--font-size--6xl)`. Current scale: `xs`=13px, `sm`=14px,
-   `md`=16px, `lg`=18px, `xl`=20px, `2xl`=24px, `3xl`=32px, `4xl`=40px, `5xl`=48px, `6xl`=56px.
-   This is the single most repeated correction — check it before submitting.
+1. **NEVER hardcode font sizes in px or clamp() at the point of use.** Use the theme's tokens ONLY:
+   `var(--font-size--3xs)` … `var(--font-size--6xl)`. Desktop scale: `3xs`=10px, `2xs`=12px,
+   `xs`=13px, `sm`=14px, `md`=16px, `lg`=18px, `xl`=20px, `2xl`=24px, `3xl`=32px, `4xl`=40px,
+   `5xl`=48px, `6xl`=56px. This is the single most repeated correction — check it before submitting.
+   **The `:root` token definitions are the ONE place fluid `clamp()` belongs** — the tokens
+   interpolate between a mobile and a desktop size there, so every usage scales automatically.
+   Do NOT add per-element mobile media queries for font-size; if something is the wrong size on
+   mobile, it needs a different token, not an override.
 2. **NEVER hardcode font families.** Inherit the theme's role fonts (headings = Oswald,
    body = Archivo, already set in Theme Settings). Do not write `font-family: Oswald`.
 3. **NO `!important`.** Match specificity instead. If a rule won't apply, find what's overriding it.
@@ -25,6 +29,20 @@ Forked from Shopify **Horizon** (v3.4.0). Built by Plutonial Inc.
    width, logo height), express it via a CSS custom property / calc, not a literal.
 6. **Boxed content in the site's page container** (reuse the header container width). Full-bleed
    only where a section is explicitly meant to be full-bleed.
+
+### Lists and bullets
+- A bullet/marker aligns to the **first line** of its item, NEVER to the vertical centre of a
+  multi-line item. Block-centring makes bullets sit at different heights depending on how many
+  lines each item wraps to, breaking the vertical column the eye scans, and leaves the marker
+  floating unrelated to the text it introduces.
+- Within that first line, align to the text's **optical centre (x-height centre)**, not the
+  geometric centre of the line box. The line box includes leading and descender space, so its
+  centre sits ~2px above where the eye reads mixed-case text as centred.
+- Compute as `calc(padding-top + (line-height − marker-height)/2 + <optical correction>em)`,
+  derived — never a hardcoded literal. Keep the optical correction in `em` so it scales with the
+  font-size token.
+- A `::before` with no `content` never renders. If a background image bullet doesn't appear, check
+  `content: ""` first.
 
 ---
 
@@ -40,12 +58,21 @@ Forked from Shopify **Horizon** (v3.4.0). Built by Plutonial Inc.
 
 ### Horizon patterns
 - Use Horizon's block-based architecture (`blocks/`, `sections/`, `snippets/`). Blocks nest up to
-  8 levels.
-- Prefer `{% style %}` blocks scoped to a unique block/section ID for section-specific CSS.
+  8 levels — leverage this for complex product pages.
+- **Every custom block/section generates a unique ID and scopes its CSS to that ID.** Prefer
+  `{% style %}` blocks scoped to that ID for section-specific CSS.
   (Exception: the shared UIkit component layer is a real CSS asset — see below.)
+- **Never use inline `style=` attributes** — use scoped `{% style %}` blocks instead.
 - Do not modify upstream Horizon files casually — keep custom work in custom blocks/sections so
   future `git pull upstream main` doesn't conflict.
-- Lazy-load below-the-fold content; keep the above-fold hero eager.
+- Lazy-load below-the-fold content with `IntersectionObserver`; keep the above-fold hero eager.
+- Prefer native **Web Components** for interactivity. Avoid loading external scripts when a Web
+  Component can do the job. (UIkit is the one sanctioned exception — see below.)
+
+### Liquid style
+- Use `{% liquid %}` blocks for multi-line logic.
+- Comment complex sections with `{% comment %}` tags.
+- Prefer Shopify's built-in filters over custom logic wherever possible.
 
 ### Assets
 - **The `assets/` folder is FLAT** (Shopify rule — no subfolders).
@@ -151,13 +178,27 @@ Specs worth exposing via metafields: manufacturer, year, theme/license, designer
 
 ---
 
-## Git workflow
+## Git workflow — YOU DO NOT COMMIT OR PUSH
 
-- Work local → `git add -A && git commit -m "..."` → `git pull origin develop --no-edit` → `git push`
-- `pull.rebase false`. Vim merge → `:wq`.
-- Push to `develop` = Shopify updates automatically (GitHub integration). No manual theme push.
-- **Never push directly to `main`** — only merge from `develop` after launch.
-- Do not commit `.DS_Store`, `node_modules`, `.env`, or local config files.
+**Division of labour: you edit files only. The developer handles all git operations from the
+terminal.** After you finish a task, the developer reviews your changes and runs
+`git add` / `commit` / `pull` / `push` himself. So:
+
+- **Do NOT run `git add`, `git commit`, `git push`, or `git pull`.** Do not stage anything, do not
+  create commits, do not offer to.
+- **Do NOT create branches or switch branches.** Work on whatever branch is checked out (`develop`).
+- Just edit the files and report what you changed — that report is what the developer reviews before
+  committing.
+- If a file you need is open in the editor and you write to disk, a "File Cache Conflict" dialog may
+  appear on the developer's side. Mention in your report which files you wrote, so it's clear which
+  version to keep.
+
+For context only (the developer runs these, not you):
+- Local edits → `git add -A && git commit -m "..."` → `git pull origin develop --no-edit` → `git push`
+- `pull.rebase false`. Push to `develop` = Shopify updates automatically via the GitHub integration;
+  no manual theme push is needed.
+- `main` is never pushed to directly — `develop` is merged into it after launch.
+- `.DS_Store`, `node_modules`, `.env` and local config files are never committed.
 
 ---
 
@@ -174,14 +215,3 @@ Specs worth exposing via metafields: manufacturer, year, theme/license, designer
 - State what changed and where (file + what it does), so the diff can be reviewed.
 - Flag anything you worked around rather than solving cleanly.
 - If a requested approach conflicts with these guidelines, say so instead of silently picking one.
-
-### Lists and bullets
-- A bullet aligns to the **first line** of the item, never to the vertical centre of a multi-line
-  item. Block-centring makes bullets sit at different heights depending on wrap count, breaking the
-  vertical column the eye scans.
-- Within that first line, align the bullet to the text's **optical centre (x-height centre)**, not
-  the geometric centre of the line box. The line box includes leading and descender space, so its
-  centre sits ~2px above where the eye reads mixed-case text as centred. Add the correction in `em`
-  so it scales with the font-size token.
-- Compute as `calc(padding-top + (line-height − marker-height)/2 + <optical correction>em)`,
-  derived — never a hardcoded literal.
