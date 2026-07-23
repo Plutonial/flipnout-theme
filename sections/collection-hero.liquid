@@ -48,7 +48,7 @@
 
       <h1 class="collection-hero__h1">
         {{- collection.title }} Pinball Machine
-        {%- if manufacturer_ref %} by <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr-link">{{ manufacturer_ref.title }}</a>{%- endif -%}
+        {%- if manufacturer_ref %}<span class="collection-hero__mfr"> by <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr-link">{{ manufacturer_ref.title }}</a></span>{%- endif -%}
       </h1>
 
       {%- if subtitle != blank -%}
@@ -181,6 +181,17 @@
     margin: 0;
     text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
     flex-basis: 100%;
+  }
+
+  #{{ section_id }} .collection-hero__mfr {
+    font-size: inherit;
+  }
+
+  @media (max-width: 989px) {
+    #{{ section_id }} .collection-hero__mfr {
+      display: block;
+      font-size: var(--font-size--2xl);
+    }
   }
 
   #{{ section_id }} .collection-hero__mfr-link {
