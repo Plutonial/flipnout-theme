@@ -174,3 +174,12 @@ Specs worth exposing via metafields: manufacturer, year, theme/license, designer
 - State what changed and where (file + what it does), so the diff can be reviewed.
 - Flag anything you worked around rather than solving cleanly.
 - If a requested approach conflicts with these guidelines, say so instead of silently picking one.
+
+### Lists and bullets
+- A list bullet or marker aligns to the **optical centre of the item's FIRST line**, never to the
+  vertical centre of a multi-line item. Anchoring to the block centre makes bullets sit at
+  different heights depending on how many lines each item wraps to, breaking the vertical column
+  the eye scans, and leaves the marker floating unrelated to the text it introduces.
+- Compute the offset as `padding-top + (line-height − marker-height) / 2`, derived via `calc()`
+  from the actual padding, line-height and marker size — never a hardcoded literal, so it survives
+  token or spacing changes.
