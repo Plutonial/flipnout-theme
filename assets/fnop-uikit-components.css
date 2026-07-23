@@ -1,5 +1,10 @@
-/*! UIkit 3.25.20 Components Subset (Slider + Lightbox) */
-/* Components: Icon, Close, Spinner, Slider, Slidenav, Dotnav, Lightbox, Animation, Transition */
+/*! UIkit 3.25.20 Components Subset (Slider + Lightbox + Grid) */
+/* Components: Icon, Close, Spinner, Slider, Slidenav, Dotnav, Lightbox, Animation, Transition, Grid, Position, Flex, Margin, Visibility */
+
+/* ========================================================================
+   Component: Visibility (subset — only uk-invisible)
+ ========================================================================== */
+.uk-invisible { visibility: hidden !important; }
 
 
 

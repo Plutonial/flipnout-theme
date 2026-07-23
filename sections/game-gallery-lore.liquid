@@ -12,7 +12,7 @@
 -%}
 
 {%- if has_gallery or has_lore -%}
-<div class="game-section-band game-section-band--white">
+<div class="game-section-band game-section-band--cream">
   <section id="{{ section_id }}" class="game-gallery-lore">
     <div class="game-gallery-lore__grid">
 
@@ -129,7 +129,7 @@
   }
 
   #{{ section_id }} .game-gallery-lore__body {
-    font-size: var(--font-size--md);
+    font-size: var(--font-size--xl);
     line-height: 1.7;
   }
 
@@ -150,8 +150,18 @@
 
   {% comment %} ── UIkit overrides scoped to this section ── {% endcomment %}
   #{{ section_id }} .uk-slidenav {
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #{{ section_id }} .uk-slidenav:hover {
+    background: rgba(0, 0, 0, 0.65);
   }
 
   #{{ section_id }} .uk-dotnav > * > * {
