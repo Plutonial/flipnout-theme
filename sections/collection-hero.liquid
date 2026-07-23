@@ -131,7 +131,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    padding: calc(var(--header-height, 60px) + 8px) var(--page-margin, 16px) clamp(32px, 6vw, 56px);
+    padding: clamp(32px, 6vw, 56px) var(--page-margin, 16px);
     width: 100%;
     max-width: var(--page-width, 1200px);
     margin-inline: auto;
@@ -236,9 +236,6 @@
       min-height: 340px;
     }
 
-    #{{ section_id }} .collection-hero__content {
-      padding-top: calc(var(--header-height, 80px) + 12px);
-    }
 
     #{{ section_id }} .collection-hero__logo {
       height: clamp(100px, 10vw, 150px);
