@@ -58,7 +58,7 @@
     background-repeat: no-repeat;
     position: absolute;
     left: 0;
-    top: calc(var(--item-padding-top) + (1.7em - var(--bullet-size)) / 2);
+    top: calc(var(--item-padding-top) + (1.7em - var(--bullet-size)) / 2 + 0.11em); /* +0.11em optical correction: align to x-height centre, not line-box centre */
   }
 
   @media (max-width: 989px) {

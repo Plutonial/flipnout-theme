@@ -176,10 +176,12 @@ Specs worth exposing via metafields: manufacturer, year, theme/license, designer
 - If a requested approach conflicts with these guidelines, say so instead of silently picking one.
 
 ### Lists and bullets
-- A list bullet or marker aligns to the **optical centre of the item's FIRST line**, never to the
-  vertical centre of a multi-line item. Anchoring to the block centre makes bullets sit at
-  different heights depending on how many lines each item wraps to, breaking the vertical column
-  the eye scans, and leaves the marker floating unrelated to the text it introduces.
-- Compute the offset as `padding-top + (line-height − marker-height) / 2`, derived via `calc()`
-  from the actual padding, line-height and marker size — never a hardcoded literal, so it survives
-  token or spacing changes.
+- A bullet aligns to the **first line** of the item, never to the vertical centre of a multi-line
+  item. Block-centring makes bullets sit at different heights depending on wrap count, breaking the
+  vertical column the eye scans.
+- Within that first line, align the bullet to the text's **optical centre (x-height centre)**, not
+  the geometric centre of the line box. The line box includes leading and descender space, so its
+  centre sits ~2px above where the eye reads mixed-case text as centred. Add the correction in `em`
+  so it scales with the font-size token.
+- Compute as `calc(padding-top + (line-height − marker-height)/2 + <optical correction>em)`,
+  derived — never a hardcoded literal.
