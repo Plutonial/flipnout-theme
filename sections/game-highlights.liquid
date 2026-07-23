@@ -55,8 +55,8 @@
           </div>
 
           {% comment %} Slidenav arrows {% endcomment %}
-          <a class="uk-position-center-left-out uk-position-small" href uk-slidenav-previous uk-slider-item="previous"></a>
-          <a class="uk-position-center-right-out uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
+          <a class="uk-position-center-left uk-position-small" href uk-slidenav-previous uk-slider-item="previous"></a>
+          <a class="uk-position-center-right uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
         </div>
 
         {% comment %} Dotnav {% endcomment %}
@@ -128,7 +128,18 @@
 
   {% comment %} ── UIkit overrides scoped to this section ── {% endcomment %}
   #{{ section_id }} .uk-slidenav {
-    color: var(--color-foreground, #333);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #{{ section_id }} .uk-slidenav:hover {
+    background: rgba(0, 0, 0, 0.65);
   }
 
   #{{ section_id }} .uk-dotnav > * > * {
