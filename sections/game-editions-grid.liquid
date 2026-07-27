@@ -85,6 +85,10 @@
             assign edition_label = dash_parts | last
           endif
         endif
+        assign is_sold_out = false
+        if product.tags contains 'sold-out' or product.available == false
+          assign is_sold_out = true
+        endif
       -%}
 
       <div class="editions-grid__card">
@@ -105,7 +109,11 @@
           {%- endif -%}
           <h3 class="editions-grid__title">{{ edition_label }}</h3>
           <span class="editions-grid__price">{{ product.price | money }}</span>
-          <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+          {%- if is_sold_out -%}
+            <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
+          {%- else -%}
+            <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+          {%- endif -%}
         </div>
       </div>
     {%- endfor -%}
@@ -247,6 +255,12 @@
   .editions-grid__btn:hover {
     transform: scale(1.03);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+  }
+
+  .editions-grid__btn--sold-out {
+    background: #999;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   .editions-grid--wrap2 {
