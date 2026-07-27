@@ -62,6 +62,23 @@
         endunless
 
         assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
+
+        comment
+          Derive edition label from product title.
+          Primary: strip "{game_name} Pinball Machine - " prefix.
+          Fallback: text after the last " - ".
+          Final fallback: full product.title.
+        endcomment
+        assign edition_label = product.title
+        assign title_prefix = game_name | append: ' Pinball Machine - '
+        if product.title contains title_prefix
+          assign edition_label = product.title | remove_first: title_prefix
+        else
+          assign dash_parts = product.title | split: ' - '
+          if dash_parts.size > 1
+            assign edition_label = dash_parts | last
+          endif
+        endif
       -%}
 
       <div class="editions-grid__card">
@@ -80,7 +97,7 @@
           {%- if edition_badge != blank -%}
             <span class="editions-grid__badge">{{ edition_badge }}</span>
           {%- endif -%}
-          <h3 class="editions-grid__title">{{ product.title }}</h3>
+          <h3 class="editions-grid__title">{{ edition_label }}</h3>
           <span class="editions-grid__price">{{ product.price | money }}</span>
           <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
         </div>
