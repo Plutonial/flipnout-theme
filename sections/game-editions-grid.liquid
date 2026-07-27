@@ -26,7 +26,7 @@
 <section id="editions" class="{{ section_id }}">
   <h2 class="editions-grid__heading game-section-heading">Shop {{ game_name }} Pinball Editions</h2>
 
-  <div class="editions-grid">
+  <div class="editions-grid{% if products_count > 3 %} editions-grid--wrap2{% endif %}">
     {%- for product in editions -%}
       {%- liquid
         assign card_image = product.metafields.custom.backglass
@@ -110,7 +110,7 @@
     --_container-inner: calc(var(--page-content-width, 1440px) - 2 * var(--page-margin, 40px));
     --_card-w: calc((var(--_container-inner) - 2 * var(--_grid-gap)) / 3);
     display: grid;
-    grid-template-columns: repeat(auto-fill, var(--_card-w));
+    grid-template-columns: repeat(auto-fit, var(--_card-w));
     justify-content: center;
     gap: var(--_grid-gap);
   }
@@ -193,8 +193,13 @@
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
   }
 
+  .editions-grid--wrap2 {
+    grid-template-columns: repeat(2, var(--_card-w));
+  }
+
   @media (max-width: 749px) {
-    .editions-grid {
+    .editions-grid,
+    .editions-grid--wrap2 {
       grid-template-columns: 1fr;
     }
   }
