@@ -86,7 +86,7 @@
           endif
         endif
         assign is_sold_out = false
-        if product.tags contains 'sold-out' or product.available == false
+        if product.tags contains 'sold-out'
           assign is_sold_out = true
         endif
       -%}
