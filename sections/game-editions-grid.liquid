@@ -1,6 +1,7 @@
 {%- liquid
   assign section_id = 'editions-grid-' | append: section.id
   assign heading = section.settings.heading | default: 'Editions'
+  assign bg_variant = section.settings.bg_variant | default: 'white'
 
   comment
     Sort products by product.edition_order metafield (ascending).
@@ -47,9 +48,14 @@
   endif
 -%}
 
-<div class="{{ section_id }}__band game-section-band game-section-band--white">
-<section id="editions" class="{{ section_id }}">
-  <h2 class="editions-grid__heading game-section-heading">Shop {{ game_name }} Pinball Editions</h2>
+{%- liquid
+  assign band_class = 'game-section-band--' | append: bg_variant
+  assign resolved_heading = heading | replace: '{game_name}', game_name
+-%}
+
+<div class="{{ section_id }}__band game-section-band {{ band_class }}">
+<section id="{{ section_id }}" class="editions-grid-section">
+  <h2 class="editions-grid__heading game-section-heading">{{ resolved_heading }}</h2>
 
   <div class="editions-grid{% if products_count > 3 %} editions-grid--wrap2{% endif %}">
     {%- for handle in sorted_handle_list -%}
@@ -118,6 +124,11 @@
   .game-section-band--white { background: #fff; }
   .game-section-band--cream { background: var(--section-bg-cream); }
   .game-section-band--dark  { background: var(--section-bg-dark); color: #fff; }
+  .game-section-band--black { background: #000; color: #fff; }
+
+  .game-section-band--black .game-section-heading {
+    color: #fff;
+  }
 
   {% comment %} ── Shared heading accent (red rule) ── {% endcomment %}
   .game-section-heading {
@@ -142,7 +153,7 @@
     color: #fff;
   }
 
-  #editions {
+  .editions-grid-section {
     padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
     max-width: var(--page-content-width, 1200px);
     margin-inline: auto;
@@ -256,8 +267,19 @@
     {
       "type": "text",
       "id": "heading",
-      "label": "Heading",
-      "default": "Editions"
+      "label": "Heading (use {game_name} for dynamic game name)",
+      "default": "Shop {game_name} Pinball Editions"
+    },
+    {
+      "type": "select",
+      "id": "bg_variant",
+      "label": "Background",
+      "options": [
+        { "value": "white", "label": "White" },
+        { "value": "cream", "label": "Cream" },
+        { "value": "black", "label": "Black" }
+      ],
+      "default": "white"
     },
     {
       "type": "range",

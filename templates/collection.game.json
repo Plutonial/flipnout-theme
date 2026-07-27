@@ -13,7 +13,8 @@
     "game-editions-grid": {
       "type": "game-editions-grid",
       "settings": {
-        "heading": "Editions",
+        "heading": "Shop {game_name} Pinball Editions",
+        "bg_variant": "white",
         "padding_top": 48,
         "padding_bottom": 48
       }
@@ -52,6 +53,15 @@
         "padding_top": 48,
         "padding_bottom": 48
       }
+    },
+    "game-editions-cta": {
+      "type": "game-editions-grid",
+      "settings": {
+        "heading": "Buy a {game_name} Pinball Machine!",
+        "bg_variant": "black",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
     }
   },
   "order": [
@@ -61,6 +71,7 @@
     "game-features",
     "game-highlights",
     "game-video",
-    "game-rules-flowchart"
+    "game-rules-flowchart",
+    "game-editions-cta"
   ]
 }
