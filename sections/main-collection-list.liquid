@@ -1,6 +1,109 @@
 {% liquid
-  assign section_collections = collections
   assign max_items = 20
+
+  comment
+    Sort collections by custom.release_date descending (newest first).
+    Collections WITH a release_date are sorted newest-first;
+    collections WITHOUT one are appended at the end in their original order.
+    Liquid sort cannot traverse nested metafield paths on the global
+    collections object, so we bucket-sort manually.
+  endcomment
+
+  assign dated_keys = ''
+  assign dated_vals = ''
+  assign undated_handles = ''
+
+  for c in collections
+    assign rd = c.metafields.custom.release_date.value | date: '%Y-%m-%d'
+    if rd != blank
+      if dated_keys == ''
+        assign dated_keys = c.handle
+        assign dated_vals = rd
+      else
+        assign dated_keys = dated_keys | append: ',' | append: c.handle
+        assign dated_vals = dated_vals | append: ',' | append: rd
+      endif
+    else
+      if undated_handles == ''
+        assign undated_handles = c.handle
+      else
+        assign undated_handles = undated_handles | append: ',' | append: c.handle
+      endif
+    endif
+  endfor
+
+  assign sorted_handles_str = ''
+
+  if dated_keys != ''
+    assign dk_arr = dated_keys | split: ','
+    assign dv_arr = dated_vals | split: ','
+    assign dk_count = dk_arr.size
+
+    comment
+      Simple insertion-sort by date string descending (ISO dates compare lexically).
+    endcomment
+    assign idx_order = ''
+    for i in (0..dk_count)
+      if i >= dk_count
+        break
+      endif
+      assign i_str = i | append: ''
+      if idx_order == ''
+        assign idx_order = i_str
+      else
+        assign inserted = false
+        assign new_order = ''
+        assign existing = idx_order | split: ','
+        for pos in existing
+          assign pos_int = pos | plus: 0
+          unless inserted
+            if dv_arr[i] > dv_arr[pos_int]
+              if new_order == ''
+                assign new_order = i_str
+              else
+                assign new_order = new_order | append: ',' | append: i_str
+              endif
+              assign inserted = true
+            endif
+          endunless
+          if new_order == ''
+            assign new_order = pos
+          else
+            assign new_order = new_order | append: ',' | append: pos
+          endif
+        endfor
+        unless inserted
+          assign new_order = new_order | append: ',' | append: i_str
+        endunless
+        assign idx_order = new_order
+      endif
+    endfor
+
+    assign sorted_idx = idx_order | split: ','
+    for idx in sorted_idx
+      assign idx_int = idx | plus: 0
+      if sorted_handles_str == ''
+        assign sorted_handles_str = dk_arr[idx_int]
+      else
+        assign sorted_handles_str = sorted_handles_str | append: ',' | append: dk_arr[idx_int]
+      endif
+    endfor
+  endif
+
+  if undated_handles != ''
+    if sorted_handles_str == ''
+      assign sorted_handles_str = undated_handles
+    else
+      assign sorted_handles_str = sorted_handles_str | append: ',' | append: undated_handles
+    endif
+  endif
+
+  assign sorted_collection_handles = sorted_handles_str | split: ','
+  assign section_collections = ''
+  for h in sorted_collection_handles
+    assign section_collections = section_collections | append: h | append: ','
+  endfor
+  assign section_collections = section_collections | split: ','
 %}
 
 <div class="section-background color-{{ section.settings.color_scheme }}"></div>
@@ -23,16 +126,9 @@
     {%- content_for 'blocks' -%}
   </div>
 
-  {% if section_collections == null %}
-    {% for i in (1..max_items) %}
-      {% assign section_collections = section_collections | append: ', ' %}
-    {% endfor %}
-
-    {% assign section_collections = section_collections | split: ',' %}
-  {% endif %}
-
   {% capture list_items %}
-    {% for collection in section_collections limit: max_items %}
+    {% for handle in section_collections limit: max_items %}
+      {% assign collection = collections[handle] %}
       <div class="resource-list__item">
         {% content_for 'block', type: '_collection-card', id: 'static-collection-card', closest.collection: collection %}
       </div>
