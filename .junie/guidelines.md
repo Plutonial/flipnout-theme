@@ -215,3 +215,59 @@ For context only (the developer runs these, not you):
 - State what changed and where (file + what it does), so the diff can be reviewed.
 - Flag anything you worked around rather than solving cleanly.
 - If a requested approach conflicts with these guidelines, say so instead of silently picking one.
+
+## Game-page conventions (LOCKED — do NOT regress)
+
+These were established building the Avatar + Harry Potter game pages. They are live and verified.
+Do not revert them on unrelated tasks.
+
+### Collection Title & the `game_name` derivation
+- Each game collection's **Title** is `"{Manufacturer} - {Game Name}"` (e.g. `Jersey Jack Pinball -
+  Avatar`, `Jersey Jack Pinball - Harry Potter`) so the Shopify collections **admin sorts/groups by
+  manufacturer**. This is DATA (set outside git).
+- The storefront must show only the game name. The game template (`collection.game.json` sections) and
+  the product template derive a **`game_name`** = the collection Title with the leading
+  `"{manufacturer} - "` prefix removed. Manufacturer comes from
+  `collection.metafields.custom.manufacturer.value.title`; **fallback to `collection.title`** when
+  there's no manufacturer or the prefix isn't present.
+
+  ```liquid
+  {%- liquid
+    assign game_name = collection.title
+    assign mfr = collection.metafields.custom.manufacturer.value
+    if mfr and mfr.title != blank
+      assign prefix = mfr.title | append: ' - '
+      if game_name contains prefix
+        assign game_name = game_name | remove_first: prefix
+      endif
+    endif
+  -%}
+  ```
+- **Use `game_name`, NOT `collection.title`, everywhere the game name is displayed** (hero H1, section
+  headings, breadcrumb, alt text, captions). Reverting any of these to `collection.title` prints the
+  manufacturer twice: "Jersey Jack Pinball - Avatar Pinball Machine by Jersey Jack Pinball".
+
+### Hero H1 is a composite
+- `{game_name} Pinball Machine by {manufacturer}` — manufacturer from `custom.manufacturer`, rendered
+  as a link to the manufacturer collection, uppercased via CSS. (`custom.manufacturer` is therefore
+  required on every game collection.)
+- The same SEO pattern drives the section headings: `Shop {game_name} Pinball Editions` and
+  `{game_name} Pinball Game Features`.
+
+### Editions grid — consistent, count-independent card size
+- **Card width is fixed regardless of edition count** — never sized as a fraction of the count (that
+  made 2-edition cards huge). Card width = `--edition-card-w`, **derived** from the boxed container
+  (the 3-up width, ~432px at the 1360px container — never hardcode; keep the calc responsive).
+- Layout: `grid-template-columns: repeat(auto-fit, var(--edition-card-w))` + `justify-content: center`
+    + gap token. The **track count must follow the item count** — a fixed 3-track template left-shifts
+      2 editions with an empty 3rd track (do not use it).
+- When `collection.products.size > 3`, cap to 2 columns (`repeat(2, var(--edition-card-w))`) for a
+  balanced **2×2**. Net: 2 editions → centered row of 2; 3 → row of 3; 4 → 2×2; all cards identical
+  size, nothing squeezed.
+
+### Other
+- The **`lore` / "About the Game" narrative is the collection Body HTML**, NOT a metafield. Render the
+  collection description there; `custom.subtitle` is the hero selling line and `custom.credits` is its
+  own one-line credits block.
+- Game-page image blocks are metafield-backed (`highlights`, `gallery`, `video`, `rules_flowchart`,
+  `logo`, `hero_image`) — keep the conditional-rendering rule (empty field → block + heading hidden).

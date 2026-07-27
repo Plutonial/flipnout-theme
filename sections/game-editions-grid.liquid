@@ -3,12 +3,37 @@
   assign heading = section.settings.heading | default: 'Editions'
 
   comment
-    Sort products by custom.edition_order metafield (ascending).
-    Iterate expected positions 1–10, match products by metafield value.
-    Products missing the metafield are appended last.
+    Sort products by product.edition_order metafield (ascending).
+    Liquid sort/sort_natural cannot traverse nested metafield paths,
+    so we build the sorted array manually: first collect products that
+    have edition_order (positions 1–10), then append any without it.
   endcomment
 
-  assign editions = collection.products | sort: 'metafields.custom.edition_order.value'
+  assign sorted_handles = ''
+  for pos in (1..10)
+    assign pos_str = pos | append: ''
+    for p in collection.products
+      assign eo = p.metafields.product.edition_order.value | append: ''
+      if eo == pos_str
+        if sorted_handles == ''
+          assign sorted_handles = p.handle
+        else
+          assign sorted_handles = sorted_handles | append: ',' | append: p.handle
+        endif
+      endif
+    endfor
+  endfor
+  for p in collection.products
+    assign eo = p.metafields.product.edition_order.value
+    if eo == blank
+      if sorted_handles == ''
+        assign sorted_handles = p.handle
+      else
+        assign sorted_handles = sorted_handles | append: ',' | append: p.handle
+      endif
+    endif
+  endfor
+  assign sorted_handle_list = sorted_handles | split: ','
 
   assign products_count = collection.products.size
 
@@ -27,7 +52,9 @@
   <h2 class="editions-grid__heading game-section-heading">Shop {{ game_name }} Pinball Editions</h2>
 
   <div class="editions-grid{% if products_count > 3 %} editions-grid--wrap2{% endif %}">
-    {%- for product in editions -%}
+    {%- for handle in sorted_handle_list -%}
+      {%- assign product = collection.products | where: 'handle', handle | first -%}
+      {%- if product == blank -%}{%- continue -%}{%- endif -%}
       {%- liquid
         assign card_image = product.metafields.custom.backglass
         unless card_image
