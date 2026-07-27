@@ -10,8 +10,6 @@
   assign game_logo = collection.metafields.custom.logo
   assign manufacturer_ref = collection.metafields.custom.manufacturer.value
   assign bg_color = section.settings.background_color | default: '#1a1a2e'
-  assign cta_text = section.settings.cta_text | default: 'Shop Editions'
-  assign cta_target = section.settings.cta_target | default: '#editions'
   assign subtitle = collection.metafields.custom.subtitle
 
   assign game_name = collection.title
@@ -63,31 +61,9 @@
       {%- if subtitle != blank -%}
         <p class="collection-hero__subtitle">{{ subtitle }}</p>
       {%- endif -%}
-
-      {%- if cta_text != blank -%}
-        <a href="{{ cta_target }}" class="collection-hero__cta">{{ cta_text }}</a>
-      {%- endif -%}
     </div>
   </div>
 </section>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var cta = document.querySelector('#{{ section_id }} .collection-hero__cta');
-    if (cta) {
-      cta.addEventListener('click', function (e) {
-        var href = cta.getAttribute('href');
-        if (href && href.charAt(0) === '#') {
-          e.preventDefault();
-          var target = document.getElementById(href.substring(1));
-          if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }
-      });
-    }
-  });
-</script>
 
 {% style %}
   {% comment %} Phosphate: Apple system font, verify web licensing before production launch {% endcomment %}
@@ -162,23 +138,21 @@
 
   #{{ section_id }} .collection-hero__stack {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     text-align: left;
     max-width: 700px;
   }
 
   {% comment %} ── Game logo: medium, height-constrained ── {% endcomment %}
   #{{ section_id }} .collection-hero__logo {
-    height: clamp(80px, 14vw, 140px);
+    height: auto;
     width: auto;
-    max-width: min(85vw, 500px);
+    max-height: clamp(80px, 14vw, 140px);
+    max-width: min(85vw, 360px);
     object-fit: contain;
     filter: drop-shadow(0 2px 8px rgb(0 0 0 / 40%));
-    text-shadow: 0 2px 6px rgb(0 0 0 / 50%);
-    margin-bottom: var(--gap-xl);
   }
 
   {% comment %} ── H1: real text for SEO ── {% endcomment %}
@@ -190,7 +164,6 @@
     font-weight: 600;
     margin: 0;
     text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
-    flex-basis: 100%;
   }
 
   #{{ section_id }} .collection-hero__mfr {
@@ -224,26 +197,6 @@
     font-weight: 400;
     margin: 0;
     text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
-    flex-basis: 100%;
-  }
-
-  #{{ section_id }} .collection-hero__cta {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 14px 32px;
-    background: white;
-    color: #111;
-    font-size: var(--font-size--md);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    border-radius: var(--radius-sm, 8px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  #{{ section_id }} .collection-hero__cta:hover {
-    transform: scale(1.03);
-    box-shadow: 0 4px 20px rgb(255 255 255 / 0.25);
   }
 
   {% comment %} ── Tablet: 16:9 band ── {% endcomment %}
@@ -255,8 +208,8 @@
 
 
     #{{ section_id }} .collection-hero__logo {
-      height: clamp(100px, 10vw, 150px);
-      max-width: 560px;
+      max-height: clamp(100px, 10vw, 150px);
+      max-width: 400px;
     }
   }
 
@@ -267,7 +220,8 @@
     }
 
     #{{ section_id }} .collection-hero__logo {
-      height: clamp(120px, 12vw, 180px);
+      max-height: clamp(120px, 12vw, 180px);
+      max-width: 440px;
     }
   }
 
@@ -289,18 +243,6 @@
 {
   "name": "Collection hero",
   "settings": [
-    {
-      "type": "text",
-      "id": "cta_text",
-      "label": "CTA button text",
-      "default": "Shop Editions"
-    },
-    {
-      "type": "text",
-      "id": "cta_target",
-      "label": "CTA scroll target (anchor)",
-      "default": "#editions"
-    },
     {
       "type": "color",
       "id": "background_color",
