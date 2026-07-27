@@ -19,6 +19,15 @@
       assign youtube_id = video_url | split: '/embed/' | last | split: '?' | first
     endif
   endif
+
+  assign game_name = collection.title
+  assign mfr = collection.metafields.custom.manufacturer.value
+  if mfr and mfr.title != blank
+    assign prefix = mfr.title | append: ' - '
+    if game_name contains prefix and game_name != prefix
+      assign game_name = game_name | remove_first: prefix
+    endif
+  endif
 -%}
 
 {%- if youtube_id != blank -%}
@@ -29,7 +38,7 @@
     <div class="game-video__wrapper">
       <iframe
         src="https://www.youtube.com/embed/{{ youtube_id }}"
-        title="{{ collection.title }} video"
+        title="{{ game_name }} video"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen

@@ -1,12 +1,21 @@
 {%- liquid
   assign section_id = 'game-features-' | append: section.id
   assign base_features = collection.metafields.custom.base_features.value
+
+  assign game_name = collection.title
+  assign mfr = collection.metafields.custom.manufacturer.value
+  if mfr and mfr.title != blank
+    assign prefix = mfr.title | append: ' - '
+    if game_name contains prefix and game_name != prefix
+      assign game_name = game_name | remove_first: prefix
+    endif
+  endif
 -%}
 
 {%- if base_features != blank and base_features.size > 0 -%}
 <div class="game-section-band game-section-band--white">
   <section id="{{ section_id }}" class="game-features">
-    <h2 class="game-features__heading game-section-heading">{{ collection.title }} Pinball Game Features</h2>
+    <h2 class="game-features__heading game-section-heading">{{ game_name }} Pinball Game Features</h2>
 
     <ul class="game-features__list">
       {%- for feature in base_features -%}

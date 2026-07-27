@@ -11,11 +11,20 @@
   assign editions = collection.products | sort: 'metafields.custom.edition_order.value'
 
   assign products_count = collection.products.size
+
+  assign game_name = collection.title
+  assign mfr = collection.metafields.custom.manufacturer.value
+  if mfr and mfr.title != blank
+    assign prefix = mfr.title | append: ' - '
+    if game_name contains prefix and game_name != prefix
+      assign game_name = game_name | remove_first: prefix
+    endif
+  endif
 -%}
 
 <div class="{{ section_id }}__band game-section-band game-section-band--white">
 <section id="editions" class="{{ section_id }}">
-  <h2 class="editions-grid__heading game-section-heading">Shop {{ collection.title }} Pinball Editions</h2>
+  <h2 class="editions-grid__heading game-section-heading">Shop {{ game_name }} Pinball Editions</h2>
 
   <div class="editions-grid">
     {%- for product in editions -%}

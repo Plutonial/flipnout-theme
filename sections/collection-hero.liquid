@@ -13,6 +13,15 @@
   assign cta_text = section.settings.cta_text | default: 'Shop Editions'
   assign cta_target = section.settings.cta_target | default: '#editions'
   assign subtitle = collection.metafields.custom.subtitle
+
+  assign game_name = collection.title
+  assign mfr = collection.metafields.custom.manufacturer.value
+  if mfr and mfr.title != blank
+    assign prefix = mfr.title | append: ' - '
+    if game_name contains prefix and game_name != prefix
+      assign game_name = game_name | remove_first: prefix
+    endif
+  endif
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
@@ -38,7 +47,7 @@
         <img
           class="collection-hero__logo"
           src="{{ game_logo | image_url: width: 800 }}"
-          alt="{{ collection.title }}"
+          alt="{{ game_name }}"
           loading="eager"
           fetchpriority="high"
           width="800"
@@ -47,7 +56,7 @@
       {%- endif -%}
 
       <h1 class="collection-hero__h1">
-        {{- collection.title }} Pinball Machine
+        {{- game_name }} Pinball Machine
         {%- if manufacturer_ref %}<span class="collection-hero__mfr"> by <a href="{{ manufacturer_ref.url }}" class="collection-hero__mfr-link">{{ manufacturer_ref.title }}</a></span>{%- endif -%}
       </h1>
 

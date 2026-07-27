@@ -9,6 +9,15 @@
   if collection.description != blank
     assign has_lore = true
   endif
+
+  assign game_name = collection.title
+  assign mfr = collection.metafields.custom.manufacturer.value
+  if mfr and mfr.title != blank
+    assign prefix = mfr.title | append: ' - '
+    if game_name contains prefix and game_name != prefix
+      assign game_name = game_name | remove_first: prefix
+    endif
+  endif
 -%}
 
 {%- if has_gallery or has_lore -%}
@@ -28,7 +37,7 @@
                       <li class="game-gallery-lore__slide">
                         <a
                           href="{{ image | image_url: width: 2400 }}"
-                          data-caption="{{ collection.title }} Gallery"
+                          data-caption="{{ game_name }} Gallery"
                           data-type="image"
                         >
                           {{ image | image_url: width: 1200 | image_tag:
