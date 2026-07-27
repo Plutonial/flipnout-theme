@@ -106,9 +106,13 @@
 
 
   .editions-grid {
+    --_grid-gap: var(--gap-2xl, 32px);
+    --_container-inner: calc(var(--page-content-width, 1440px) - 2 * var(--page-margin, 40px));
+    --_card-w: calc((var(--_container-inner) - 2 * var(--_grid-gap)) / 3);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: clamp(16px, 3vw, 32px);
+    grid-template-columns: repeat(auto-fill, var(--_card-w));
+    justify-content: center;
+    gap: var(--_grid-gap);
   }
 
   .editions-grid__card {
