@@ -1,0 +1,131 @@
+{% comment %}
+  Shared hero-band CSS for collection-hero (game) and brand-hero (manufacturer).
+  Expects: `hero_id` — the scoped section ID (e.g. 'collection-hero-xxx' or 'brand-hero-xxx').
+  Expects: `hero_bg_color` — fallback background colour.
+  Expects: `hero_bg_position` — object-position for the background image (default 'center').
+{% endcomment %}
+
+{%- liquid
+  assign _bg_color = hero_bg_color | default: '#1a1a2e'
+  assign _bg_position = hero_bg_position | default: 'center'
+-%}
+
+{% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
+#{{ hero_id }} {
+  --_bg-color: {{ _bg_color }};
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  min-height: 420px;
+  max-height: min(560px, 62svh);
+  background: var(--_bg-color);
+  overflow: hidden;
+}
+
+{% comment %} ── Background image ── {% endcomment %}
+#{{ hero_id }} .collection-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+#{{ hero_id }} .collection-hero__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: {{ _bg_position }} center;
+}
+
+{% comment %} ── Scrim: radial gradient anchored to the full-bleed hero ── {% endcomment %}
+#{{ hero_id }}::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(ellipse at 25% 50%,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.3) 30%,
+    rgba(0, 0, 0, 0) 65%
+  );
+  pointer-events: none;
+}
+
+{% comment %} ── Content overlay: left-aligned ── {% endcomment %}
+#{{ hero_id }} .collection-hero__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: clamp(32px, 6vw, 56px) var(--page-margin, 16px);
+  width: 100%;
+  max-width: var(--page-width, 1200px);
+  margin-inline: auto;
+}
+
+#{{ hero_id }} .collection-hero__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  max-width: 700px;
+}
+
+{% comment %} ── Logo: height-constrained ── {% endcomment %}
+#{{ hero_id }} .collection-hero__logo {
+  height: auto;
+  width: auto;
+  max-height: clamp(80px, 14vw, 140px);
+  max-width: min(85vw, 300px);
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 40%));
+  margin-bottom: 12px;
+}
+
+{% comment %} ── H1 ── {% endcomment %}
+#{{ hero_id }} .collection-hero__h1 {
+  color: white;
+  font-size: var(--font-size--4xl);
+  line-height: 1.1;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+}
+
+{% comment %} ── Subtitle ── {% endcomment %}
+#{{ hero_id }} .collection-hero__subtitle {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--font-size--2xl);
+  line-height: 1.5;
+  font-weight: 400;
+  margin: 0;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+}
+
+{% comment %} ── Tablet: 16:9 band ── {% endcomment %}
+@media (min-width: 701px) {
+  #{{ hero_id }} {
+    aspect-ratio: 16 / 9;
+    min-height: 340px;
+  }
+
+  #{{ hero_id }} .collection-hero__logo {
+    max-height: clamp(100px, 10vw, 150px);
+    max-width: 320px;
+  }
+}
+
+{% comment %} ── Desktop: 4.2:1 cinematic band ── {% endcomment %}
+@media (min-width: 1025px) {
+  #{{ hero_id }} {
+    aspect-ratio: 4.2 / 1;
+  }
+
+  #{{ hero_id }} .collection-hero__logo {
+    max-height: clamp(120px, 12vw, 180px);
+    max-width: 320px;
+  }
+}

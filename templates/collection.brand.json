@@ -11,11 +11,7 @@
   "sections": {
     "brand-hero": {
       "type": "brand-hero",
-      "settings": {
-        "logo_position": "top-left",
-        "text_align": "left",
-        "overlay_darkness": 50
-      }
+      "settings": {}
     },
     "brand-subcollections": {
       "type": "brand-subcollections",

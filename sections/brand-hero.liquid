@@ -1,54 +1,55 @@
 {%- liquid
   assign section_id = 'brand-hero-' | append: section.id
-  assign bg_image = collection.image
-  assign brand_logo = collection.metafields.collection.brand_logo
-  assign text_align = section.settings.text_align | default: 'left'
-  assign logo_position = section.settings.logo_position | default: 'top-left'
-  assign overlay_darkness = section.settings.overlay_darkness | default: 50
-  assign btn_label = 'Shop ' | append: collection.title
+
+  assign hero_image = collection.metafields.custom.hero_image
+  unless hero_image
+    assign hero_image = collection.image
+  endunless
+
+  assign brand_logo = collection.metafields.custom.logo
+  assign subtitle = collection.metafields.custom.subtitle
+  assign bg_color = section.settings.background_color | default: '#1a1a2e'
 -%}
 
-<div id="{{ section_id }}" class="brand-hero" style="position: relative;">
-  {%- render 'hero-content',
-    hero_id: section_id,
-    hero_title: collection.title,
-    hero_content: collection.description,
-    hero_btn_text: btn_label,
-    hero_btn_link: '#brand-machines',
-    hero_text_align: text_align,
-    hero_overlay_darkness: overlay_darkness,
-    hero_bg_image: bg_image,
-    hero_bg_loading: 'eager',
-    hero_logo: brand_logo,
-    hero_logo_position: logo_position
-  -%}
-</div>
+<section id="{{ section_id }}" class="collection-hero">
+  <div class="collection-hero__media">
+    {%- if hero_image -%}
+      {{ hero_image | image_url: width: 2400 | image_tag:
+        loading: 'eager',
+        fetchpriority: 'high',
+        class: 'collection-hero__img',
+        sizes: '100vw',
+        widths: '800,1200,1600,2000,2400'
+      }}
+    {%- endif -%}
+  </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    var cta = document.querySelector('#{{ section_id }} .hero-slide__cta');
-    if (cta && cta.getAttribute('href') === '#brand-machines') {
-      cta.addEventListener('click', function (e) {
-        e.preventDefault();
-        var target = document.getElementById('brand-machines');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    }
-  });
-</script>
+  <div class="collection-hero__content">
+    <div class="collection-hero__stack">
+      {%- if brand_logo != blank -%}
+        <img
+          class="collection-hero__logo"
+          src="{{ brand_logo | image_url: width: 800 }}"
+          alt="{{ collection.title }}"
+          loading="eager"
+          fetchpriority="high"
+          width="800"
+          height="400"
+        />
+      {%- endif -%}
+
+      <h1 class="collection-hero__h1">{{ collection.title }}</h1>
+
+      {%- if subtitle != blank -%}
+        <p class="collection-hero__subtitle">{{ subtitle }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
 
 {% style %}
-  #{{ section_id }} .hero-slide__bg {
-    min-height: 100svh;
-  }
-
-  @media (min-width: 750px) {
-    #{{ section_id }} .hero-slide__bg {
-      min-height: 100svh;
-    }
-  }
+  {% comment %} ── Shared hero band styles ── {% endcomment %}
+  {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: bg_color, hero_bg_position: 'center' -%}
 {% endstyle %}
 
 {% schema %}
@@ -56,34 +57,10 @@
   "name": "Brand hero",
   "settings": [
     {
-      "type": "select",
-      "id": "logo_position",
-      "label": "Logo position",
-      "options": [
-        { "value": "top-left", "label": "Top left" },
-        { "value": "centered", "label": "Centered" }
-      ],
-      "default": "top-left"
-    },
-    {
-      "type": "select",
-      "id": "text_align",
-      "label": "Text alignment",
-      "options": [
-        { "value": "left", "label": "Left" },
-        { "value": "center", "label": "Center" }
-      ],
-      "default": "left"
-    },
-    {
-      "type": "range",
-      "id": "overlay_darkness",
-      "label": "Overlay darkness",
-      "min": 0,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "default": 50
+      "type": "color",
+      "id": "background_color",
+      "label": "Fallback background color",
+      "default": "#1a1a2e"
     }
   ],
   "disabled_on": { "groups": ["header", "footer"] }
