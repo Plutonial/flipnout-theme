@@ -134,5 +134,24 @@
     {% endif %}
 
     {% render 'uikit-loader' %}
+
+    {%- liquid
+        assign n_all = 0
+        assign n_games = 0
+        assign n_mine = 0
+    -%}
+    {%- for c in collections -%}
+        {%- assign n_all = n_all | plus: 1 -%}
+        {%- if c.metafields.collection.is_game -%}
+            {%- assign n_games = n_games | plus: 1 -%}
+            {%- if c.metafields.custom.manufacturer.value.id == collection.id -%}
+                {%- assign n_mine = n_mine | plus: 1 -%}
+            {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+    <div style="position:fixed;bottom:0;left:0;z-index:99999;background:#f00;color:#fff;font:14px monospace;padding:8px">
+        LOOPTEST · collections={{ n_all }} · games={{ n_games }} · thisBrand={{ n_mine }}
+    </div>
+
   </body>
 </html>
