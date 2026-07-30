@@ -1,0 +1,14 @@
+{% comment %}
+  Shared mobile override for section headings that are left-aligned at desktop
+  but should centre on mobile to match the rest of the page.
+  Render this snippet inside a {% style %} block — it outputs raw CSS, not a tag.
+{% endcomment %}
+@media (max-width: 749px) {
+  .game-section-heading {
+    text-align: center;
+  }
+
+  .game-section-heading::after {
+    margin-inline: auto;
+  }
+}
