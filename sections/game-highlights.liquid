@@ -4,27 +4,47 @@
 -%}
 
 {%- if highlights != blank and highlights.size > 0 -%}
-{%- comment -%}
-  L — Pre-rotate the render order so floor(n/2) is at DOM position 0.
-  UIkit center:true centres index 0 on init — no show() needed, so the
-  first paint is already the final position. Zero post-paint movement.
-  Rotation: render [startIndex..end] then [0..startIndex-1], twice
-  (primary + duplicate set for looping).
-{%- endcomment -%}
 {%- liquid
   assign hl_count = highlights.size
   assign hl_start = hl_count | divided_by: 2
   assign hl_tail = hl_count | minus: hl_start
 -%}
 <div class="game-section-band game-section-band--cream">
-  <section id="{{ section_id }}" class="game-highlights game-highlights--carousel" data-gh-count="{{ hl_count }}">
+  <section id="{{ section_id }}" class="game-highlights" data-gh-count="{{ hl_count }}">
     <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
-    <div uk-lightbox="animation: fade">
+    {% comment %}
+      Desktop path: plain list, paged by JS. No UIkit, no duplicates.
+      Mobile path: UIkit slider with rotation + duplicates for infinite loop.
+      The two are toggled via a class on the section: --desktop / --mobile.
+    {% endcomment %}
+
+    {% comment %} ── Desktop: natural order, no duplicates ── {% endcomment %}
+    <div class="game-highlights__desktop-wrap">
+      <div class="game-highlights__track-wrap">
+        <div class="game-highlights__container">
+          <ul class="game-highlights__list game-highlights__list--desktop">
+            {%- for feature in highlights -%}
+              {%- render 'fnop-highlight-card', fnop_hl_feature: feature, fnop_hl_is_dup: false -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+
+        <button type="button" class="game-highlights__nav game-highlights__nav--prev" aria-label="Previous highlights">
+          <svg width="20" height="20" viewBox="0 0 20 20"><polyline fill="none" stroke="currentColor" stroke-width="1.4" points="13 16 7 10 13 4"></polyline></svg>
+        </button>
+        <button type="button" class="game-highlights__nav game-highlights__nav--next" aria-label="Next highlights">
+          <svg width="20" height="20" viewBox="0 0 20 20"><polyline fill="none" stroke="currentColor" stroke-width="1.4" points="7 4 13 10 7 16"></polyline></svg>
+        </button>
+      </div>
+    </div>
+
+    {% comment %} ── Mobile: UIkit slider with rotation + duplicates ── {% endcomment %}
+    <div class="game-highlights__mobile-wrap" uk-lightbox="animation: fade">
       <div class="game-highlights__slider" uk-slider="finite: false; autoplay: false; center: true" data-gh-slider-opts="finite: false; autoplay: false; center: true">
         <div class="uk-position-relative game-highlights__track-wrap">
           <div class="uk-slider-container game-highlights__container">
-            <ul class="uk-slider-items game-highlights__list">
+            <ul class="uk-slider-items game-highlights__list game-highlights__list--mobile">
               {% comment %} Primary set — rotated so centre card is at index 0 {% endcomment %}
               {%- for feature in highlights offset: hl_start -%}
                 {%- render 'fnop-highlight-card', fnop_hl_feature: feature, fnop_hl_is_dup: false -%}
@@ -35,10 +55,7 @@
                 {%- endfor -%}
               {%- endif -%}
 
-              {% comment %}
-                K-fix-4 — Duplicate set (same rotation) for UIkit loop track.
-                aria-hidden on card element, tabindex=-1 on links, no dup ids.
-              {% endcomment %}
+              {% comment %} Duplicate set for UIkit loop track {% endcomment %}
               {%- for feature in highlights offset: hl_start -%}
                 {%- render 'fnop-highlight-card', fnop_hl_feature: feature, fnop_hl_is_dup: true -%}
               {%- endfor -%}
@@ -49,113 +66,159 @@
               {%- endif -%}
             </ul>
           </div>
-
-          {% comment %} Overlay arrows — positioned on the image axis, outside track at wide viewports {% endcomment %}
-          <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
-          <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
         </div>
       </div>
+    </div>
+
+    {% comment %} Desktop lightbox: rendered separately since desktop cards are outside uk-lightbox {% endcomment %}
+    <div class="game-highlights__lightbox-desktop" uk-lightbox="animation: fade" hidden>
+      {%- for feature in highlights -%}
+        {%- if feature.image != blank -%}
+          <a href="{{ feature.image | image_url: width: 2400 }}" data-caption="{{ feature.name }}" data-type="image"></a>
+        {%- endif -%}
+      {%- endfor -%}
     </div>
   </section>
 </div>
 
-{% comment %}
-  Mode logic — identical to fnop-gc (games carousel).
-  Fit → centred static group, no slider, no arrows.
-  Overflow → uk-slider with center + loop, index 0 is already the centre card
-  (items pre-rotated in Liquid — brief L, approach a).
-  No show() call — zero post-paint movement.
-  K-fix-4: Liquid-duplicated set provides enough track for UIkit to loop.
-  In centred/fit mode the duplicates are hidden via display:none.
-{% endcomment %}
 <script>
   (function() {
     var sectionId = '{{ section_id }}';
+    var MOBILE_BP = 749;
 
-    function updateMode() {
-      try {
-        var section = document.getElementById(sectionId);
-        if (!section) return;
+    function isMobile() {
+      return window.innerWidth <= MOBILE_BP;
+    }
 
-        var sliderEl = section.querySelector('.game-highlights__slider');
-        if (!sliderEl) return;
+    function initSection() {
+      var section = document.getElementById(sectionId);
+      if (!section) return;
 
-        var list = section.querySelector('.game-highlights__list');
-        if (!list) return;
+      var desktopWrap = section.querySelector('.game-highlights__desktop-wrap');
+      var mobileWrap = section.querySelector('.game-highlights__mobile-wrap');
+      if (!desktopWrap || !mobileWrap) return;
 
-        /* Use only the primary (non-duplicate) items for the fit test */
-        var primaryItems = list.querySelectorAll('.game-highlights__item:not(.game-highlights__item--dup)');
-        if (!primaryItems.length) return;
+      var mobile = isMobile();
 
-        var item = primaryItems[0];
-        var listStyle = getComputedStyle(list);
-        var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
-        var itemW = item.offsetWidth + gapVal;
-        if (!isFinite(itemW) || itemW <= 0) return;
+      /* Show/hide the correct path */
+      desktopWrap.hidden = mobile;
+      mobileWrap.hidden = !mobile;
 
-        /* Fit test uses only the real items, not the duplicates */
-        var setW = itemW * primaryItems.length;
-        var containerW = section.querySelector('.game-highlights__container').offsetWidth;
-        var overflows = setW > containerW;
+      if (!mobile) {
+        initDesktopPaging(section);
+      } else {
+        initMobileSlider(section);
+      }
+    }
 
-        /* Toggle mode class — JS only toggles state, never rebuilds markup */
-        section.classList.toggle('game-highlights--centred', !overflows);
-        section.classList.toggle('game-highlights--carousel', overflows);
+    /* ── Desktop: paged navigation ── */
+    function initDesktopPaging(section) {
+      var list = section.querySelector('.game-highlights__list--desktop');
+      if (!list) return;
 
-        /* Hide/show arrows */
-        section.querySelectorAll('.game-highlights__nav').forEach(function(nav) {
-          if (overflows) { nav.removeAttribute('hidden'); } else { nav.setAttribute('hidden', ''); }
-        });
+      var items = list.querySelectorAll('.game-highlights__item');
+      var count = items.length;
+      if (count === 0) return;
 
-        /* In fits mode: remove uk-slider so no transform is applied.
-           In overflow mode: restore it so the carousel works with center + loop.
-           Items are pre-rotated in Liquid so index 0 is the centre card —
-           no show() needed, UIkit centres index 0 on init. */
-        var initSlider = function () {
-          if (!window.UIkit) return false;
+      var perPage = 3;
+      var totalPages = Math.ceil(count / perPage);
+      var currentPage = 0;
 
-          if (overflows) {
-            if (!sliderEl.hasAttribute('uk-slider')) {
-              sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gh-slider-opts'));
-              UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
-            }
-            /* L: no show() — index 0 is already the centre card (pre-rotated in Liquid) */
-          } else {
-            var slider = UIkit.slider(sliderEl);
-            if (slider) {
-              slider.$destroy();
-            }
-            sliderEl.removeAttribute('uk-slider');
-            list.style.transform = 'none';
-          }
-          return true;
-        };
+      var prevBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--prev');
+      var nextBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--next');
 
-        if (!initSlider()) {
-          var uikitRetries = 0;
-          var waitForUIkit = setInterval(function () {
-            uikitRetries++;
-            if (initSlider() || uikitRetries >= 20) clearInterval(waitForUIkit);
-          }, 150);
+      function goToPage(page) {
+        currentPage = ((page % totalPages) + totalPages) % totalPages;
+        var offset = currentPage * perPage;
+
+        /* Hide all, show current page */
+        for (var i = 0; i < count; i++) {
+          var show = i >= offset && i < offset + perPage;
+          items[i].classList.toggle('game-highlights__item--hidden', !show);
         }
-      } catch (e) {
-        /* Fail toward visible: leave server markup untouched */
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          goToPage(currentPage - 1);
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          goToPage(currentPage + 1);
+        });
+      }
+
+      /* Set up lightbox click handlers for desktop cards */
+      var lightboxContainer = section.querySelector('.game-highlights__lightbox-desktop');
+      if (lightboxContainer) {
+        var imageLinks = section.querySelectorAll('.game-highlights__list--desktop .game-highlights__image-wrap');
+        imageLinks.forEach(function(link, idx) {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (window.UIkit && lightboxContainer) {
+              lightboxContainer.hidden = false;
+              var lb = UIkit.lightbox(lightboxContainer);
+              lb.show(idx);
+              lightboxContainer.hidden = true;
+            }
+          });
+        });
+      }
+
+      /* Show first page */
+      goToPage(0);
+
+      /* Hide arrows if all fit on one page */
+      if (totalPages <= 1) {
+        if (prevBtn) prevBtn.setAttribute('hidden', '');
+        if (nextBtn) nextBtn.setAttribute('hidden', '');
+      } else {
+        if (prevBtn) prevBtn.removeAttribute('hidden');
+        if (nextBtn) nextBtn.removeAttribute('hidden');
+      }
+    }
+
+    /* ── Mobile: UIkit slider ── */
+    function initMobileSlider(section) {
+      var sliderEl = section.querySelector('.game-highlights__slider');
+      if (!sliderEl || !window.UIkit) return;
+
+      if (!sliderEl.hasAttribute('uk-slider')) {
+        sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gh-slider-opts'));
+      }
+      UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
+    }
+
+    var lastMobile = null;
+
+    function update() {
+      var mobile = isMobile();
+      if (mobile !== lastMobile) {
+        lastMobile = mobile;
+        initSection();
       }
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() { setTimeout(updateMode, 100); });
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(update, 100); });
     } else {
-      setTimeout(updateMode, 100);
+      setTimeout(update, 100);
     }
 
     var resizeTimer;
     window.addEventListener('resize', function() {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(updateMode, 200);
+      resizeTimer = setTimeout(update, 200);
     });
 
-    document.addEventListener('shopify:section:load', function() { setTimeout(updateMode, 200); });
+    document.addEventListener('shopify:section:load', function() {
+      lastMobile = null;
+      setTimeout(update, 200);
+    });
   })();
 </script>
 {%- endif -%}
@@ -164,7 +227,7 @@
   #{{ section_id }} {
     --_gh-card-gap: 24px;
     --_gh-track-w: min(var(--game-band-w), 100vw - 2 * var(--game-band-gutter));
-    --_gh-card-w: calc((var(--_gh-track-w) - 4 * var(--_gh-card-gap)) / 4);
+    --_gh-card-w: calc((var(--_gh-track-w) - 2 * var(--_gh-card-gap)) / 3);
     --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
     --_gh-arrow-inset: clamp(8px, 2vw, 24px);
 
@@ -175,15 +238,12 @@
 
   #{{ section_id }} .game-highlights__container {
     min-width: 0;
+    overflow: hidden;
   }
 
-  /* Fix 1 (L-fix-2 / M1-fix-3): initial transform accounts for 2 items
-     UIkit wraps to the left. Formula: (track−card)/2 − 2×(card+gap).
-     Wrap count = ceil(sideSpace/slot) = ceil(~1.53) = 2 at all desktop widths.
-     UIkit overwrites transform on init, so CSS owns the position
-     until JS runs, then UIkit owns it — no stacking. */
-  #{{ section_id }} .game-highlights__list {
-    transform: translateX(calc((var(--_gh-track-w) - var(--_gh-card-w)) / 2 - 2 * (var(--_gh-card-w) + var(--_gh-card-gap))));
+  {% comment %} ── Desktop path ── {% endcomment %}
+  #{{ section_id }} .game-highlights__list--desktop {
+    display: flex;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -195,6 +255,10 @@
     width: var(--_gh-card-w);
     flex-shrink: 0;
     display: flex;
+  }
+
+  #{{ section_id }} .game-highlights__item--hidden {
+    display: none;
   }
 
   #{{ section_id }} .game-highlights__card {
@@ -240,19 +304,6 @@
     flex: 1;
   }
 
-  {% comment %} ── Centred mode — static row, no slider, no arrows; hide duplicates ── {% endcomment %}
-  #{{ section_id }}.game-highlights--centred .game-highlights__list {
-    justify-content: center;
-  }
-
-  #{{ section_id }}.game-highlights--centred .game-highlights__item--dup {
-    display: none;
-  }
-
-  #{{ section_id }}.game-highlights--centred .game-highlights__nav {
-    display: none;
-  }
-
   {% comment %}
     K-fix-2: Arrows on the image's vertical axis.
     The track-wrap is position:relative. Arrows use top = half the image height.
@@ -276,6 +327,8 @@
     background: rgba(0, 0, 0, 0.45);
     color: #fff;
     padding: 0;
+    border: none;
+    cursor: pointer;
     text-decoration: none;
   }
 
@@ -305,8 +358,6 @@
     K-fix-3: Outside arrows when viewport is wide enough.
     Breakpoint derived: game-band-w + 2 × (arrow-size + 16px breathing).
     At 4xl=40px, arrow-size = 64px → 1440 + 2×80 = 1600px.
-    Use the derived calc in a custom property; the media query uses the
-    computed 1600px since CSS cannot use calc() in @media (yet).
     If --game-band-w or --_gh-arrow-size change, update the MQ.
   {% endcomment %}
   @media (min-width: 1600px) {
@@ -319,7 +370,13 @@
     }
   }
 
-  {% comment %} ── Mobile: wider cards, no arrows (K-fix-3: < 750px) ── {% endcomment %}
+  {% comment %} ── Mobile path ── {% endcomment %}
+
+  {% comment %} Hide mobile wrap by default (desktop-first); JS toggles hidden attr {% endcomment %}
+  #{{ section_id }} .game-highlights__mobile-wrap {
+    display: none;
+  }
+
   @media (max-width: 749px) {
     #{{ section_id }} {
       --_gh-card-gap: 12px;
@@ -327,6 +384,24 @@
       --_gh-card-w: 75vw;
       width: 100%;
       padding-inline: 0;
+    }
+
+    {% comment %} On mobile, show mobile wrap and hide desktop wrap {% endcomment %}
+    #{{ section_id }} .game-highlights__desktop-wrap {
+      display: none;
+    }
+
+    #{{ section_id }} .game-highlights__mobile-wrap {
+      display: block;
+    }
+
+    #{{ section_id }} .game-highlights__list--mobile {
+      transform: translateX(calc((var(--_gh-track-w) - var(--_gh-card-w)) / 2));
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: var(--_gh-card-gap);
+      align-items: stretch;
     }
 
     #{{ section_id }} .game-highlights__nav {
