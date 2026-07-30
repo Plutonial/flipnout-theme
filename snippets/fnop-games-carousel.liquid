@@ -82,17 +82,32 @@
 
           /* In fits mode: remove uk-slider so no transform is applied.
              In overflow mode: restore it so the carousel works with center + loop. */
-          if (window.UIkit) {
+          var initSlider = function () {
+            if (!window.UIkit) return false;
+
             if (overflows) {
               if (!sliderEl.hasAttribute('uk-slider')) {
                 sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
                 UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
-                /* Start on a middle item so both peeks are filled at rest.
-                   With n=2 one peek will be empty — no cloning, accept it. */
-                var startIndex = Math.floor(items.length / 2);
-                if (startIndex > 0) {
-                  UIkit.slider(sliderEl).show(startIndex, false);
-                }
+              }
+              /* Start on a middle item so both peeks are filled at rest.
+                 With n=2 one peek will be empty — no cloning, accept it.
+                 Deferred: show() is a no-op before UIkit connects, so retry. */
+              var startIndex = Math.floor(items.length / 2);
+              if (startIndex > 0) {
+                var applyStart = function () {
+                  var s = UIkit.slider(sliderEl);
+                  if (!s) return false;
+                  s.show(startIndex, false);
+                  return s.index === startIndex;
+                };
+                requestAnimationFrame(function () {
+                  if (applyStart()) return;
+                  requestAnimationFrame(function () {
+                    if (applyStart()) return;
+                    setTimeout(applyStart, 200);
+                  });
+                });
               }
             } else {
               var slider = UIkit.slider(sliderEl);
@@ -103,6 +118,16 @@
               /* Clear any leftover transform */
               list.style.transform = 'none';
             }
+            return true;
+          };
+
+          /* Fix 2: if UIkit is not loaded yet, retry instead of silently skipping */
+          if (!initSlider()) {
+            var uikitRetries = 0;
+            var waitForUIkit = setInterval(function () {
+              uikitRetries++;
+              if (initSlider() || uikitRetries >= 20) clearInterval(waitForUIkit);
+            }, 150);
           }
         } catch (e) {
           /* Fail toward visible: leave server markup untouched */
