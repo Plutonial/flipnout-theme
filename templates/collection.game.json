@@ -61,8 +61,8 @@
   },
   "order": [
     "collection-hero",
-    "game-editions-grid",
     "game-gallery-lore",
+    "game-editions-grid",
     "game-features",
     "game-highlights",
     "game-video",

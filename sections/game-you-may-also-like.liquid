@@ -87,11 +87,13 @@
     assign sorted_handles_str = sorted_handles | join: '|'
   -%}
 
-  {%- render 'fnop-games-carousel',
-    fnop_carousel_id: section_id,
-    fnop_carousel_heading: 'You May Also Like',
-    fnop_carousel_handles: sorted_handles_str
-  -%}
+  <div class="game-section-band game-section-band--white">
+    {%- render 'fnop-games-carousel',
+      fnop_carousel_id: section_id,
+      fnop_carousel_heading: 'You May Also Like',
+      fnop_carousel_handles: sorted_handles_str
+    -%}
+  </div>
 {%- endif -%}
 
 {% schema %}
