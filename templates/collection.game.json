@@ -57,7 +57,7 @@
     "game-editions-cta": {
       "type": "game-editions-grid",
       "settings": {
-        "heading": "Buy a {game_name} Pinball Machine!",
+        "heading": "Choose Your {game_name} Pinball Machine!",
         "bg_variant": "black",
         "padding_top": 48,
         "padding_bottom": 48
