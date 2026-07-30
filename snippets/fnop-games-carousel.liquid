@@ -87,6 +87,12 @@
               if (!sliderEl.hasAttribute('uk-slider')) {
                 sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
                 UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
+                /* Start on a middle item so both peeks are filled at rest.
+                   With n=2 one peek will be empty — no cloning, accept it. */
+                var startIndex = Math.floor(items.length / 2);
+                if (startIndex > 0) {
+                  UIkit.slider(sliderEl).show(startIndex, false);
+                }
               }
             } else {
               var slider = UIkit.slider(sliderEl);
