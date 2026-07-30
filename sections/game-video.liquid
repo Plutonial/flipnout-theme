@@ -49,8 +49,8 @@
 
 {% style %}
   #{{ section_id }} {
-    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px) 0;
-    max-width: var(--page-content-width, 1200px);
+    padding: clamp(40px, 6vw, 80px) 0 0;
+    width: min(var(--game-band-w), 100% - 2 * var(--game-band-gutter));
     margin-inline: auto;
   }
 

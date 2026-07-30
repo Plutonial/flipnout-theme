@@ -166,11 +166,9 @@
     --_gh-card-gap: 24px;
     --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
     --_gh-arrow-inset: clamp(8px, 2vw, 24px);
-    --_gh-section-max-w: 1440px;
-    --_gh-section-pad: 40px;
 
-    padding: clamp(40px, 6vw, 80px) var(--_gh-section-pad);
-    max-width: var(--_gh-section-max-w);
+    padding: clamp(40px, 6vw, 80px) 0;
+    width: min(var(--game-band-w), 100% - 2 * var(--game-band-gutter));
     margin-inline: auto;
   }
 
@@ -182,7 +180,7 @@
      UIkit overwrites transform on init, so CSS owns the position
      until JS runs, then UIkit owns it — no stacking. */
   #{{ section_id }} .game-highlights__list {
-    --_gh-track-w: calc(min(var(--_gh-section-max-w), 100vw) - 2 * var(--_gh-section-pad));
+    --_gh-track-w: min(var(--game-band-w), 100vw - 2 * var(--game-band-gutter));
     transform: translateX(calc((var(--_gh-track-w) - var(--_gh-card-w)) / 2));
     list-style: none;
     margin: 0;
@@ -303,11 +301,11 @@
 
   {% comment %}
     K-fix-3: Outside arrows when viewport is wide enough.
-    Breakpoint derived: section-max-w + 2 × (arrow-size + 16px breathing).
+    Breakpoint derived: game-band-w + 2 × (arrow-size + 16px breathing).
     At 4xl=40px, arrow-size = 64px → 1440 + 2×80 = 1600px.
     Use the derived calc in a custom property; the media query uses the
     computed 1600px since CSS cannot use calc() in @media (yet).
-    If --_gh-section-max-w or --_gh-arrow-size change, update the MQ.
+    If --game-band-w or --_gh-arrow-size change, update the MQ.
   {% endcomment %}
   @media (min-width: 1600px) {
     #{{ section_id }} .game-highlights__nav--prev {
@@ -324,7 +322,7 @@
     #{{ section_id }} {
       --_gh-card-w: 75vw;
       --_gh-card-gap: 12px;
-      --_gh-section-pad: 0px;
+      width: 100%;
       padding-inline: 0;
     }
 

@@ -110,6 +110,8 @@
 {% style %}
   {% comment %} ── Shared game-section band tokens (defined once, used by all game sections) ── {% endcomment %}
   .game-section-band {
+    --game-band-w: 1440px;
+    --game-band-gutter: 40px;
     --section-bg-cream: var(--color-surface-cream);
     --section-bg-dark: #111;
     width: 100%;
@@ -148,15 +150,15 @@
   }
 
   .editions-grid-section {
-    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
-    max-width: var(--page-content-width, 1200px);
+    padding: clamp(40px, 6vw, 80px) 0;
+    width: min(var(--game-band-w), 100% - 2 * var(--game-band-gutter));
     margin-inline: auto;
   }
 
 
   .editions-grid {
     --_grid-gap: var(--gap-2xl, 32px);
-    --_container-inner: calc(var(--page-content-width, 1440px) - 2 * var(--page-margin, 40px));
+    --_container-inner: var(--game-band-w);
     --_card-w: calc((var(--_container-inner) - 2 * var(--_grid-gap)) / 3);
     display: grid;
     grid-template-columns: repeat(auto-fit, var(--_card-w));
