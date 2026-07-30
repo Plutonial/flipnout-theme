@@ -144,7 +144,7 @@
 
         /* Build position stops: 0, perView, 2*perView, … each clamped to maxPos */
         var positions = [];
-        for (var p = 0; p <= maxPos; p += perView) {
+        for (var p = 0; p < count; p += perView) {
           positions.push(Math.min(p, maxPos));
         }
         /* Deduplicate in case the last step lands on maxPos twice */
@@ -152,7 +152,7 @@
           positions.pop();
         }
 
-        return { perView: perView, maxPos: maxPos, positions: positions };
+        return { perView: perView, maxPos: maxPos, positions: positions, slot: slot };
       }
 
       function slideTo(idx) {
@@ -164,8 +164,8 @@
         if (pos === 0) {
           list.style.transform = 'none';
         } else {
-          /* offset = -pos * (card + gap), derived from CSS custom properties */
-          list.style.transform = 'translateX(calc(-' + pos + ' * (var(--_gh-card-w) + var(--_gh-card-gap))))';
+          /* offset = -pos * slot, using the measured slot from live geometry */
+          list.style.transform = 'translateX(' + (-pos * geo.slot) + 'px)';
         }
       }
 
