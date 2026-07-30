@@ -98,6 +98,7 @@
     -%}
   {%- endif -%}
 
+  <div class="brand-about__band{% if games_count == 0 %} brand-about__band--full{% endif %}">
   <section id="{{ section_id }}" class="brand-about{% if games_count == 0 %} brand-about--full{% endif %}">
     <div class="brand-about__grid">
       <div class="brand-about__copy">
@@ -107,7 +108,7 @@
 
       {%- if games_count > 0 -%}
         <div class="brand-about__releases">
-          <h2 class="brand-about__heading game-section-heading">Releases</h2>
+          <h2 class="brand-about__heading game-section-heading">Latest Releases</h2>
           <table class="brand-about__table">
             <thead>
               <tr>
@@ -167,6 +168,7 @@
       {%- endif -%}
     </div>
   </section>
+  </div>
 
   {% style %}
     #{{ section_id }} {
@@ -174,14 +176,23 @@
       --_table-col-gap: 24px;
 
       max-width: var(--page-content-width, 1200px);
-      padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px) 0;
+      padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
       margin-inline: auto;
+    }
+
+    .brand-about__band {
+      background: var(--color-surface-cream);
     }
 
     #{{ section_id }} .brand-about__grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--_about-gap);
+    }
+
+    #{{ section_id }} .brand-about__releases {
+      border-left: 1px solid rgba(0, 0, 0, 0.12);
+      padding-left: var(--_about-gap);
     }
 
     #{{ section_id }}.brand-about--full .brand-about__grid {
@@ -193,8 +204,8 @@
     }
 
     #{{ section_id }} .brand-about__copy {
-      font-size: var(--font-size--md);
-      line-height: 1.6;
+      font-size: var(--font-size--xl);
+      line-height: 1.7;
     }
 
     #{{ section_id }} .brand-about__table {
@@ -234,6 +245,11 @@
     @media (max-width: 749px) {
       #{{ section_id }} .brand-about__grid {
         grid-template-columns: 1fr;
+      }
+
+      #{{ section_id }} .brand-about__releases {
+        border-left: none;
+        padding-left: 0;
       }
 
       #{{ section_id }} .brand-about__table {
