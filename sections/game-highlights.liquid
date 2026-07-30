@@ -31,8 +31,10 @@
             </ul>
           </div>
 
-          <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous" aria-label="Previous highlights"></a>
-          <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next" aria-label="Next highlights"></a>
+          <div class="game-highlights__arrow-rail" aria-hidden="true">
+            <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous" aria-label="Previous highlights"></a>
+            <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next" aria-label="Next highlights"></a>
+          </div>
         </div>
       </div>
     </div>
@@ -169,7 +171,7 @@
   #{{ section_id }} {
     --_gh-card-gap: 24px;
     --_gh-track-w: min(var(--game-band-w), 100% - 2 * var(--game-band-gutter));
-    --_gh-card-w: calc((var(--_gh-track-w) - 2 * var(--_gh-card-gap)) / 3);
+    --_gh-card-w: calc((100% - 2 * var(--_gh-card-gap)) / 3);
     --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
     --_gh-arrow-inset: clamp(8px, 2vw, 24px);
 
@@ -245,17 +247,30 @@
 
   {% comment %}
     K-fix-2: Arrows on the image's vertical axis.
-    The track-wrap is position:relative. Arrows use top = half the image height.
-    Image height = card-width × 3/4 (from aspect-ratio 4/3).
+    The arrow-rail is an absolutely-positioned overlay whose height equals the image row
+    (padding-bottom trick: percentage padding resolves against width, so
+    (100% - 2*gap)/3 * 3/4 = one card-width × 3/4 = image height).
+    Arrows sit at top: 50% of the rail → image centre, independent of --_gh-card-w.
   {% endcomment %}
   #{{ section_id }} .game-highlights__track-wrap {
     position: relative;
   }
 
+  #{{ section_id }} .game-highlights__arrow-rail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    padding-bottom: calc((100% - 2 * var(--_gh-card-gap)) / 3 * 3 / 4);
+    pointer-events: none;
+  }
+
   #{{ section_id }} .game-highlights__nav {
     position: absolute;
-    top: calc(var(--_gh-card-w) * 3 / 4 / 2);
+    top: 50%;
     transform: translateY(-50%);
+    pointer-events: auto;
     z-index: 10;
     display: flex;
     align-items: center;
