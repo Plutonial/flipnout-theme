@@ -5,14 +5,14 @@
 
 {%- if highlights != blank and highlights.size > 0 -%}
 <div class="game-section-band game-section-band--cream">
-  <section id="{{ section_id }}" class="game-highlights">
+  <section id="{{ section_id }}" class="game-highlights" data-gh-count="{{ highlights.size }}">
     <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
     <div uk-lightbox="animation: fade">
-      <div uk-slider="center: true; autoplay: true; autoplay-interval: 7000; finite: false; pause-on-hover: true">
+      <div class="game-highlights__slider" uk-slider="finite: false; autoplay: false; center: true" data-gh-slider-opts="finite: false; autoplay: false; center: true">
         <div class="uk-position-relative">
-          <div class="uk-slider-container uk-light">
-            <ul class="uk-slider-items uk-grid uk-grid-small">
+          <div class="uk-slider-container game-highlights__container">
+            <ul class="uk-slider-items game-highlights__list">
               {%- for feature in highlights -%}
                 {%- liquid
                   assign feat_name = feature.name
@@ -21,7 +21,7 @@
                 -%}
 
                 {%- if feat_name != blank or feat_desc != blank -%}
-                  <li class="game-highlights__slide">
+                  <li class="game-highlights__item">
                     <div class="game-highlights__card">
                       {%- if feat_image != blank -%}
                         <a
@@ -33,6 +33,7 @@
                           {{ feat_image | image_url: width: 800 | image_tag:
                             loading: 'lazy',
                             class: 'game-highlights__img',
+                            alt: '',
                             sizes: '(min-width: 990px) 33vw, 80vw',
                             widths: '400,600,800'
                           }}
@@ -54,49 +55,158 @@
             </ul>
           </div>
 
-          {% comment %} Slidenav arrows {% endcomment %}
-          <a class="uk-position-center-left uk-position-small" href uk-slidenav-previous uk-slider-item="previous"></a>
-          <a class="uk-position-center-right uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
+          {% comment %} Overlay arrows — same spec as fnop-gc {% endcomment %}
+          <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
+          <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
         </div>
-
-        {% comment %} Dotnav {% endcomment %}
-        <ul class="uk-slider-nav uk-dotnav uk-flex-center uk-margin-small-top"></ul>
       </div>
     </div>
   </section>
 </div>
+
+{% comment %}
+  Mode logic — identical to fnop-gc (games carousel).
+  Fit → centred static group, no slider, no arrows.
+  Overflow → uk-slider with center + loop, arrows visible, start at floor(n/2).
+{% endcomment %}
+<script>
+  (function() {
+    var sectionId = '{{ section_id }}';
+
+    function updateMode() {
+      try {
+        var section = document.getElementById(sectionId);
+        if (!section) return;
+
+        var sliderEl = section.querySelector('.game-highlights__slider');
+        if (!sliderEl) return;
+
+        var list = section.querySelector('.game-highlights__list');
+        if (!list) return;
+
+        var items = list.querySelectorAll('.game-highlights__item');
+        if (!items.length) return;
+
+        var item = items[0];
+        var listStyle = getComputedStyle(list);
+        var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
+        var itemW = item.offsetWidth + gapVal;
+        if (!isFinite(itemW) || itemW <= 0) return;
+
+        var setW = itemW * items.length;
+        var containerW = section.querySelector('.game-highlights__container').offsetWidth;
+        var overflows = setW > containerW;
+
+        /* Toggle mode class — JS only toggles state, never rebuilds markup */
+        section.classList.toggle('game-highlights--centred', !overflows);
+        section.classList.toggle('game-highlights--carousel', overflows);
+
+        /* Hide/show arrows */
+        section.querySelectorAll('.game-highlights__nav').forEach(function(nav) {
+          if (overflows) { nav.removeAttribute('hidden'); } else { nav.setAttribute('hidden', ''); }
+        });
+
+        /* In fits mode: remove uk-slider so no transform is applied.
+           In overflow mode: restore it so the carousel works with center + loop. */
+        var initSlider = function () {
+          if (!window.UIkit) return false;
+
+          if (overflows) {
+            if (!sliderEl.hasAttribute('uk-slider')) {
+              sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gh-slider-opts'));
+              UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
+            }
+            var startIndex = Math.floor(items.length / 2);
+            if (startIndex > 0) {
+              var applyStart = function () {
+                var s = UIkit.slider(sliderEl);
+                if (!s) return false;
+                s.show(startIndex, false);
+                return s.index === startIndex;
+              };
+              requestAnimationFrame(function () {
+                if (applyStart()) return;
+                requestAnimationFrame(function () {
+                  if (applyStart()) return;
+                  setTimeout(applyStart, 200);
+                });
+              });
+            }
+          } else {
+            var slider = UIkit.slider(sliderEl);
+            if (slider) {
+              slider.$destroy();
+            }
+            sliderEl.removeAttribute('uk-slider');
+            list.style.transform = 'none';
+          }
+          return true;
+        };
+
+        if (!initSlider()) {
+          var uikitRetries = 0;
+          var waitForUIkit = setInterval(function () {
+            uikitRetries++;
+            if (initSlider() || uikitRetries >= 20) clearInterval(waitForUIkit);
+          }, 150);
+        }
+      } catch (e) {
+        /* Fail toward visible: leave server markup untouched */
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(updateMode, 100); });
+    } else {
+      setTimeout(updateMode, 100);
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(updateMode, 200);
+    });
+
+    document.addEventListener('shopify:section:load', function() { setTimeout(updateMode, 200); });
+  })();
+</script>
 {%- endif -%}
 
 {% style %}
   #{{ section_id }} {
+    --_gh-card-w: 440px;
+    --_gh-card-gap: 24px;
+    --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
+    --_gh-arrow-inset: clamp(8px, 2vw, 24px);
+
     padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
     max-width: var(--page-content-width, 1200px);
     margin-inline: auto;
   }
 
-  #{{ section_id }} .game-highlights__slide {
-    width: 80%;
-    flex: 0 0 80%;
+  #{{ section_id }} .game-highlights__container {
+    min-width: 0;
   }
 
-  @media (min-width: 750px) {
-    #{{ section_id }} .game-highlights__slide {
-      width: 40%;
-      flex: 0 0 40%;
-    }
+  #{{ section_id }} .game-highlights__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--_gh-card-gap);
+    align-items: stretch;
   }
 
-  @media (min-width: 990px) {
-    #{{ section_id }} .game-highlights__slide {
-      width: 30%;
-      flex: 0 0 30%;
-    }
+  #{{ section_id }} .game-highlights__item {
+    width: var(--_gh-card-w);
+    flex-shrink: 0;
+    display: flex;
   }
 
   #{{ section_id }} .game-highlights__card {
     display: flex;
     flex-direction: column;
     gap: var(--gap-md, 16px);
+    width: 100%;
   }
 
   #{{ section_id }} .game-highlights__image-wrap {
@@ -113,41 +223,81 @@
     object-fit: cover;
   }
 
+  #{{ section_id }} .game-highlights__text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
   #{{ section_id }} .game-highlights__name {
-    font-size: var(--font-size--lg);
+    font-size: calc(var(--font-size--2xl) * 1.5);
     font-weight: 600;
     margin: 0;
   }
 
   #{{ section_id }} .game-highlights__desc {
-    font-size: var(--font-size--sm);
+    font-size: var(--font-size--md);
     line-height: 1.6;
     margin: 0;
     color: var(--color-foreground-secondary, #555);
+    flex: 1;
   }
 
-  {% comment %} ── UIkit overrides scoped to this section ── {% endcomment %}
-  #{{ section_id }} .uk-slidenav {
-    color: #fff;
-    background: rgba(0, 0, 0, 0.45);
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
+  {% comment %} ── Centred mode — static row, no slider, no arrows ── {% endcomment %}
+  #{{ section_id }}.game-highlights--centred .game-highlights__list {
     justify-content: center;
   }
 
-  #{{ section_id }} .uk-slidenav:hover {
+  #{{ section_id }}.game-highlights--centred .game-highlights__nav {
+    display: none;
+  }
+
+  {% comment %} ── Overlay arrows — same spec as fnop-gc ── {% endcomment %}
+  #{{ section_id }} .game-highlights__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_gh-arrow-size);
+    height: var(--_gh-arrow-size);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    padding: 0;
+    text-decoration: none;
+  }
+
+  #{{ section_id }} .game-highlights__nav:hover {
     background: rgba(0, 0, 0, 0.65);
   }
 
-  #{{ section_id }} .uk-dotnav > * > * {
-    background: var(--color-foreground-secondary, #888);
+  #{{ section_id }} .game-highlights__nav svg {
+    width: calc(var(--_gh-arrow-size) * 0.45);
+    height: calc(var(--_gh-arrow-size) * 0.45);
+    color: inherit;
   }
 
-  #{{ section_id }} .uk-dotnav > .uk-active > * {
-    background: var(--color-foreground, #333);
+  #{{ section_id }} .game-highlights__nav--prev {
+    left: var(--_gh-arrow-inset);
+  }
+
+  #{{ section_id }} .game-highlights__nav--next {
+    right: var(--_gh-arrow-inset);
+  }
+
+  {% comment %} ── Mobile: wider cards, no arrows ── {% endcomment %}
+  @media (max-width: 749px) {
+    #{{ section_id }} {
+      --_gh-card-w: 75vw;
+    }
+
+    #{{ section_id }} .game-highlights__nav {
+      display: none;
+    }
   }
 {% endstyle %}
 
