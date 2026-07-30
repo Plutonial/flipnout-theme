@@ -21,7 +21,22 @@
   <section id="{{ section_id }}" class="game-gallery-lore">
     <div class="game-gallery-lore__grid">
 
-      {% comment %} ── Left column: Gallery as UIkit Slider + Lightbox ── {% endcomment %}
+      {% comment %} ── Left column: About the Game (lore + credits) ── {% endcomment %}
+      {%- if has_lore -%}
+        <div class="game-gallery-lore__lore">
+          <h2 class="game-gallery-lore__heading game-section-heading">About the Game</h2>
+
+          <div class="game-gallery-lore__body rte">
+            {{ collection.description }}
+          </div>
+
+          {%- if collection.metafields.custom.credits != blank -%}
+            <p class="game-gallery-lore__credits">Credits: {{ collection.metafields.custom.credits }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {% comment %} ── Right column: Gallery as UIkit Slider + Lightbox ── {% endcomment %}
       {%- if has_gallery -%}
         <div class="game-gallery-lore__gallery">
           <div uk-lightbox="animation: fade">
@@ -60,21 +75,6 @@
         </div>
       {%- endif -%}
 
-      {% comment %} ── Right column: About the Game (lore + credits) ── {% endcomment %}
-      {%- if has_lore -%}
-        <div class="game-gallery-lore__lore">
-          <h2 class="game-gallery-lore__heading game-section-heading">About the Game</h2>
-
-          <div class="game-gallery-lore__body rte">
-            {{ collection.description }}
-          </div>
-
-          {%- if collection.metafields.custom.credits != blank -%}
-            <p class="game-gallery-lore__credits">Credits: {{ collection.metafields.custom.credits }}</p>
-          {%- endif -%}
-        </div>
-      {%- endif -%}
-
     </div>
   </section>
 </div>
@@ -95,8 +95,23 @@
 
   @media (min-width: 990px) {
     #{{ section_id }} .game-gallery-lore__grid {
+      --_gl-gap: clamp(32px, 4vw, 48px);
       grid-template-columns: 1fr 1fr;
+      gap: 0;
       align-items: start;
+    }
+
+    {% comment %}
+      Vertical separator: the grid gap is zeroed; each column gets half-gap
+      padding on the separator side. The border sits on the centre line.
+    {% endcomment %}
+    #{{ section_id }} .game-gallery-lore__lore {
+      padding-right: calc(var(--_gl-gap) / 2);
+      border-right: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    #{{ section_id }} .game-gallery-lore__gallery {
+      padding-left: calc(var(--_gl-gap) / 2);
     }
   }
 
