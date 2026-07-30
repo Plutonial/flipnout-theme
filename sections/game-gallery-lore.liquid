@@ -21,11 +21,14 @@
   <section id="{{ section_id }}" class="game-gallery-lore">
     <div class="game-gallery-lore__grid">
 
-      {% comment %} ── Left column: About the Game (lore + credits) ── {% endcomment %}
+      {% comment %} ── Heading: sits above the two-column grid so it does not affect vertical centring ── {% endcomment %}
+      {%- if has_lore -%}
+        <h2 class="game-gallery-lore__heading game-section-heading">About the Game</h2>
+      {%- endif -%}
+
+      {% comment %} ── Left column: About the Game copy + credits ── {% endcomment %}
       {%- if has_lore -%}
         <div class="game-gallery-lore__lore">
-          <h2 class="game-gallery-lore__heading game-section-heading">About the Game</h2>
-
           <div class="game-gallery-lore__body rte">
             {{ collection.description }}
           </div>
@@ -91,12 +94,33 @@
     gap: clamp(32px, 4vw, 48px);
   }
 
+  {% comment %}
+    On mobile the heading is a separate grid item so the grid gap provides
+    spacing — zero the heading's own bottom margin to avoid doubling.
+    On desktop (gap: 0) the heading's margin provides the spacing instead.
+  {% endcomment %}
+  #{{ section_id }} .game-gallery-lore__grid > .game-gallery-lore__heading {
+    margin-bottom: 0;
+  }
+
   @media (min-width: 990px) {
     #{{ section_id }} .game-gallery-lore__grid {
       --_gl-gap: clamp(32px, 4vw, 48px);
       grid-template-columns: 1fr 1fr;
       gap: 0;
       align-items: start;
+    }
+
+    {% comment %}
+      The heading spans both columns so it sits above the two-column row.
+      This way align-self: center on the gallery centres it against the
+      copy block only, not the heading + copy.
+      Restore the heading margin (zeroed globally to avoid doubling with
+      the mobile grid gap) since desktop gap is 0.
+    {% endcomment %}
+    #{{ section_id }} .game-gallery-lore__heading {
+      grid-column: 1 / -1;
+      margin-bottom: clamp(24px, 4vw, 48px);
     }
 
     #{{ section_id }} .game-gallery-lore__gallery {
