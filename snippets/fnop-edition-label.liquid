@@ -1,0 +1,48 @@
+{%- comment -%}
+  Derive the edition label from a product title.
+
+  Fallback chain:
+  1. Strip "{game_name} Pinball Machine - " prefix
+  2. Text after the last " - "
+  3. Strip a known game-name prefix (for titles with no dash)
+  4. Full product title unchanged
+
+  Usage:
+    {%- capture edition_label -%}{%- render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name -%}{%- endcapture -%}
+
+  Input:  fnop_product   — the product object
+          fnop_game_name — the derived game name (from fnop-game-name snippet)
+  Output: the edition label (printed as text, capture it in the caller)
+{%- endcomment -%}
+
+{%- liquid
+  assign _label = fnop_product.title
+
+  comment — Fallback 1: strip "{game_name} Pinball Machine - "
+  endcomment
+  assign _title_prefix = fnop_game_name | append: ' Pinball Machine - '
+  if fnop_product.title contains _title_prefix
+    assign _label = fnop_product.title | remove_first: _title_prefix
+  else
+    comment — Fallback 2: text after the last " - "
+    endcomment
+    assign _dash_parts = fnop_product.title | split: ' - '
+    if _dash_parts.size > 1
+      assign _label = _dash_parts | last
+    else
+      comment — Fallback 3: strip game-name prefix (no dash in title)
+      endcomment
+      assign _gn_prefix = fnop_game_name | append: ' '
+      assign _title_down = fnop_product.title | downcase
+      assign _gn_prefix_down = _gn_prefix | downcase
+      if _title_down contains _gn_prefix_down
+        assign _gn_len = _gn_prefix.size
+        assign _stripped = fnop_product.title | slice: _gn_len, 500 | strip
+        if _stripped != ''
+          assign _label = _stripped
+        endif
+      endif
+    endif
+  endif
+-%}
+{{- _label -}}

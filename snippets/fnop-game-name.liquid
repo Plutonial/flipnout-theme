@@ -1,0 +1,65 @@
+{%- comment -%}
+  Derive the game name from a game collection's title by stripping
+  the manufacturer prefix ("{Manufacturer} - ").
+
+  Hardened: case-insensitive match, tolerates trailing "Pinball" on
+  the brand title, trims whitespace around the separator.
+
+  Usage:
+    {%- capture game_name -%}{%- render 'fnop-game-name', fnop_game_col: some_collection -%}{%- endcapture -%}
+
+  Input:  fnop_game_col — the game collection object
+  Output: the derived game name (printed as text, capture it in the caller)
+{%- endcomment -%}
+
+{%- liquid
+  assign _result = fnop_game_col.title
+
+  assign _mfr = fnop_game_col.metafields.custom.manufacturer.value
+  if _mfr and _mfr.title != blank
+    assign _mfr_title = _mfr.title | strip
+    assign _col_title = fnop_game_col.title | strip
+    assign _col_down = _col_title | downcase
+
+    assign _matched = false
+
+    comment — Try exact manufacturer title + " - "
+    endcomment
+    assign _prefix = _mfr_title | append: ' - '
+    assign _prefix_down = _prefix | downcase
+
+    if _col_down contains _prefix_down
+      assign _prefix_len = _prefix.size
+      assign _remainder = _col_title | slice: _prefix_len, 500 | strip
+      if _remainder != ''
+        assign _result = _remainder
+        assign _matched = true
+      endif
+    endif
+
+    unless _matched
+      comment — Try manufacturer title without trailing " Pinball"
+      endcomment
+      assign _mfr_down = _mfr_title | downcase
+      assign _mfr_short = _mfr_title
+      if _mfr_down contains ' pinball'
+        assign _pinball_len = 8
+        assign _short_len = _mfr_title.size | minus: _pinball_len
+        assign _mfr_short = _mfr_title | slice: 0, _short_len | strip
+      endif
+
+      if _mfr_short != _mfr_title
+        assign _prefix2 = _mfr_short | append: ' - '
+        assign _prefix2_down = _prefix2 | downcase
+        if _col_down contains _prefix2_down
+          assign _prefix2_len = _prefix2.size
+          assign _remainder2 = _col_title | slice: _prefix2_len, 500 | strip
+          if _remainder2 != ''
+            assign _result = _remainder2
+          endif
+        endif
+      endif
+    endunless
+  endif
+-%}
+{{- _result -}}

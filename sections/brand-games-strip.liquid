@@ -114,16 +114,7 @@
             {%- assign game_col = collections[handle] -%}
             {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
-            {%- liquid
-              assign game_name = game_col.title
-              assign mfr = game_col.metafields.custom.manufacturer.value
-              if mfr and mfr.title != blank
-                assign gprefix = mfr.title | append: ' - '
-                if game_name contains gprefix and game_name != gprefix
-                  assign game_name = game_name | remove_first: gprefix
-                endif
-              endif
-            -%}
+            {%- capture game_name -%}{%- render 'fnop-game-name', fnop_game_col: game_col -%}{%- endcapture -%}
 
             <li class="brand-games-strip__item">
               <a href="{{ game_col.url }}" class="brand-games-strip__card">

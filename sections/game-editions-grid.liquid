@@ -38,14 +38,10 @@
 
   assign products_count = collection.products.size
 
-  assign game_name = collection.title
-  assign mfr = collection.metafields.custom.manufacturer.value
-  if mfr and mfr.title != blank
-    assign prefix = mfr.title | append: ' - '
-    if game_name contains prefix and game_name != prefix
-      assign game_name = game_name | remove_first: prefix
-    endif
-  endif
+  capture game_name
+    render 'fnop-game-name', fnop_game_col: collection
+  endcapture
+  assign game_name = game_name | strip
 -%}
 
 {%- liquid
@@ -69,22 +65,10 @@
 
         assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
 
-        comment
-          Derive edition label from product title.
-          Primary: strip "{game_name} Pinball Machine - " prefix.
-          Fallback: text after the last " - ".
-          Final fallback: full product.title.
-        endcomment
-        assign edition_label = product.title
-        assign title_prefix = game_name | append: ' Pinball Machine - '
-        if product.title contains title_prefix
-          assign edition_label = product.title | remove_first: title_prefix
-        else
-          assign dash_parts = product.title | split: ' - '
-          if dash_parts.size > 1
-            assign edition_label = dash_parts | last
-          endif
-        endif
+        capture edition_label
+          render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
+        endcapture
+        assign edition_label = edition_label | strip
         assign is_sold_out = false
         if product.tags contains 'sold-out'
           assign is_sold_out = true
