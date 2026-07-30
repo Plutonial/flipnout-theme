@@ -283,6 +283,13 @@
     padding: 0;
     gap: var(--_gh-card-gap);
     align-items: stretch;
+    transition: transform var(--surface-transition-duration) var(--surface-transition-timing);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #{{ section_id }} .game-highlights__list--desktop {
+      transition-duration: 0s;
+    }
   }
 
   #{{ section_id }} .game-highlights__item {
