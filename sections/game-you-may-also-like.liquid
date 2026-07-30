@@ -88,7 +88,7 @@
   <section id="{{ section_id }}" class="game-ymal" data-ymal-count="{{ games_count }}">
     <h2 class="game-ymal__heading game-section-heading">You May Also Like</h2>
 
-    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false">
+    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false; center: true">
       <div class="uk-position-relative">
         <div class="uk-slider-container game-ymal__container">
           <ul class="uk-slider-items game-ymal__list">
@@ -96,7 +96,7 @@
               {%- assign game_col = collections[handle] -%}
               {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
-              <li class="game-ymal__item" data-ymal-original>
+              <li class="game-ymal__item">
                 {%- render 'fnop-game-card',
                   fnop_game_col: game_col,
                   fnop_card_class: 'game-ymal__card',
@@ -117,53 +117,42 @@
   <script>
     (function() {
       var sectionId = '{{ section_id }}';
-      function fillRow() {
+
+      function updateMode() {
         try {
           var section = document.getElementById(sectionId);
           if (!section) return;
+
+          var sliderEl = section.querySelector('[uk-slider]');
+          if (!sliderEl) return;
+
           var list = section.querySelector('.game-ymal__list');
           if (!list) return;
 
-          /* Remove old clones */
-          list.querySelectorAll('[data-ymal-clone]').forEach(function(el) { el.remove(); });
+          var items = list.querySelectorAll('.game-ymal__item');
+          if (!items.length) return;
 
-          var originals = list.querySelectorAll('[data-ymal-original]');
-          if (!originals.length) return;
-
-          var item = originals[0];
-          var itemStyle = getComputedStyle(item);
-          var gap = parseFloat(getComputedStyle(list).columnGap) || 0;
-          var margin = parseFloat(itemStyle.marginRight) || 0;
-          var itemW = item.offsetWidth + Math.max(gap, margin);
+          var item = items[0];
+          var listStyle = getComputedStyle(list);
+          var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
+          var itemW = item.offsetWidth + gapVal;
           if (!isFinite(itemW) || itemW <= 0) return;
 
+          var setW = itemW * items.length;
           var containerW = section.querySelector('.game-ymal__container').offsetWidth;
-          var setW = itemW * originals.length;
-          var needed = Math.ceil((containerW + itemW) / setW);
-          if (!isFinite(needed) || needed <= 1) return;
+          var overflows = setW > containerW;
 
-          /* Duplicate whole sets */
-          for (var s = 1; s < needed; s++) {
-            originals.forEach(function(orig) {
-              var clone = orig.cloneNode(true);
-              clone.removeAttribute('data-ymal-original');
-              clone.setAttribute('data-ymal-clone', '');
-              clone.setAttribute('aria-hidden', 'true');
-              clone.querySelectorAll('a, button, input, [tabindex]').forEach(function(el) {
-                el.setAttribute('tabindex', '-1');
-              });
-              clone.querySelectorAll('[id]').forEach(function(el) { el.removeAttribute('id'); });
-              list.appendChild(clone);
-            });
-          }
+          /* Toggle mode class — JS only toggles state, never rebuilds markup */
+          section.classList.toggle('game-ymal--centred', !overflows);
+          section.classList.toggle('game-ymal--carousel', overflows);
 
-          /* Re-init UIkit slider so it picks up the new items */
-          var sliderEl = section.querySelector('[uk-slider]');
-          if (sliderEl && window.UIkit) {
+          /* Update slider finite setting to disable/enable looping */
+          if (window.UIkit) {
             var slider = UIkit.slider(sliderEl);
             if (slider) {
-              slider.$destroy();
-              UIkit.slider(sliderEl, { finite: false, autoplay: false });
+              slider.$props.finite = !overflows;
+              slider.$props.center = overflows;
+              UIkit.update(sliderEl);
             }
           }
         } catch (e) {
@@ -173,20 +162,20 @@
 
       /* Run after layout */
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { setTimeout(fillRow, 100); });
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(updateMode, 100); });
       } else {
-        setTimeout(fillRow, 100);
+        setTimeout(updateMode, 100);
       }
 
       /* Recompute on resize (debounced) */
       var resizeTimer;
       window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(fillRow, 200);
+        resizeTimer = setTimeout(updateMode, 200);
       });
 
       /* Theme editor support */
-      document.addEventListener('shopify:section:load', function() { setTimeout(fillRow, 200); });
+      document.addEventListener('shopify:section:load', function() { setTimeout(updateMode, 200); });
     })();
   </script>
 
@@ -215,11 +204,11 @@
       list-style: none;
       margin: 0;
       padding: 0;
+      gap: var(--_ymal-card-gap);
     }
 
     #{{ section_id }} .game-ymal__item {
       width: var(--_ymal-card-w);
-      margin-right: var(--_ymal-card-gap);
       flex-shrink: 0;
     }
 
@@ -245,7 +234,16 @@
       text-align: center;
     }
 
-    /* Overlay arrows — translucent dark circle + white chevron */
+    /* Centred mode — static row, no slider behaviour, no arrows */
+    #{{ section_id }}.game-ymal--centred .game-ymal__list {
+      justify-content: center;
+    }
+
+    #{{ section_id }}.game-ymal--centred .game-ymal__nav {
+      display: none;
+    }
+
+    /* Overlay arrows — translucent dark circle + white chevron (carousel mode) */
     #{{ section_id }} .game-ymal__nav {
       position: absolute;
       top: 50%;
