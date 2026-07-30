@@ -18,6 +18,12 @@
   assign game_dates = ''
 
   for c in collections
+    comment
+      Intentionally `collection.is_game`, NOT `custom.is_game`.
+      The build pipeline (fnop.py) writes this boolean in the
+      `collection` namespace on all 35 game collections. Changing
+      to `custom` would require re-importing every game collection.
+    endcomment
     assign is_game = c.metafields.collection.is_game
     if is_game
       assign mfr_ref = c.metafields.custom.manufacturer.value

@@ -1,0 +1,259 @@
+{%- liquid
+  comment
+    Brand About + Releases table.
+    Renders only when collection.description is present.
+    Two-column layout when games exist; full-width About when no games.
+  endcomment
+
+  assign has_description = false
+  if collection.description != blank
+    assign has_description = true
+  endif
+-%}
+
+{%- if has_description -%}
+  {%- liquid
+    assign section_id = 'brand-about-' | append: section.id
+
+    comment
+      Games derivation — same logic as brand-games-strip.
+      Collect game collections belonging to this manufacturer,
+      sorted by release_date descending (newest first).
+    endcomment
+    assign brand_id = collection.id
+    assign game_handles = ''
+    assign game_dates = ''
+
+    for c in collections
+      assign is_game = c.metafields.collection.is_game
+      if is_game
+        assign mfr_ref = c.metafields.custom.manufacturer.value
+        if mfr_ref and mfr_ref.id == brand_id
+          assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+          if game_handles == ''
+            assign game_handles = c.handle
+            assign game_dates = rd
+          else
+            assign game_handles = game_handles | append: '|' | append: c.handle
+            assign game_dates = game_dates | append: '|' | append: rd
+          endif
+        endif
+      endif
+    endfor
+
+    assign games_count = 0
+    if game_handles != ''
+      assign game_handle_arr = game_handles | split: '|'
+      assign game_date_arr = game_dates | split: '|'
+      assign games_count = game_handle_arr.size
+    endif
+  -%}
+
+  {%- if games_count > 0 -%}
+    {%- liquid
+      comment
+        Pass 2: bubble sort by release_date descending.
+        Games with missing dates got '1970-01-01' so they sort last.
+      endcomment
+      assign sorted_handles = game_handle_arr
+      assign sorted_dates = game_date_arr
+
+      assign n = games_count | minus: 1
+      for i in (1..n)
+        assign inner = n | minus: i
+        for j in (0..inner)
+          assign j1 = j | plus: 1
+          assign date_a = sorted_dates[j]
+          assign date_b = sorted_dates[j1]
+          if date_a < date_b
+            assign tmp_h = sorted_handles[j]
+            assign tmp_d = sorted_dates[j]
+
+            assign new_handles = ''
+            assign new_dates = ''
+            for k in (0..n)
+              if k == j
+                assign h_val = sorted_handles[j1]
+                assign d_val = sorted_dates[j1]
+              elsif k == j1
+                assign h_val = tmp_h
+                assign d_val = tmp_d
+              else
+                assign h_val = sorted_handles[k]
+                assign d_val = sorted_dates[k]
+              endif
+              if new_handles == ''
+                assign new_handles = h_val
+                assign new_dates = d_val
+              else
+                assign new_handles = new_handles | append: '|' | append: h_val
+                assign new_dates = new_dates | append: '|' | append: d_val
+              endif
+            endfor
+            assign sorted_handles = new_handles | split: '|'
+            assign sorted_dates = new_dates | split: '|'
+          endif
+        endfor
+      endfor
+    -%}
+  {%- endif -%}
+
+  <section id="{{ section_id }}" class="brand-about{% if games_count == 0 %} brand-about--full{% endif %}">
+    <div class="brand-about__grid">
+      <div class="brand-about__copy">
+        <h2 class="brand-about__heading game-section-heading">About {{ collection.title }}</h2>
+        {{ collection.description }}
+      </div>
+
+      {%- if games_count > 0 -%}
+        <div class="brand-about__releases">
+          <h2 class="brand-about__heading game-section-heading">Releases</h2>
+          <table class="brand-about__table">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Released</th>
+                <th>Editions</th>
+                <th>From</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for handle in sorted_handles -%}
+                {%- assign game_col = collections[handle] -%}
+                {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+                {%- liquid
+                  assign game_name = game_col.title
+                  assign mfr = game_col.metafields.custom.manufacturer.value
+                  if mfr and mfr.title != blank
+                    assign gprefix = mfr.title | append: ' - '
+                    if game_name contains gprefix and game_name != gprefix
+                      assign game_name = game_name | remove_first: gprefix
+                    endif
+                  endif
+
+                  assign rd_raw = game_col.metafields.custom.release_date.value
+                  assign rd_display = ''
+                  if rd_raw and rd_raw != blank
+                    assign rd_display = rd_raw | date: '%B %Y'
+                  endif
+
+                  assign edition_count = game_col.products.size
+                  assign lowest_price = ''
+                  if edition_count > 0
+                    for p in game_col.products
+                      if lowest_price == '' or p.price < lowest_price
+                        assign lowest_price = p.price
+                      endif
+                    endfor
+                  endif
+                -%}
+
+                <tr>
+                  <td><a href="{{ game_col.url }}">{{ game_name }}</a></td>
+                  <td>{{ rd_display | default: '—' }}</td>
+                  <td>
+                    {%- if edition_count > 0 -%}
+                      {{ edition_count }}
+                    {%- else -%}
+                      —
+                    {%- endif -%}
+                  </td>
+                  <td>
+                    {%- if lowest_price != '' and edition_count > 0 -%}
+                      {{ lowest_price | money }}
+                    {%- else -%}
+                      —
+                    {%- endif -%}
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+
+  {% style %}
+    #{{ section_id }} {
+      --_about-gap: 48px;
+      --_table-col-gap: 24px;
+
+      max-width: var(--page-content-width, 1200px);
+      padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px) 0;
+      margin-inline: auto;
+    }
+
+    #{{ section_id }} .brand-about__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--_about-gap);
+    }
+
+    #{{ section_id }}.brand-about--full .brand-about__grid {
+      grid-template-columns: 1fr;
+    }
+
+    #{{ section_id }} .brand-about__heading {
+      margin-bottom: 24px;
+    }
+
+    #{{ section_id }} .brand-about__copy {
+      font-size: var(--font-size--md);
+      line-height: 1.6;
+    }
+
+    #{{ section_id }} .brand-about__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size--sm);
+    }
+
+    #{{ section_id }} .brand-about__table th,
+    #{{ section_id }} .brand-about__table td {
+      text-align: left;
+      padding: 8px var(--_table-col-gap) 8px 0;
+      border-bottom: 1px solid var(--color-border, #e5e5e5);
+    }
+
+    #{{ section_id }} .brand-about__table th:last-child,
+    #{{ section_id }} .brand-about__table td:last-child {
+      padding-right: 0;
+    }
+
+    #{{ section_id }} .brand-about__table th {
+      font-size: var(--font-size--xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+    }
+
+    #{{ section_id }} .brand-about__table a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    #{{ section_id }} .brand-about__table a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 749px) {
+      #{{ section_id }} .brand-about__grid {
+        grid-template-columns: 1fr;
+      }
+
+      #{{ section_id }} .brand-about__table {
+        font-size: var(--font-size--xs);
+      }
+    }
+  {% endstyle %}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Brand about + releases",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
