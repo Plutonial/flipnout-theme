@@ -148,7 +148,7 @@
 {% style %}
   #{{ section_id }} {
     --_card-gap: 24px;
-    --_card-w: calc((var(--page-content-width, 1200px) - 2 * var(--page-margin, 40px) - 2 * var(--_card-gap)) / 3);
+    --_card-w: calc((100% - 2 * var(--_card-gap)) / 3);
     --_nav-size: 40px;
     --_nav-offset: calc(0px - var(--_nav-size) - 12px);
 
@@ -171,7 +171,7 @@
   }
 
   #{{ section_id }} .brand-games-strip__item {
-    flex: 0 0 var(--_card-w);
+    width: var(--_card-w);
     min-width: 0;
   }
 
