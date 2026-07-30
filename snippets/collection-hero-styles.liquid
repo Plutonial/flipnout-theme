@@ -14,6 +14,8 @@
 #{{ hero_id }} {
   --_bg-color: {{ _bg_color }};
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   aspect-ratio: 4 / 5;
   min-height: 420px;
@@ -58,7 +60,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  height: 100%;
+  flex: 1 1 0%;
   padding: clamp(32px, 6vw, 56px) var(--page-margin, 16px);
   width: 100%;
   max-width: var(--page-width, 1200px);
