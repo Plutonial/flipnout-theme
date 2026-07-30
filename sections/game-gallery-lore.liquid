@@ -43,7 +43,7 @@
       {%- if has_gallery -%}
         <div class="game-gallery-lore__gallery">
           <div uk-lightbox="animation: fade">
-            <div uk-slider="finite: true">
+            <div class="game-gallery-lore__slider" uk-slider="finite: false; autoplay: true; autoplay-interval: 5000; pause-on-hover: true">
               <div class="uk-position-relative">
                 <div class="uk-slider-container">
                   <ul class="uk-slider-items uk-grid uk-grid-collapse">
@@ -72,6 +72,15 @@
               </div>
 
             </div>
+
+            <script>
+              (function() {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                  var s = document.currentScript.parentElement.querySelector('.game-gallery-lore__slider');
+                  if (s) s.setAttribute('uk-slider', s.getAttribute('uk-slider').replace('autoplay: true', 'autoplay: false'));
+                }
+              })();
+            </script>
           </div>
         </div>
       {%- endif -%}
@@ -156,14 +165,12 @@
   }
 
   #{{ section_id }} .game-gallery-lore__img {
-    --_gallery-shadow: 0 6px 18px 0 rgba(0, 0, 0, 0.12);
     max-width: 100%;
     max-height: 100%;
     width: auto;
     height: auto;
     object-fit: contain;
     border-radius: var(--radius-sm, 8px);
-    box-shadow: var(--_gallery-shadow);
   }
 
   {% comment %} ── Lore column: left-aligned at desktop, centres at mobile via shared snippet ── {% endcomment %}
