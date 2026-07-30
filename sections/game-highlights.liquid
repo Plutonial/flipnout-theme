@@ -120,12 +120,20 @@
       var count = items.length;
       if (count === 0) return;
 
-      var visible = 3;
-      var maxPos = Math.max(0, count - visible);
+      /* Derive perView from geometry — never from display state or child count vs shown count */
+      var listStyles = getComputedStyle(list);
+      var gap = parseFloat(listStyles.columnGap) || 0;
+      var slot = (items[0].getBoundingClientRect().width || 0) + gap;
+      var trackEl = section.querySelector('.game-highlights__container');
+      var trackW = trackEl ? trackEl.getBoundingClientRect().width : 0;
+      var perView = (isFinite(slot) && slot > 0) ? Math.floor((trackW + gap) / slot) : 3;
+      if (!isFinite(perView) || perView < 1) perView = 3;
 
-      /* Build position stops: 0, 3, 6, … each clamped to maxPos */
+      var maxPos = Math.max(0, count - perView);
+
+      /* Build position stops: 0, perView, 2*perView, … each clamped to maxPos */
       var positions = [];
-      for (var p = 0; p <= maxPos; p += visible) {
+      for (var p = 0; p <= maxPos; p += perView) {
         positions.push(Math.min(p, maxPos));
       }
       /* Deduplicate in case the last step lands on maxPos twice */
