@@ -9,7 +9,9 @@
     fnop_label_class — CSS class for the label (default: none)
     fnop_loading    — 'lazy' or 'eager' (default: 'lazy')
 
-  Output: an <a> wrapping an image + label, linking to the game page.
+    fnop_hide_label — if true, suppress the label (tile-only mode)
+
+  Output: an <a> wrapping an image + optional label, linking to the game page.
 {%- endcomment -%}
 
 {%- liquid
@@ -20,14 +22,17 @@
 
   assign _loading = fnop_loading | default: 'lazy'
 -%}
-<a href="{{ fnop_game_col.url }}" class="{{ fnop_card_class }}">
+<a href="{{ fnop_game_col.url }}" class="{{ fnop_card_class }}"{% if fnop_hide_label %} aria-label="{{ _card_game_name }}"{% endif %}>
   {%- if fnop_game_col.image -%}
     {{ fnop_game_col.image | image_url: width: 800 | image_tag:
       loading: _loading,
       class: fnop_img_class,
+      alt: _card_game_name,
       sizes: '(min-width: 750px) 33vw, 80vw',
       widths: '400,600,800'
     }}
   {%- endif -%}
-  <span class="{{ fnop_label_class }}">{{ _card_game_name }}</span>
+  {%- unless fnop_hide_label -%}
+    <span class="{{ fnop_label_class }}">{{ _card_game_name }}</span>
+  {%- endunless -%}
 </a>

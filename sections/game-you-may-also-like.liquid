@@ -101,7 +101,7 @@
                   fnop_game_col: game_col,
                   fnop_card_class: 'game-ymal__card',
                   fnop_img_class: 'game-ymal__img',
-                  fnop_label_class: 'game-ymal__label'
+                  fnop_hide_label: true
                 -%}
               </li>
             {%- endfor -%}
@@ -239,13 +239,6 @@
       aspect-ratio: 1 / 1;
       object-fit: cover;
       border-radius: var(--radius-sm, 8px);
-    }
-
-    #{{ section_id }} .game-ymal__label {
-      display: block;
-      margin-top: 12px;
-      font-size: var(--font-size--md);
-      text-align: center;
     }
 
     /* Centred mode — static row, no slider behaviour, no arrows */
