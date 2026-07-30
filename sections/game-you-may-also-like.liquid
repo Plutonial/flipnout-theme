@@ -88,7 +88,7 @@
   <section id="{{ section_id }}" class="game-ymal" data-ymal-count="{{ games_count }}">
     <h2 class="game-ymal__heading game-section-heading">You May Also Like</h2>
 
-    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false; center: true">
+    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false; center: true" data-ymal-slider-opts="finite: false; autoplay: false; center: true">
       <div class="uk-position-relative">
         <div class="uk-slider-container game-ymal__container">
           <ul class="uk-slider-items game-ymal__list">
@@ -146,13 +146,27 @@
           section.classList.toggle('game-ymal--centred', !overflows);
           section.classList.toggle('game-ymal--carousel', overflows);
 
-          /* Update slider finite setting to disable/enable looping */
+          /* Hide/show arrows */
+          section.querySelectorAll('.game-ymal__nav').forEach(function(nav) {
+            if (overflows) { nav.removeAttribute('hidden'); } else { nav.setAttribute('hidden', ''); }
+          });
+
+          /* In fits mode: remove uk-slider so no transform is applied.
+             In overflow mode: restore it so the carousel works with center + loop. */
           if (window.UIkit) {
-            var slider = UIkit.slider(sliderEl);
-            if (slider) {
-              slider.$props.finite = !overflows;
-              slider.$props.center = overflows;
-              UIkit.update(sliderEl);
+            if (overflows) {
+              if (!sliderEl.hasAttribute('uk-slider')) {
+                sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-ymal-slider-opts'));
+                UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
+              }
+            } else {
+              var slider = UIkit.slider(sliderEl);
+              if (slider) {
+                slider.$destroy();
+              }
+              sliderEl.removeAttribute('uk-slider');
+              /* Clear any leftover transform */
+              list.style.transform = 'none';
             }
           }
         } catch (e) {
