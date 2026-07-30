@@ -10,9 +10,10 @@
 
     <div uk-lightbox="animation: fade">
       <div class="game-highlights__slider" uk-slider="finite: false; autoplay: false; center: true" data-gh-slider-opts="finite: false; autoplay: false; center: true">
-        <div class="uk-position-relative">
+        <div class="uk-position-relative game-highlights__track-wrap">
           <div class="uk-slider-container game-highlights__container">
             <ul class="uk-slider-items game-highlights__list">
+              {% comment %} Primary set — each highlight rendered once {% endcomment %}
               {%- for feature in highlights -%}
                 {%- liquid
                   assign feat_name = feature.name
@@ -52,10 +53,57 @@
                   </li>
                 {%- endif -%}
               {%- endfor -%}
+
+              {% comment %}
+                K-fix-4 — Duplicate set rendered server-side so UIkit has enough
+                track length to loop (setW needs ~2× container). aria-hidden on
+                the card element (not the <li> — UIkit rewrites aria-hidden on
+                slides). tabindex="-1" on links, no duplicate ids.
+              {% endcomment %}
+              {%- for feature in highlights -%}
+                {%- liquid
+                  assign feat_name = feature.name
+                  assign feat_desc = feature.description
+                  assign feat_image = feature.image
+                -%}
+
+                {%- if feat_name != blank or feat_desc != blank -%}
+                  <li class="game-highlights__item game-highlights__item--dup">
+                    <div class="game-highlights__card" aria-hidden="true">
+                      {%- if feat_image != blank -%}
+                        <a
+                          href="{{ feat_image | image_url: width: 2400 }}"
+                          data-caption="{{ feat_name }}"
+                          data-type="image"
+                          class="game-highlights__image-wrap"
+                          tabindex="-1"
+                        >
+                          {{ feat_image | image_url: width: 800 | image_tag:
+                            loading: 'lazy',
+                            class: 'game-highlights__img',
+                            alt: '',
+                            sizes: '(min-width: 990px) 33vw, 80vw',
+                            widths: '400,600,800'
+                          }}
+                        </a>
+                      {%- endif -%}
+
+                      <div class="game-highlights__text">
+                        {%- if feat_name != blank -%}
+                          <h3 class="game-highlights__name">{{ feat_name }}</h3>
+                        {%- endif -%}
+                        {%- if feat_desc != blank -%}
+                          <p class="game-highlights__desc">{{ feat_desc }}</p>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
             </ul>
           </div>
 
-          {% comment %} Overlay arrows — same spec as fnop-gc {% endcomment %}
+          {% comment %} Overlay arrows — positioned on the image axis, outside track at wide viewports {% endcomment %}
           <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
           <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
         </div>
@@ -68,10 +116,14 @@
   Mode logic — identical to fnop-gc (games carousel).
   Fit → centred static group, no slider, no arrows.
   Overflow → uk-slider with center + loop, arrows visible, start at floor(n/2).
+  K-fix-4: with Liquid-duplicated set (2× items), overflow is guaranteed in
+  carousel mode — the duplicate set provides enough track for UIkit to loop.
+  In centred/fit mode the duplicates are hidden via display:none.
 {% endcomment %}
 <script>
   (function() {
     var sectionId = '{{ section_id }}';
+    var realCount = {{ highlights.size }};
 
     function updateMode() {
       try {
@@ -84,16 +136,19 @@
         var list = section.querySelector('.game-highlights__list');
         if (!list) return;
 
-        var items = list.querySelectorAll('.game-highlights__item');
-        if (!items.length) return;
+        /* Use only the primary (non-duplicate) items for the fit test */
+        var allItems = list.querySelectorAll('.game-highlights__item');
+        var primaryItems = list.querySelectorAll('.game-highlights__item:not(.game-highlights__item--dup)');
+        if (!primaryItems.length) return;
 
-        var item = items[0];
+        var item = primaryItems[0];
         var listStyle = getComputedStyle(list);
         var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
         var itemW = item.offsetWidth + gapVal;
         if (!isFinite(itemW) || itemW <= 0) return;
 
-        var setW = itemW * items.length;
+        /* Fit test uses only the real items, not the duplicates */
+        var setW = itemW * primaryItems.length;
         var containerW = section.querySelector('.game-highlights__container').offsetWidth;
         var overflows = setW > containerW;
 
@@ -107,7 +162,8 @@
         });
 
         /* In fits mode: remove uk-slider so no transform is applied.
-           In overflow mode: restore it so the carousel works with center + loop. */
+           In overflow mode: restore it so the carousel works with center + loop.
+           The Liquid-duplicated items give UIkit enough track to wrap. */
         var initSlider = function () {
           if (!window.UIkit) return false;
 
@@ -116,7 +172,7 @@
               sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gh-slider-opts'));
               UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
             }
-            var startIndex = Math.floor(items.length / 2);
+            var startIndex = Math.floor(realCount / 2);
             if (startIndex > 0) {
               var applyStart = function () {
                 var s = UIkit.slider(sliderEl);
@@ -178,9 +234,11 @@
     --_gh-card-gap: 24px;
     --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
     --_gh-arrow-inset: clamp(8px, 2vw, 24px);
+    --_gh-section-max-w: 1440px;
+    --_gh-section-pad: 40px;
 
-    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px);
-    max-width: var(--page-content-width, 1200px);
+    padding: clamp(40px, 6vw, 80px) var(--_gh-section-pad);
+    max-width: var(--_gh-section-max-w);
     margin-inline: auto;
   }
 
@@ -230,33 +288,46 @@
     flex: 1;
   }
 
+  {% comment %} K-fix-1: heading 32px (--font-size--3xl), desc 20px (--font-size--xl) with 34px lh {% endcomment %}
   #{{ section_id }} .game-highlights__name {
-    font-size: calc(var(--font-size--2xl) * 1.5);
+    font-size: var(--font-size--3xl);
     font-weight: 600;
     margin: 0;
   }
 
   #{{ section_id }} .game-highlights__desc {
-    font-size: var(--font-size--md);
-    line-height: 1.6;
+    font-size: var(--font-size--xl);
+    line-height: 1.7;
     margin: 0;
-    color: var(--color-foreground-secondary, #555);
+    color: rgba(0, 0, 0, 0.81);
     flex: 1;
   }
 
-  {% comment %} ── Centred mode — static row, no slider, no arrows ── {% endcomment %}
+  {% comment %} ── Centred mode — static row, no slider, no arrows; hide duplicates ── {% endcomment %}
   #{{ section_id }}.game-highlights--centred .game-highlights__list {
     justify-content: center;
+  }
+
+  #{{ section_id }}.game-highlights--centred .game-highlights__item--dup {
+    display: none;
   }
 
   #{{ section_id }}.game-highlights--centred .game-highlights__nav {
     display: none;
   }
 
-  {% comment %} ── Overlay arrows — same spec as fnop-gc ── {% endcomment %}
+  {% comment %}
+    K-fix-2: Arrows on the image's vertical axis.
+    The track-wrap is position:relative. Arrows use top = half the image height.
+    Image height = card-width × 3/4 (from aspect-ratio 4/3).
+  {% endcomment %}
+  #{{ section_id }} .game-highlights__track-wrap {
+    position: relative;
+  }
+
   #{{ section_id }} .game-highlights__nav {
     position: absolute;
-    top: 50%;
+    top: calc(var(--_gh-card-w) * 3 / 4 / 2);
     transform: translateY(-50%);
     z-index: 10;
     display: flex;
@@ -281,6 +352,10 @@
     color: inherit;
   }
 
+  {% comment %}
+    K-fix-3: Three-band arrow positioning.
+    Default (750–1599px): overlaid at track edges.
+  {% endcomment %}
   #{{ section_id }} .game-highlights__nav--prev {
     left: var(--_gh-arrow-inset);
   }
@@ -289,7 +364,25 @@
     right: var(--_gh-arrow-inset);
   }
 
-  {% comment %} ── Mobile: wider cards, no arrows ── {% endcomment %}
+  {% comment %}
+    K-fix-3: Outside arrows when viewport is wide enough.
+    Breakpoint derived: section-max-w + 2 × (arrow-size + 16px breathing).
+    At 4xl=40px, arrow-size = 64px → 1440 + 2×80 = 1600px.
+    Use the derived calc in a custom property; the media query uses the
+    computed 1600px since CSS cannot use calc() in @media (yet).
+    If --_gh-section-max-w or --_gh-arrow-size change, update the MQ.
+  {% endcomment %}
+  @media (min-width: 1600px) {
+    #{{ section_id }} .game-highlights__nav--prev {
+      left: calc(-1 * (var(--_gh-arrow-size) + 16px));
+    }
+
+    #{{ section_id }} .game-highlights__nav--next {
+      right: calc(-1 * (var(--_gh-arrow-size) + 16px));
+    }
+  }
+
+  {% comment %} ── Mobile: wider cards, no arrows (K-fix-3: < 750px) ── {% endcomment %}
   @media (max-width: 749px) {
     #{{ section_id }} {
       --_gh-card-w: 75vw;
