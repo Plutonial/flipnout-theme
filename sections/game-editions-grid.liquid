@@ -59,7 +59,7 @@
 
   {%- if use_carousel -%}
     {% comment %} ── n ≥ 4: UIkit carousel ── {% endcomment %}
-    <div class="editions-grid-carousel" data-editions-slider-opts="finite: false; center: false; autoplay: false">
+    <div class="editions-grid-carousel" uk-slider="finite: false; center: false; autoplay: false">
       <div class="editions-grid-carousel__track-wrap uk-position-relative">
         <div class="uk-slider-container editions-grid-carousel__container">
           <ul class="uk-slider-items editions-grid-carousel__list">
@@ -248,11 +248,7 @@
       mobileStack.hidden = !mobile;
 
       if (!mobile && window.UIkit) {
-        var sliderEl = carouselWrap;
-        if (!sliderEl.hasAttribute('uk-slider')) {
-          sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-editions-slider-opts'));
-        }
-        UIkit.slider(sliderEl, { finite: false, center: false, autoplay: false });
+        UIkit.update(carouselWrap);
       }
     }
 
