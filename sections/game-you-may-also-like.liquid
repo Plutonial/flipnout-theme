@@ -118,50 +118,56 @@
     (function() {
       var sectionId = '{{ section_id }}';
       function fillRow() {
-        var section = document.getElementById(sectionId);
-        if (!section) return;
-        var list = section.querySelector('.game-ymal__list');
-        if (!list) return;
+        try {
+          var section = document.getElementById(sectionId);
+          if (!section) return;
+          var list = section.querySelector('.game-ymal__list');
+          if (!list) return;
 
-        /* Remove old clones */
-        list.querySelectorAll('[data-ymal-clone]').forEach(function(el) { el.remove(); });
+          /* Remove old clones */
+          list.querySelectorAll('[data-ymal-clone]').forEach(function(el) { el.remove(); });
 
-        var originals = list.querySelectorAll('[data-ymal-original]');
-        if (!originals.length) return;
+          var originals = list.querySelectorAll('[data-ymal-original]');
+          if (!originals.length) return;
 
-        var item = originals[0];
-        var itemW = item.offsetWidth + parseFloat(getComputedStyle(item).marginRight || 0);
-        if (itemW <= 0) return;
+          var item = originals[0];
+          var itemStyle = getComputedStyle(item);
+          var gap = parseFloat(getComputedStyle(list).columnGap || getComputedStyle(list).gap || 0);
+          var margin = parseFloat(itemStyle.marginRight || 0);
+          var itemW = item.offsetWidth + Math.max(gap, margin);
+          if (itemW <= 0) return;
 
-        var containerW = section.querySelector('.game-ymal__container').offsetWidth;
-        var setW = itemW * originals.length;
-        var needed = Math.ceil((containerW + itemW) / setW);
-        if (needed <= 1) return;
+          var containerW = section.querySelector('.game-ymal__container').offsetWidth;
+          var setW = itemW * originals.length;
+          var needed = Math.ceil((containerW + itemW) / setW);
+          if (needed <= 1) return;
 
-        /* Duplicate whole sets */
-        for (var s = 1; s < needed; s++) {
-          originals.forEach(function(orig) {
-            var clone = orig.cloneNode(true);
-            clone.removeAttribute('data-ymal-original');
-            clone.setAttribute('data-ymal-clone', '');
-            clone.setAttribute('aria-hidden', 'true');
-            /* Remove from tab order and strip duplicate ids */
-            clone.querySelectorAll('a, button, input, [tabindex]').forEach(function(el) {
-              el.setAttribute('tabindex', '-1');
+          /* Duplicate whole sets */
+          for (var s = 1; s < needed; s++) {
+            originals.forEach(function(orig) {
+              var clone = orig.cloneNode(true);
+              clone.removeAttribute('data-ymal-original');
+              clone.setAttribute('data-ymal-clone', '');
+              clone.setAttribute('aria-hidden', 'true');
+              clone.querySelectorAll('a, button, input, [tabindex]').forEach(function(el) {
+                el.setAttribute('tabindex', '-1');
+              });
+              clone.querySelectorAll('[id]').forEach(function(el) { el.removeAttribute('id'); });
+              list.appendChild(clone);
             });
-            clone.querySelectorAll('[id]').forEach(function(el) { el.removeAttribute('id'); });
-            list.appendChild(clone);
-          });
-        }
-
-        /* Re-init UIkit slider so it picks up the new items */
-        var sliderEl = section.querySelector('[uk-slider]');
-        if (sliderEl && window.UIkit) {
-          var slider = UIkit.slider(sliderEl);
-          if (slider) {
-            slider.$destroy(true);
-            UIkit.slider(sliderEl, { finite: false, autoplay: false });
           }
+
+          /* Re-init UIkit slider so it picks up the new items */
+          var sliderEl = section.querySelector('[uk-slider]');
+          if (sliderEl && window.UIkit) {
+            var slider = UIkit.slider(sliderEl);
+            if (slider) {
+              slider.$destroy();
+              UIkit.slider(sliderEl, { finite: false, autoplay: false });
+            }
+          }
+        } catch (e) {
+          /* Fail toward visible: leave server markup untouched */
         }
       }
 
