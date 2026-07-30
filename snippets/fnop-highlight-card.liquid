@@ -1,0 +1,47 @@
+{%- comment -%}
+  Renders a single highlight card (image + heading + description).
+  Used by game-highlights.liquid for both primary and duplicate sets.
+
+  Input:
+    fnop_hl_feature  — the highlight metafield entry
+    fnop_hl_is_dup   — true for duplicate-set cards (adds aria-hidden, tabindex)
+{%- endcomment -%}
+
+{%- liquid
+  assign _name = fnop_hl_feature.name
+  assign _desc = fnop_hl_feature.description
+  assign _img  = fnop_hl_feature.image
+-%}
+
+{%- if _name != blank or _desc != blank -%}
+  <li class="game-highlights__item{% if fnop_hl_is_dup %} game-highlights__item--dup{% endif %}">
+    <div class="game-highlights__card"{% if fnop_hl_is_dup %} aria-hidden="true"{% endif %}>
+      {%- if _img != blank -%}
+        <a
+          href="{{ _img | image_url: width: 2400 }}"
+          data-caption="{{ _name }}"
+          data-type="image"
+          class="game-highlights__image-wrap"
+          {% if fnop_hl_is_dup %}tabindex="-1"{% endif %}
+        >
+          {{ _img | image_url: width: 800 | image_tag:
+            loading: 'lazy',
+            class: 'game-highlights__img',
+            alt: '',
+            sizes: '(min-width: 990px) 33vw, 80vw',
+            widths: '400,600,800'
+          }}
+        </a>
+      {%- endif -%}
+
+      <div class="game-highlights__text">
+        {%- if _name != blank -%}
+          <h3 class="game-highlights__name">{{ _name }}</h3>
+        {%- endif -%}
+        {%- if _desc != blank -%}
+          <p class="game-highlights__desc">{{ _desc }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </li>
+{%- endif -%}

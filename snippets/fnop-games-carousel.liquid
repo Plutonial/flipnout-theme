@@ -13,6 +13,15 @@
   assign _count = _handles.size
 -%}
 
+{%- comment -%}
+  L — Pre-rotate the handles so floor(n/2) is at DOM position 0.
+  UIkit center:true centres index 0 on init — no show() needed,
+  so the first paint is already the final position.
+{%- endcomment -%}
+{%- liquid
+  assign _gc_start = _count | divided_by: 2
+-%}
+
 {%- if _count > 0 -%}
   <section id="{{ fnop_carousel_id }}" class="fnop-gc" data-gc-count="{{ _count }}">
     <h2 class="fnop-gc__heading game-section-heading">{{ fnop_carousel_heading }}</h2>
@@ -21,7 +30,8 @@
       <div class="uk-position-relative">
         <div class="uk-slider-container fnop-gc__container">
           <ul class="uk-slider-items fnop-gc__list">
-            {%- for handle in _handles -%}
+            {% comment %} Rotated: render [start..end] then [0..start-1] {% endcomment %}
+            {%- for handle in _handles offset: _gc_start -%}
               {%- assign game_col = collections[handle] -%}
               {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
@@ -34,6 +44,21 @@
                 -%}
               </li>
             {%- endfor -%}
+            {%- if _gc_start > 0 -%}
+              {%- for handle in _handles limit: _gc_start -%}
+                {%- assign game_col = collections[handle] -%}
+                {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+                <li class="fnop-gc__item">
+                  {%- render 'fnop-game-card',
+                    fnop_game_col: game_col,
+                    fnop_card_class: 'fnop-gc__card',
+                    fnop_img_class: 'fnop-gc__img',
+                    fnop_hide_label: true
+                  -%}
+                </li>
+              {%- endfor -%}
+            {%- endif -%}
           </ul>
         </div>
 
@@ -90,25 +115,8 @@
                 sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
                 UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
               }
-              /* Start on a middle item so both peeks are filled at rest.
-                 With n=2 one peek will be empty — no cloning, accept it.
-                 Deferred: show() is a no-op before UIkit connects, so retry. */
-              var startIndex = Math.floor(items.length / 2);
-              if (startIndex > 0) {
-                var applyStart = function () {
-                  var s = UIkit.slider(sliderEl);
-                  if (!s) return false;
-                  s.show(startIndex, false);
-                  return s.index === startIndex;
-                };
-                requestAnimationFrame(function () {
-                  if (applyStart()) return;
-                  requestAnimationFrame(function () {
-                    if (applyStart()) return;
-                    setTimeout(applyStart, 200);
-                  });
-                });
-              }
+              /* L: no show() — items are pre-rotated in Liquid so index 0
+                 is already the centre card. Zero post-paint movement. */
             } else {
               var slider = UIkit.slider(sliderEl);
               if (slider) {
