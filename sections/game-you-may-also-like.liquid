@@ -132,15 +132,15 @@
 
           var item = originals[0];
           var itemStyle = getComputedStyle(item);
-          var gap = parseFloat(getComputedStyle(list).columnGap || getComputedStyle(list).gap || 0);
-          var margin = parseFloat(itemStyle.marginRight || 0);
+          var gap = parseFloat(getComputedStyle(list).columnGap) || 0;
+          var margin = parseFloat(itemStyle.marginRight) || 0;
           var itemW = item.offsetWidth + Math.max(gap, margin);
-          if (itemW <= 0) return;
+          if (!isFinite(itemW) || itemW <= 0) return;
 
           var containerW = section.querySelector('.game-ymal__container').offsetWidth;
           var setW = itemW * originals.length;
           var needed = Math.ceil((containerW + itemW) / setW);
-          if (needed <= 1) return;
+          if (!isFinite(needed) || needed <= 1) return;
 
           /* Duplicate whole sets */
           for (var s = 1; s < needed; s++) {
