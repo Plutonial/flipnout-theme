@@ -68,8 +68,6 @@
                 <a class="uk-position-center-right uk-position-small" href uk-slidenav-next uk-slider-item="next"></a>
               </div>
 
-              {% comment %} Dotnav {% endcomment %}
-              <ul class="uk-slider-nav uk-dotnav uk-flex-center uk-margin-small-top"></ul>
             </div>
           </div>
         </div>
@@ -106,12 +104,11 @@
     }
 
     {% comment %}
-      Vertical separator: the grid gap is zeroed; each column gets half-gap
-      padding on the separator side. The border sits on the centre line.
+      The grid gap is zeroed; each column gets half-gap padding on the
+      inner side so content does not touch across the centre line.
     {% endcomment %}
     #{{ section_id }} .game-gallery-lore__lore {
       padding-right: calc(var(--_gl-gap) / 2);
-      border-right: 1px solid rgba(0, 0, 0, 0.15);
     }
 
     #{{ section_id }} .game-gallery-lore__gallery {
@@ -190,13 +187,6 @@
     background: rgba(0, 0, 0, 0.65);
   }
 
-  #{{ section_id }} .uk-dotnav > * > * {
-    background: var(--color-foreground-secondary, #888);
-  }
-
-  #{{ section_id }} .uk-dotnav > .uk-active > * {
-    background: var(--color-foreground, #333);
-  }
 
   {%- render 'fnop-section-heading-mobile' -%}
 {% endstyle %}
