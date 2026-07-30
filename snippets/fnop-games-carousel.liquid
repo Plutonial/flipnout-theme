@@ -178,13 +178,14 @@
       margin-bottom: 32px;
     }
 
-    /* Fix 1 (L-fix): centre offset so pre-JS paint has item 0 centred */
     #{{ fnop_carousel_id }} .fnop-gc__container {
       min-width: 0;
-      padding-inline-start: calc(50% - var(--_gc-card-w) / 2);
     }
 
+    /* Fix 1 (L-fix-2): centre offset via transform on the track.
+       fnop-gc is full-bleed so track width = 100vw. */
     #{{ fnop_carousel_id }} .fnop-gc__list {
+      transform: translateX(calc((100vw - var(--_gc-card-w)) / 2));
       list-style: none;
       margin: 0;
       padding: 0;
