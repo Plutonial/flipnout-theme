@@ -25,17 +25,12 @@
   endcapture
   assign game_name = game_name | strip
 
-  assign video_heading_name = game_name
-  assign first_four = game_name | slice: 0, 4
-  if first_four == 'The '
-    assign video_heading_name = game_name | remove_first: 'The '
-  endif
 -%}
 
 {%- if youtube_id != blank -%}
 <div class="game-section-band game-section-band--dark">
   <section id="{{ section_id }}" class="game-video">
-    <h2 class="game-video__heading game-section-heading">Watch the {{ video_heading_name }} Video!</h2>
+    <h2 class="game-video__heading game-section-heading">{{ game_name }} Video</h2>
 
     <div class="game-video__wrapper">
       <iframe

@@ -54,14 +54,9 @@
         "padding_bottom": 48
       }
     },
-    "game-editions-cta": {
-      "type": "game-editions-grid",
-      "settings": {
-        "heading": "Choose Your {game_name} Pinball Machine!",
-        "bg_variant": "black",
-        "padding_top": 48,
-        "padding_bottom": 48
-      }
+    "game-you-may-also-like": {
+      "type": "game-you-may-also-like",
+      "settings": {}
     }
   },
   "order": [
@@ -72,6 +67,6 @@
     "game-highlights",
     "game-video",
     "game-rules-flowchart",
-    "game-editions-cta"
+    "game-you-may-also-like"
   ]
 }

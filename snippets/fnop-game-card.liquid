@@ -1,0 +1,33 @@
+{%- comment -%}
+  Shared game card — renders a single game collection tile.
+  Used by brand-games-strip and game-you-may-also-like.
+
+  Input:
+    fnop_game_col  — the game collection object
+    fnop_card_class — CSS class for the card link (default: none)
+    fnop_img_class  — CSS class for the image (default: none)
+    fnop_label_class — CSS class for the label (default: none)
+    fnop_loading    — 'lazy' or 'eager' (default: 'lazy')
+
+  Output: an <a> wrapping an image + label, linking to the game page.
+{%- endcomment -%}
+
+{%- liquid
+  capture _card_game_name
+    render 'fnop-game-name', fnop_game_col: fnop_game_col
+  endcapture
+  assign _card_game_name = _card_game_name | strip
+
+  assign _loading = fnop_loading | default: 'lazy'
+-%}
+<a href="{{ fnop_game_col.url }}" class="{{ fnop_card_class }}">
+  {%- if fnop_game_col.image -%}
+    {{ fnop_game_col.image | image_url: width: 800 | image_tag:
+      loading: _loading,
+      class: fnop_img_class,
+      sizes: '(min-width: 750px) 33vw, 80vw',
+      widths: '400,600,800'
+    }}
+  {%- endif -%}
+  <span class="{{ fnop_label_class }}">{{ _card_game_name }}</span>
+</a>

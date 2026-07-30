@@ -114,20 +114,13 @@
             {%- assign game_col = collections[handle] -%}
             {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
-            {%- capture game_name -%}{%- render 'fnop-game-name', fnop_game_col: game_col -%}{%- endcapture -%}
-
             <li class="brand-games-strip__item">
-              <a href="{{ game_col.url }}" class="brand-games-strip__card">
-                {%- if game_col.image -%}
-                  {{ game_col.image | image_url: width: 800 | image_tag:
-                    loading: 'lazy',
-                    class: 'brand-games-strip__img',
-                    sizes: '(min-width: 750px) 33vw, 80vw',
-                    widths: '400,600,800'
-                  }}
-                {%- endif -%}
-                <span class="brand-games-strip__label">{{ game_name }}</span>
-              </a>
+              {%- render 'fnop-game-card',
+                fnop_game_col: game_col,
+                fnop_card_class: 'brand-games-strip__card',
+                fnop_img_class: 'brand-games-strip__img',
+                fnop_label_class: 'brand-games-strip__label'
+              -%}
             </li>
           {%- endfor -%}
         </ul>

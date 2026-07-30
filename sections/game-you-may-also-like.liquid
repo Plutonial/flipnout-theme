@@ -1,0 +1,221 @@
+{%- liquid
+  comment
+    "You May Also Like" — other games by the same manufacturer.
+    Full-bleed infinite UIkit slider with large arrows.
+    Renders nothing when there are zero other games (e.g. Turner / Yukon Yeti).
+  endcomment
+
+  assign section_id = 'game-ymal-' | append: section.id
+  assign brand_id = collection.metafields.custom.manufacturer.value.id
+  assign current_id = collection.id
+
+  comment — Pass 1: collect matching game collections (excluding current)
+  endcomment
+  assign game_handles = ''
+  assign game_dates = ''
+
+  for c in collections
+    assign is_game = c.metafields.collection.is_game
+    if is_game
+      assign mfr_ref = c.metafields.custom.manufacturer.value
+      if mfr_ref and mfr_ref.id == brand_id and c.id != current_id
+        assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+        if game_handles == ''
+          assign game_handles = c.handle
+          assign game_dates = rd
+        else
+          assign game_handles = game_handles | append: '|' | append: c.handle
+          assign game_dates = game_dates | append: '|' | append: rd
+        endif
+      endif
+    endif
+  endfor
+
+  assign games_count = 0
+  if game_handles != ''
+    assign game_handle_arr = game_handles | split: '|'
+    assign game_date_arr = game_dates | split: '|'
+    assign games_count = game_handle_arr.size
+  endif
+-%}
+
+{%- if games_count > 0 -%}
+  {%- liquid
+    comment — Pass 2: bubble sort by release_date descending
+    endcomment
+    assign sorted_handles = game_handle_arr
+    assign sorted_dates = game_date_arr
+
+    assign n = games_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_dates[j]
+        assign date_b = sorted_dates[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_handles[j]
+          assign tmp_d = sorted_dates[j]
+
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_handles[j1]
+              assign d_val = sorted_dates[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_handles[k]
+              assign d_val = sorted_dates[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_handles = new_handles | split: '|'
+          assign sorted_dates = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+  -%}
+
+  <section id="{{ section_id }}" class="game-ymal">
+    <h2 class="game-ymal__heading game-section-heading">You May Also Like</h2>
+
+    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false">
+      <div class="game-ymal__slider-inner">
+        <a class="game-ymal__nav game-ymal__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
+
+        <div class="uk-slider-container game-ymal__container">
+          <ul class="uk-slider-items game-ymal__list">
+            {%- for handle in sorted_handles -%}
+              {%- assign game_col = collections[handle] -%}
+              {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+              <li class="game-ymal__item">
+                {%- render 'fnop-game-card',
+                  fnop_game_col: game_col,
+                  fnop_card_class: 'game-ymal__card',
+                  fnop_img_class: 'game-ymal__img',
+                  fnop_label_class: 'game-ymal__label'
+                -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+
+        <a class="game-ymal__nav game-ymal__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
+      </div>
+    </div>
+  </section>
+
+  {% style %}
+    #{{ section_id }} {
+      --_ymal-card-gap: 24px;
+      --_ymal-card-w: 280px;
+      --_ymal-arrow-size: var(--font-size--4xl);
+      --_ymal-arrow-inset: clamp(8px, 2vw, 24px);
+
+      padding: clamp(40px, 6vw, 80px) 0;
+    }
+
+    #{{ section_id }} .game-ymal__heading {
+      max-width: var(--page-content-width, 1200px);
+      margin-inline: auto;
+      padding-inline: var(--page-margin, 16px);
+      margin-bottom: 32px;
+    }
+
+    #{{ section_id }} .game-ymal__slider-inner {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    #{{ section_id }} .game-ymal__container {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #{{ section_id }} .game-ymal__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #{{ section_id }} .game-ymal__item {
+      width: var(--_ymal-card-w);
+      margin-right: var(--_ymal-card-gap);
+      flex-shrink: 0;
+    }
+
+    #{{ section_id }} .game-ymal__card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    #{{ section_id }} .game-ymal__img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: var(--radius-sm, 8px);
+    }
+
+    #{{ section_id }} .game-ymal__label {
+      display: block;
+      margin-top: 12px;
+      font-size: var(--font-size--md);
+      text-align: center;
+    }
+
+    /* Large arrows outside the cards, vertically centred */
+    #{{ section_id }} .game-ymal__nav {
+      flex-shrink: 0;
+      width: var(--_ymal-arrow-inset);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      z-index: 1;
+    }
+
+    #{{ section_id }} .game-ymal__nav svg {
+      width: var(--_ymal-arrow-size);
+      height: var(--_ymal-arrow-size);
+    }
+
+    #{{ section_id }} .game-ymal__nav--prev {
+      padding-left: var(--_ymal-arrow-inset);
+      padding-right: calc(var(--_ymal-arrow-inset) / 2);
+    }
+
+    #{{ section_id }} .game-ymal__nav--next {
+      padding-right: var(--_ymal-arrow-inset);
+      padding-left: calc(var(--_ymal-arrow-inset) / 2);
+    }
+
+    /* Mobile: stack-friendly */
+    @media (max-width: 749px) {
+      #{{ section_id }} {
+        --_ymal-card-w: 60vw;
+      }
+    }
+  {% endstyle %}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "You May Also Like",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
