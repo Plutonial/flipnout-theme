@@ -85,20 +85,18 @@
     endfor
   -%}
 
-  <section id="{{ section_id }}" class="game-ymal">
+  <section id="{{ section_id }}" class="game-ymal" data-ymal-count="{{ games_count }}">
     <h2 class="game-ymal__heading game-section-heading">You May Also Like</h2>
 
     <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false">
-      <div class="game-ymal__slider-inner">
-        <a class="game-ymal__nav game-ymal__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
-
+      <div class="uk-position-relative">
         <div class="uk-slider-container game-ymal__container">
           <ul class="uk-slider-items game-ymal__list">
             {%- for handle in sorted_handles -%}
               {%- assign game_col = collections[handle] -%}
               {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
-              <li class="game-ymal__item">
+              <li class="game-ymal__item" data-ymal-original>
                 {%- render 'fnop-game-card',
                   fnop_game_col: game_col,
                   fnop_card_class: 'game-ymal__card',
@@ -110,16 +108,87 @@
           </ul>
         </div>
 
+        <a class="game-ymal__nav game-ymal__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
         <a class="game-ymal__nav game-ymal__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
       </div>
     </div>
   </section>
 
+  <script>
+    (function() {
+      var sectionId = '{{ section_id }}';
+      function fillRow() {
+        var section = document.getElementById(sectionId);
+        if (!section) return;
+        var list = section.querySelector('.game-ymal__list');
+        if (!list) return;
+
+        /* Remove old clones */
+        list.querySelectorAll('[data-ymal-clone]').forEach(function(el) { el.remove(); });
+
+        var originals = list.querySelectorAll('[data-ymal-original]');
+        if (!originals.length) return;
+
+        var item = originals[0];
+        var itemW = item.offsetWidth + parseFloat(getComputedStyle(item).marginRight || 0);
+        if (itemW <= 0) return;
+
+        var containerW = section.querySelector('.game-ymal__container').offsetWidth;
+        var setW = itemW * originals.length;
+        var needed = Math.ceil((containerW + itemW) / setW);
+        if (needed <= 1) return;
+
+        /* Duplicate whole sets */
+        for (var s = 1; s < needed; s++) {
+          originals.forEach(function(orig) {
+            var clone = orig.cloneNode(true);
+            clone.removeAttribute('data-ymal-original');
+            clone.setAttribute('data-ymal-clone', '');
+            clone.setAttribute('aria-hidden', 'true');
+            /* Remove from tab order and strip duplicate ids */
+            clone.querySelectorAll('a, button, input, [tabindex]').forEach(function(el) {
+              el.setAttribute('tabindex', '-1');
+            });
+            clone.querySelectorAll('[id]').forEach(function(el) { el.removeAttribute('id'); });
+            list.appendChild(clone);
+          });
+        }
+
+        /* Re-init UIkit slider so it picks up the new items */
+        var sliderEl = section.querySelector('[uk-slider]');
+        if (sliderEl && window.UIkit) {
+          var slider = UIkit.slider(sliderEl);
+          if (slider) {
+            slider.$destroy(true);
+            UIkit.slider(sliderEl, { finite: false, autoplay: false });
+          }
+        }
+      }
+
+      /* Run after layout */
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(fillRow, 100); });
+      } else {
+        setTimeout(fillRow, 100);
+      }
+
+      /* Recompute on resize (debounced) */
+      var resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(fillRow, 200);
+      });
+
+      /* Theme editor support */
+      document.addEventListener('shopify:section:load', function() { setTimeout(fillRow, 200); });
+    })();
+  </script>
+
   {% style %}
     #{{ section_id }} {
       --_ymal-card-gap: 24px;
       --_ymal-card-w: 280px;
-      --_ymal-arrow-size: var(--font-size--4xl);
+      --_ymal-arrow-size: calc(var(--font-size--4xl) * 1.6);
       --_ymal-arrow-inset: clamp(8px, 2vw, 24px);
 
       padding: clamp(40px, 6vw, 80px) 0;
@@ -132,14 +201,7 @@
       margin-bottom: 32px;
     }
 
-    #{{ section_id }} .game-ymal__slider-inner {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
     #{{ section_id }} .game-ymal__container {
-      flex: 1;
       min-width: 0;
     }
 
@@ -177,30 +239,40 @@
       text-align: center;
     }
 
-    /* Large arrows outside the cards, vertically centred */
+    /* Overlay arrows — translucent dark circle + white chevron */
     #{{ section_id }} .game-ymal__nav {
-      flex-shrink: 0;
-      width: var(--_ymal-arrow-inset);
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: var(--_ymal-arrow-size);
+      height: var(--_ymal-arrow-size);
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
       padding: 0;
-      z-index: 1;
+      text-decoration: none;
+    }
+
+    #{{ section_id }} .game-ymal__nav:hover {
+      background: rgba(0, 0, 0, 0.65);
     }
 
     #{{ section_id }} .game-ymal__nav svg {
-      width: var(--_ymal-arrow-size);
-      height: var(--_ymal-arrow-size);
+      width: calc(var(--_ymal-arrow-size) * 0.45);
+      height: calc(var(--_ymal-arrow-size) * 0.45);
+      color: inherit;
     }
 
     #{{ section_id }} .game-ymal__nav--prev {
-      padding-left: var(--_ymal-arrow-inset);
-      padding-right: calc(var(--_ymal-arrow-inset) / 2);
+      left: var(--_ymal-arrow-inset);
     }
 
     #{{ section_id }} .game-ymal__nav--next {
-      padding-right: var(--_ymal-arrow-inset);
-      padding-left: calc(var(--_ymal-arrow-inset) / 2);
+      right: var(--_ymal-arrow-inset);
     }
 
     /* Mobile: stack-friendly */
