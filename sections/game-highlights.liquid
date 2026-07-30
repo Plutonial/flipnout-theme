@@ -1,6 +1,11 @@
 {%- liquid
   assign section_id = 'game-highlights-' | append: section.id
   assign highlights = collection.metafields.custom.highlights.value
+
+  capture game_name
+    render 'fnop-game-name', fnop_game_col: collection
+  endcapture
+  assign game_name = game_name | strip
 -%}
 
 {%- if highlights != blank and highlights.size > 0 -%}
@@ -11,7 +16,7 @@
 -%}
 <div class="game-section-band game-section-band--white">
   <section id="{{ section_id }}" class="game-highlights" data-gh-count="{{ hl_count }}">
-    <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
+    <h2 class="game-highlights__heading game-section-heading">{{ game_name }} Pinball Highlights</h2>
 
     {% comment %}
       Desktop path: UIkit slider with center: false, no duplicates.

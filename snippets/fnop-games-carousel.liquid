@@ -5,6 +5,7 @@
   Input:
     fnop_carousel_id      — unique section ID for CSS scoping
     fnop_carousel_heading — heading text (HTML-safe)
+    fnop_carousel_heading_tag — 'h2' or 'h3' (default: 'h2')
     fnop_carousel_handles — pipe-delimited sorted game handles
 {%- endcomment -%}
 
@@ -24,7 +25,10 @@
 
 {%- if _count > 0 -%}
   <section id="{{ fnop_carousel_id }}" class="fnop-gc fnop-gc--carousel" data-gc-count="{{ _count }}">
-    <h2 class="fnop-gc__heading game-section-heading">{{ fnop_carousel_heading }}</h2>
+    {%- liquid
+      assign _heading_tag = fnop_carousel_heading_tag | default: 'h2'
+    -%}
+    <{{ _heading_tag }} class="fnop-gc__heading game-section-heading">{{ fnop_carousel_heading }}</{{ _heading_tag }}>
 
     <div class="fnop-gc__slider" uk-slider="finite: false; autoplay: false; center: true" data-gc-slider-opts="finite: false; autoplay: false; center: true">
       <div class="uk-position-relative">
