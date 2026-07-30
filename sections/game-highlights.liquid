@@ -111,7 +111,7 @@
       }
     }
 
-    /* ── Desktop: paged navigation ── */
+    /* ── Desktop: sliding navigation ── */
     function initDesktopPaging(section) {
       var list = section.querySelector('.game-highlights__list--desktop');
       if (!list) return;
@@ -120,35 +120,46 @@
       var count = items.length;
       if (count === 0) return;
 
-      var perPage = 3;
-      var totalPages = Math.ceil(count / perPage);
-      var currentPage = 0;
+      var visible = 3;
+      var maxPos = Math.max(0, count - visible);
+
+      /* Build position stops: 0, 3, 6, … each clamped to maxPos */
+      var positions = [];
+      for (var p = 0; p <= maxPos; p += visible) {
+        positions.push(Math.min(p, maxPos));
+      }
+      /* Deduplicate in case the last step lands on maxPos twice */
+      if (positions.length > 1 && positions[positions.length - 1] === positions[positions.length - 2]) {
+        positions.pop();
+      }
+
+      var currentIdx = 0;
 
       var prevBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--prev');
       var nextBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--next');
 
-      function goToPage(page) {
-        currentPage = ((page % totalPages) + totalPages) % totalPages;
-        var offset = currentPage * perPage;
-
-        /* Hide all, show current page */
-        for (var i = 0; i < count; i++) {
-          var show = i >= offset && i < offset + perPage;
-          items[i].classList.toggle('game-highlights__item--hidden', !show);
+      function slideTo(idx) {
+        currentIdx = ((idx % positions.length) + positions.length) % positions.length;
+        var pos = positions[currentIdx];
+        if (pos === 0) {
+          list.style.transform = 'none';
+        } else {
+          /* offset = -pos * (card + gap), derived from CSS custom properties */
+          list.style.transform = 'translateX(calc(-' + pos + ' * (var(--_gh-card-w) + var(--_gh-card-gap))))';
         }
       }
 
       if (prevBtn) {
         prevBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          goToPage(currentPage - 1);
+          slideTo(currentIdx - 1);
         });
       }
 
       if (nextBtn) {
         nextBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          goToPage(currentPage + 1);
+          slideTo(currentIdx + 1);
         });
       }
 
@@ -169,11 +180,11 @@
         });
       }
 
-      /* Show first page */
-      goToPage(0);
+      /* Position 0 — transform: none (already the default) */
+      slideTo(0);
 
-      /* Hide arrows if all fit on one page */
-      if (totalPages <= 1) {
+      /* Hide arrows if all fit without sliding */
+      if (positions.length <= 1) {
         if (prevBtn) prevBtn.setAttribute('hidden', '');
         if (nextBtn) nextBtn.setAttribute('hidden', '');
       } else {
@@ -257,9 +268,6 @@
     display: flex;
   }
 
-  #{{ section_id }} .game-highlights__item--hidden {
-    display: none;
-  }
 
   #{{ section_id }} .game-highlights__card {
     display: flex;
