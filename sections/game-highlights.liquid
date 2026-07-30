@@ -120,35 +120,47 @@
       var count = items.length;
       if (count === 0) return;
 
-      /* Derive perView from geometry — never from display state or child count vs shown count */
-      var listStyles = getComputedStyle(list);
-      var gap = parseFloat(listStyles.columnGap) || 0;
-      var slot = (items[0].getBoundingClientRect().width || 0) + gap;
       var trackEl = section.querySelector('.game-highlights__container');
-      var trackW = trackEl ? trackEl.getBoundingClientRect().width : 0;
-      var perView = (isFinite(slot) && slot > 0) ? Math.floor((trackW + gap) / slot) : 3;
-      if (!isFinite(perView) || perView < 1) perView = 3;
 
-      var maxPos = Math.max(0, count - perView);
-
-      /* Build position stops: 0, perView, 2*perView, … each clamped to maxPos */
-      var positions = [];
-      for (var p = 0; p <= maxPos; p += perView) {
-        positions.push(Math.min(p, maxPos));
-      }
-      /* Deduplicate in case the last step lands on maxPos twice */
-      if (positions.length > 1 && positions[positions.length - 1] === positions[positions.length - 2]) {
-        positions.pop();
-      }
-
+      /* Persistent position index across clicks — lives in this closure */
       var currentIdx = 0;
 
-      var prevBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--prev');
-      var nextBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--next');
+      /**
+       * Measure geometry from the live DOM at call time.
+       * Returns { perView, maxPos, positions } or null if layout is not ready.
+       */
+      function measureGeometry() {
+        var gap = parseFloat(getComputedStyle(list).columnGap) || 0;
+        var cardW = items[0].getBoundingClientRect().width || 0;
+        var slot = cardW + gap;
+        var trackW = trackEl ? trackEl.getBoundingClientRect().width : 0;
+
+        if (!isFinite(slot) || slot <= 0) return null;
+
+        var perView = Math.floor((trackW + gap) / slot);
+        if (!isFinite(perView) || perView < 1) return null;
+
+        var maxPos = Math.max(0, count - perView);
+
+        /* Build position stops: 0, perView, 2*perView, … each clamped to maxPos */
+        var positions = [];
+        for (var p = 0; p <= maxPos; p += perView) {
+          positions.push(Math.min(p, maxPos));
+        }
+        /* Deduplicate in case the last step lands on maxPos twice */
+        if (positions.length > 1 && positions[positions.length - 1] === positions[positions.length - 2]) {
+          positions.pop();
+        }
+
+        return { perView: perView, maxPos: maxPos, positions: positions };
+      }
 
       function slideTo(idx) {
-        currentIdx = ((idx % positions.length) + positions.length) % positions.length;
-        var pos = positions[currentIdx];
+        var geo = measureGeometry();
+        if (!geo || geo.positions.length === 0) return;
+
+        currentIdx = ((idx % geo.positions.length) + geo.positions.length) % geo.positions.length;
+        var pos = geo.positions[currentIdx];
         if (pos === 0) {
           list.style.transform = 'none';
         } else {
@@ -156,6 +168,9 @@
           list.style.transform = 'translateX(calc(-' + pos + ' * (var(--_gh-card-w) + var(--_gh-card-gap))))';
         }
       }
+
+      var prevBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--prev');
+      var nextBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--next');
 
       if (prevBtn) {
         prevBtn.addEventListener('click', function(e) {
@@ -191,14 +206,14 @@
       /* Position 0 — transform: none (already the default) */
       slideTo(0);
 
-      /* Hide arrows if all fit without sliding */
-      if (positions.length <= 1) {
-        if (prevBtn) prevBtn.setAttribute('hidden', '');
-        if (nextBtn) nextBtn.setAttribute('hidden', '');
-      } else {
-        if (prevBtn) prevBtn.removeAttribute('hidden');
-        if (nextBtn) nextBtn.removeAttribute('hidden');
+      /* Hide arrows if all fit without sliding — measure now, and re-check on resize */
+      function updateArrowVisibility() {
+        var geo = measureGeometry();
+        var hide = !geo || geo.positions.length <= 1;
+        if (prevBtn) { hide ? prevBtn.setAttribute('hidden', '') : prevBtn.removeAttribute('hidden'); }
+        if (nextBtn) { hide ? nextBtn.setAttribute('hidden', '') : nextBtn.removeAttribute('hidden'); }
       }
+      updateArrowVisibility();
     }
 
     /* ── Mobile: UIkit slider ── */
