@@ -9,6 +9,8 @@
   assign brand_logo = collection.metafields.custom.logo
   assign subtitle = collection.metafields.custom.subtitle
   assign bg_color = section.settings.background_color | default: '#1a1a2e'
+
+  assign logo_scale = collection.metafields.custom.logo_scale | default: 1
 -%}
 
 <section id="{{ section_id }}" class="collection-hero">
@@ -50,6 +52,44 @@
 {% style %}
   {% comment %} ── Shared hero band styles ── {% endcomment %}
   {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: bg_color, hero_bg_position: 'center' -%}
+
+  {% comment %} ── Part B: Logo normalisation via per-brand scale metafield ── {% endcomment %}
+  #{{ section_id }} .collection-hero__logo {
+    --_logo-scale: {{ logo_scale }};
+    max-width:  calc(min(85vw, 300px) * var(--_logo-scale));
+    max-height: calc(clamp(80px, 14vw, 140px) * var(--_logo-scale));
+  }
+
+  @media (min-width: 701px) {
+    #{{ section_id }} .collection-hero__logo {
+      max-width:  calc(320px * var(--_logo-scale));
+      max-height: calc(clamp(100px, 10vw, 150px) * var(--_logo-scale));
+    }
+  }
+
+  @media (min-width: 1025px) {
+    #{{ section_id }} .collection-hero__logo {
+      max-width:  calc(320px * var(--_logo-scale));
+      max-height: calc(clamp(120px, 12vw, 180px) * var(--_logo-scale));
+    }
+  }
+
+  {% comment %} ── Part A: Mobile — centre content + bigger logo ── {% endcomment %}
+  @media (max-width: 700px) {
+    #{{ section_id }} .collection-hero__content {
+      justify-content: center;
+    }
+
+    #{{ section_id }} .collection-hero__stack {
+      align-items: center;
+      text-align: center;
+    }
+
+    #{{ section_id }} .collection-hero__logo {
+      max-width:  calc(min(90vw, 340px) * var(--_logo-scale));
+      max-height: calc(clamp(100px, 20vw, 160px) * var(--_logo-scale));
+    }
+  }
 {% endstyle %}
 
 {% schema %}
