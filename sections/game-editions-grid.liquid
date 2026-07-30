@@ -47,65 +47,243 @@
 {%- liquid
   assign band_class = 'game-section-band--' | append: bg_variant
   assign resolved_heading = heading | replace: '{game_name}', game_name
+  assign use_carousel = false
+  if products_count >= 4
+    assign use_carousel = true
+  endif
 -%}
 
 <div class="{{ section_id }}__band game-section-band {{ band_class }}">
-<section id="{{ section_id }}" class="editions-grid-section">
+<section id="{{ section_id }}" class="editions-grid-section" data-editions-count="{{ products_count }}">
   <h2 class="editions-grid__heading game-section-heading">{{ resolved_heading }}</h2>
 
-  <div class="editions-grid{% if products_count > 3 %} editions-grid--wrap2{% endif %}">
-    {%- for handle in sorted_handle_list -%}
-      {%- assign product = collection.products | where: 'handle', handle | first -%}
-      {%- if product == blank -%}{%- continue -%}{%- endif -%}
-      {%- liquid
-        assign card_image = product.metafields.custom.backglass
-        unless card_image
-          assign card_image = product.featured_image
-        endunless
+  {%- if use_carousel -%}
+    {% comment %} ── n ≥ 4: UIkit carousel ── {% endcomment %}
+    <div class="editions-grid-carousel" data-editions-slider-opts="finite: false; center: false; autoplay: false">
+      <div class="editions-grid-carousel__track-wrap uk-position-relative">
+        <div class="uk-slider-container editions-grid-carousel__container">
+          <ul class="uk-slider-items editions-grid-carousel__list">
+            {%- for handle in sorted_handle_list -%}
+              {%- assign product = collection.products | where: 'handle', handle | first -%}
+              {%- if product == blank -%}{%- continue -%}{%- endif -%}
+              {%- liquid
+                assign card_image = product.metafields.custom.backglass
+                unless card_image
+                  assign card_image = product.featured_image
+                endunless
+                assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
+                capture edition_label
+                  render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
+                endcapture
+                assign edition_label = edition_label | strip
+                assign is_sold_out = false
+                if product.tags contains 'sold-out'
+                  assign is_sold_out = true
+                endif
+              -%}
+              <li class="editions-grid-carousel__slide">
+                <div class="editions-grid__card">
+                  {%- if card_image -%}
+                    <div class="editions-grid__art">
+                      {{ card_image | image_url: width: 800 | image_tag:
+                        loading: 'lazy',
+                        class: 'editions-grid__img',
+                        sizes: '(min-width: 750px) 25vw, 100vw',
+                        widths: '400,600,800'
+                      }}
+                    </div>
+                  {%- endif -%}
+                  <div class="editions-grid__info">
+                    {%- if edition_badge != blank -%}
+                      <span class="editions-grid__badge">{{ edition_badge }}</span>
+                    {%- endif -%}
+                    {%- if edition_label != blank -%}
+                      <h3 class="editions-grid__title">{{ edition_label }}</h3>
+                    {%- endif -%}
+                    <span class="editions-grid__price">{{ product.price | money }}</span>
+                    {%- if is_sold_out -%}
+                      <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
+                    {%- else -%}
+                      <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
 
-        assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
-
-        capture edition_label
-          render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
-        endcapture
-        assign edition_label = edition_label | strip
-        assign is_sold_out = false
-        if product.tags contains 'sold-out'
-          assign is_sold_out = true
-        endif
-      -%}
-
-      <div class="editions-grid__card">
-        {%- if card_image -%}
-          <div class="editions-grid__art">
-            {{ card_image | image_url: width: 800 | image_tag:
-              loading: 'lazy',
-              class: 'editions-grid__img',
-              sizes: '(min-width: 750px) 25vw, 100vw',
-              widths: '400,600,800'
-            }}
-          </div>
-        {%- endif -%}
-
-        <div class="editions-grid__info">
-          {%- if edition_badge != blank -%}
-            <span class="editions-grid__badge">{{ edition_badge }}</span>
-          {%- endif -%}
-          {%- if edition_label != blank -%}
-            <h3 class="editions-grid__title">{{ edition_label }}</h3>
-          {%- endif -%}
-          <span class="editions-grid__price">{{ product.price | money }}</span>
-          {%- if is_sold_out -%}
-            <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
-          {%- else -%}
-            <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
-          {%- endif -%}
+        <div class="editions-grid-carousel__arrow-rail" aria-hidden="true">
+          <a class="editions-grid-carousel__nav editions-grid-carousel__nav--prev" href uk-slidenav-previous uk-slider-item="previous" aria-label="Previous editions"></a>
+          <a class="editions-grid-carousel__nav editions-grid-carousel__nav--next" href uk-slidenav-next uk-slider-item="next" aria-label="Next editions"></a>
         </div>
       </div>
-    {%- endfor -%}
-  </div>
+    </div>
+
+    {% comment %} ── Mobile stack for n ≥ 4 (no carousel) ── {% endcomment %}
+    <div class="editions-grid-mobile-stack" hidden>
+      {%- for handle in sorted_handle_list -%}
+        {%- assign product = collection.products | where: 'handle', handle | first -%}
+        {%- if product == blank -%}{%- continue -%}{%- endif -%}
+        {%- liquid
+          assign card_image = product.metafields.custom.backglass
+          unless card_image
+            assign card_image = product.featured_image
+          endunless
+          assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
+          capture edition_label
+            render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
+          endcapture
+          assign edition_label = edition_label | strip
+          assign is_sold_out = false
+          if product.tags contains 'sold-out'
+            assign is_sold_out = true
+          endif
+        -%}
+        <div class="editions-grid__card">
+          {%- if card_image -%}
+            <div class="editions-grid__art">
+              {{ card_image | image_url: width: 800 | image_tag:
+                loading: 'lazy',
+                class: 'editions-grid__img',
+                sizes: '100vw',
+                widths: '400,600,800'
+              }}
+            </div>
+          {%- endif -%}
+          <div class="editions-grid__info">
+            {%- if edition_badge != blank -%}
+              <span class="editions-grid__badge">{{ edition_badge }}</span>
+            {%- endif -%}
+            {%- if edition_label != blank -%}
+              <h3 class="editions-grid__title">{{ edition_label }}</h3>
+            {%- endif -%}
+            <span class="editions-grid__price">{{ product.price | money }}</span>
+            {%- if is_sold_out -%}
+              <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
+            {%- else -%}
+              <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- else -%}
+    {% comment %} ── n = 1, 2, 3: centred grid, no arrows ── {% endcomment %}
+    <div class="editions-grid" data-editions-n="{{ products_count }}">
+      {%- for handle in sorted_handle_list -%}
+        {%- assign product = collection.products | where: 'handle', handle | first -%}
+        {%- if product == blank -%}{%- continue -%}{%- endif -%}
+        {%- liquid
+          assign card_image = product.metafields.custom.backglass
+          unless card_image
+            assign card_image = product.featured_image
+          endunless
+          assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
+          capture edition_label
+            render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
+          endcapture
+          assign edition_label = edition_label | strip
+          assign is_sold_out = false
+          if product.tags contains 'sold-out'
+            assign is_sold_out = true
+          endif
+        -%}
+
+        <div class="editions-grid__card">
+          {%- if card_image -%}
+            <div class="editions-grid__art">
+              {{ card_image | image_url: width: 800 | image_tag:
+                loading: 'lazy',
+                class: 'editions-grid__img',
+                sizes: '(min-width: 750px) 25vw, 100vw',
+                widths: '400,600,800'
+              }}
+            </div>
+          {%- endif -%}
+
+          <div class="editions-grid__info">
+            {%- if edition_badge != blank -%}
+              <span class="editions-grid__badge">{{ edition_badge }}</span>
+            {%- endif -%}
+            {%- if edition_label != blank -%}
+              <h3 class="editions-grid__title">{{ edition_label }}</h3>
+            {%- endif -%}
+            <span class="editions-grid__price">{{ product.price | money }}</span>
+            {%- if is_sold_out -%}
+              <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
+            {%- else -%}
+              <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
 </section>
 </div>
+
+{% comment %} ── Carousel JS for n ≥ 4 ── {% endcomment %}
+{%- if use_carousel -%}
+<script>
+  (function() {
+    var sectionId = '{{ section_id }}';
+    var MOBILE_BP = 749;
+
+    function isMobile() {
+      return window.innerWidth <= MOBILE_BP;
+    }
+
+    function init() {
+      var section = document.getElementById(sectionId);
+      if (!section) return;
+
+      var carouselWrap = section.querySelector('.editions-grid-carousel');
+      var mobileStack = section.querySelector('.editions-grid-mobile-stack');
+      if (!carouselWrap || !mobileStack) return;
+
+      var mobile = isMobile();
+
+      carouselWrap.hidden = mobile;
+      mobileStack.hidden = !mobile;
+
+      if (!mobile && window.UIkit) {
+        var sliderEl = carouselWrap;
+        if (!sliderEl.hasAttribute('uk-slider')) {
+          sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-editions-slider-opts'));
+        }
+        UIkit.slider(sliderEl, { finite: false, center: false, autoplay: false });
+      }
+    }
+
+    var lastMobile = null;
+    function update() {
+      var mobile = isMobile();
+      if (mobile !== lastMobile) {
+        lastMobile = mobile;
+        init();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() { setTimeout(update, 100); });
+    } else {
+      setTimeout(update, 100);
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(update, 200);
+    });
+
+    document.addEventListener('shopify:section:load', function() {
+      lastMobile = null;
+      setTimeout(update, 200);
+    });
+  })();
+</script>
+{%- endif -%}
 
 {% style %}
   {% comment %} ── Shared game-section band tokens (defined once, used by all game sections) ── {% endcomment %}
@@ -155,15 +333,148 @@
     margin-inline: auto;
   }
 
-
+  {% comment %} ── n = 1, 2, 3: fluid centred grid ── {% endcomment %}
   .editions-grid {
     --_grid-gap: var(--gap-2xl, 32px);
-    --_container-inner: var(--game-band-w);
-    --_card-w: calc((var(--_container-inner) - 2 * var(--_grid-gap)) / 3);
+    --_card-max-w: 432px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, var(--_card-w));
     justify-content: center;
     gap: var(--_grid-gap);
+  }
+
+  .editions-grid[data-editions-n="1"] {
+    grid-template-columns: minmax(0, var(--_card-max-w));
+  }
+
+  .editions-grid[data-editions-n="2"] {
+    grid-template-columns: repeat(2, minmax(0, var(--_card-max-w)));
+  }
+
+  .editions-grid[data-editions-n="3"] {
+    grid-template-columns: repeat(3, minmax(0, var(--_card-max-w)));
+  }
+
+  {% comment %} ── Mobile stack breakpoint for n ≤ 3 ── {% endcomment %}
+  @media (max-width: 749px) {
+    .editions-grid[data-editions-n="2"],
+    .editions-grid[data-editions-n="3"] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  {% comment %} ── n ≥ 4: carousel ── {% endcomment %}
+  .editions-grid-carousel {
+    position: relative;
+  }
+
+  .editions-grid-carousel__container {
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .editions-grid-carousel__list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--gap-2xl, 32px);
+    align-items: stretch;
+  }
+
+  .editions-grid-carousel__slide {
+    --_editions-visible: 3;
+    --_editions-gap: var(--gap-2xl, 32px);
+    width: calc((100% - (var(--_editions-visible) - 1) * var(--_editions-gap)) / var(--_editions-visible));
+    flex-shrink: 0;
+    display: flex;
+  }
+
+  .editions-grid-carousel__slide .editions-grid__card {
+    width: 100%;
+  }
+
+  {% comment %} Arrow rail — anchored to card art vertical centre {% endcomment %}
+  .editions-grid-carousel__track-wrap {
+    position: relative;
+  }
+
+  .editions-grid-carousel__arrow-rail {
+    --_arrow-size: calc(var(--font-size--4xl) * 1.6);
+    --_arrow-inset: clamp(8px, 2vw, 24px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    {% comment %}
+      Art height = card width × 4/3.
+      Card width = (100% - 2 × gap) / 3 for 3 visible.
+      Arrow centre = art height / 2.
+      padding-bottom trick: percentage resolves against containing block width.
+    {% endcomment %}
+    padding-bottom: calc((100% - 2 * var(--gap-2xl, 32px)) / 3 * 4 / 3 / 2);
+    pointer-events: none;
+  }
+
+  .editions-grid-carousel__nav {
+    position: absolute;
+    top: 100%;
+    transform: translateY(-50%);
+    pointer-events: auto;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_arrow-size);
+    height: var(--_arrow-size);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .editions-grid-carousel__nav:hover {
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .editions-grid-carousel__nav svg {
+    width: calc(var(--_arrow-size) * 0.45);
+    height: calc(var(--_arrow-size) * 0.45);
+    color: inherit;
+  }
+
+  .editions-grid-carousel__nav--prev {
+    left: var(--_arrow-inset);
+  }
+
+  .editions-grid-carousel__nav--next {
+    right: var(--_arrow-inset);
+  }
+
+  @media (min-width: 1600px) {
+    .editions-grid-carousel__nav--prev {
+      left: calc(-1 * (var(--_arrow-size) + 16px));
+    }
+
+    .editions-grid-carousel__nav--next {
+      right: calc(-1 * (var(--_arrow-size) + 16px));
+    }
+  }
+
+  {% comment %} ── Mobile: hide carousel, show stack ── {% endcomment %}
+  @media (max-width: 749px) {
+    .editions-grid-carousel {
+      display: none;
+    }
+
+    .editions-grid-mobile-stack {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-2xl, 32px);
+    }
   }
 
   .editions-grid__card {
@@ -249,17 +560,6 @@
     background: #999;
     cursor: not-allowed;
     pointer-events: none;
-  }
-
-  .editions-grid--wrap2 {
-    grid-template-columns: repeat(2, var(--_card-w));
-  }
-
-  @media (max-width: 749px) {
-    .editions-grid,
-    .editions-grid--wrap2 {
-      grid-template-columns: 1fr;
-    }
   }
 {% endstyle %}
 
