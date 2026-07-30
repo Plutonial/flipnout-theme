@@ -1,0 +1,255 @@
+{%- liquid
+  comment
+    Brand Games Strip — renders game collection tiles for this manufacturer.
+    A game collection has collection.is_game == true AND custom.manufacturer
+    pointing at the current (brand) collection. Sorted by custom.release_date
+    descending (newest first).
+  endcomment
+
+  assign section_id = 'brand-games-' | append: section.id
+  assign brand_id = collection.id
+
+  comment
+    Pass 1: collect matching game collections and their release dates.
+    We build two parallel pipe-delimited strings: one of handles, one of
+    ISO date strings, so we can sort by date in pass 2.
+  endcomment
+  assign game_handles = ''
+  assign game_dates = ''
+
+  for c in collections
+    assign is_game = c.metafields.collection.is_game
+    if is_game
+      assign mfr_ref = c.metafields.custom.manufacturer.value
+      if mfr_ref and mfr_ref.id == brand_id
+        assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+        if game_handles == ''
+          assign game_handles = c.handle
+          assign game_dates = rd
+        else
+          assign game_handles = game_handles | append: '|' | append: c.handle
+          assign game_dates = game_dates | append: '|' | append: rd
+        endif
+      endif
+    endif
+  endfor
+
+  assign games_count = 0
+  if game_handles != ''
+    assign game_handle_arr = game_handles | split: '|'
+    assign game_date_arr = game_dates | split: '|'
+    assign games_count = game_handle_arr.size
+  endif
+-%}
+
+{%- if games_count > 0 -%}
+  {%- liquid
+    comment
+      Pass 2: sort by release_date descending.
+      Bubble sort on the parallel arrays (handles + dates).
+      ISO date strings sort lexicographically.
+    endcomment
+    assign sorted_handles = game_handle_arr
+    assign sorted_dates = game_date_arr
+
+    assign n = games_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_dates[j]
+        assign date_b = sorted_dates[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_handles[j]
+          assign tmp_d = sorted_dates[j]
+
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_handles[j1]
+              assign d_val = sorted_dates[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_handles[k]
+              assign d_val = sorted_dates[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_handles = new_handles | split: '|'
+          assign sorted_dates = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+  -%}
+
+  <section id="{{ section_id }}" class="brand-games-strip">
+    <h2 class="brand-games-strip__heading game-section-heading">{{ collection.title }} Games</h2>
+
+    <div class="brand-games-strip__carousel"
+      {% if games_count > 3 %}
+        uk-slider="finite: true"
+      {% endif %}
+    >
+      {% if games_count > 3 %}
+        <div class="uk-slider-container">
+      {% endif %}
+
+        <ul class="brand-games-strip__list{% if games_count > 3 %} uk-slider-items{% endif %}">
+          {%- for handle in sorted_handles -%}
+            {%- assign game_col = collections[handle] -%}
+            {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+            {%- liquid
+              assign game_name = game_col.title
+              assign mfr = game_col.metafields.custom.manufacturer.value
+              if mfr and mfr.title != blank
+                assign gprefix = mfr.title | append: ' - '
+                if game_name contains gprefix and game_name != gprefix
+                  assign game_name = game_name | remove_first: gprefix
+                endif
+              endif
+            -%}
+
+            <li class="brand-games-strip__item">
+              <a href="{{ game_col.url }}" class="brand-games-strip__card">
+                {%- if game_col.image -%}
+                  {{ game_col.image | image_url: width: 800 | image_tag:
+                    loading: 'lazy',
+                    class: 'brand-games-strip__img',
+                    sizes: '(min-width: 750px) 33vw, 80vw',
+                    widths: '400,600,800'
+                  }}
+                {%- endif -%}
+                <span class="brand-games-strip__label">{{ game_name }}</span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+      {% if games_count > 3 %}
+        </div>
+
+        <a class="brand-games-strip__nav brand-games-strip__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
+        <a class="brand-games-strip__nav brand-games-strip__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
+      {% endif %}
+    </div>
+  </section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    --_card-gap: 24px;
+    --_card-w: calc((var(--page-content-width, 1200px) - 2 * var(--page-margin, 40px) - 2 * var(--_card-gap)) / 3);
+    --_nav-size: 40px;
+    --_nav-offset: calc(0px - var(--_nav-size) - 12px);
+
+    max-width: var(--page-content-width, 1200px);
+    padding: clamp(40px, 6vw, 80px) var(--page-margin, 16px) 0;
+    margin-inline: auto;
+    position: relative;
+  }
+
+  #{{ section_id }} .brand-games-strip__heading {
+    margin-bottom: 32px;
+  }
+
+  #{{ section_id }} .brand-games-strip__list {
+    display: flex;
+    gap: var(--_card-gap);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #{{ section_id }} .brand-games-strip__item {
+    flex: 0 0 var(--_card-w);
+    min-width: 0;
+  }
+
+  #{{ section_id }} .brand-games-strip__card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  #{{ section_id }} .brand-games-strip__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm, 8px);
+  }
+
+  #{{ section_id }} .brand-games-strip__label {
+    display: block;
+    margin-top: 12px;
+    font-size: var(--font-size--md);
+    text-align: center;
+  }
+
+  /* Navigation arrows — outside the card area, aligned to page frame */
+  #{{ section_id }} .brand-games-strip__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+  }
+
+  #{{ section_id }} .brand-games-strip__nav--prev {
+    left: var(--_nav-offset);
+  }
+
+  #{{ section_id }} .brand-games-strip__nav--next {
+    right: var(--_nav-offset);
+  }
+
+  /* When arrows can't fit outside, pull them to the container edge */
+  @media (max-width: 1440px) {
+    #{{ section_id }} {
+      --_nav-offset: 0px;
+    }
+
+    #{{ section_id }} .brand-games-strip__nav--prev {
+      left: var(--page-margin, 16px);
+    }
+
+    #{{ section_id }} .brand-games-strip__nav--next {
+      right: var(--page-margin, 16px);
+    }
+  }
+
+  /* Mobile: smaller cards, scroll naturally */
+  @media (max-width: 749px) {
+    #{{ section_id }} {
+      --_card-w: 70vw;
+    }
+
+    #{{ section_id }} .brand-games-strip__list {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #{{ section_id }} .brand-games-strip__item {
+      scroll-snap-align: start;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Brand games strip",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

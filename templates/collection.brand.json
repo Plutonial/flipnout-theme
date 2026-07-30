@@ -13,6 +13,10 @@
       "type": "brand-hero",
       "settings": {}
     },
+    "brand-games-strip": {
+      "type": "brand-games-strip",
+      "settings": {}
+    },
     "brand-subcollections": {
       "type": "brand-subcollections",
       "settings": {
@@ -83,6 +87,7 @@
   },
   "order": [
     "brand-hero",
+    "brand-games-strip",
     "brand-subcollections",
     "brand-reviews"
   ]
