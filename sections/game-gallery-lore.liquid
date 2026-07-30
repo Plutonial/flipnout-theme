@@ -114,18 +114,18 @@
 
   @media (min-width: 990px) {
     #{{ section_id }} .game-gallery-lore__grid {
-      --_gl-gap: clamp(32px, 4vw, 48px);
+      --_gl-gutter: clamp(48px, 6vw, 80px);
       grid-template-columns: 1fr 1fr;
-      gap: 0;
+      column-gap: var(--_gl-gutter);
+      row-gap: 0;
       align-items: start;
     }
 
     {% comment %}
       The heading spans both columns so it sits above the two-column row.
-      This way align-self: center on the gallery centres it against the
-      copy block only, not the heading + copy.
+      The gallery top-aligns to the copy block (align-self: start).
       Restore the heading margin (zeroed globally to avoid doubling with
-      the mobile grid gap) since desktop gap is 0.
+      the mobile grid gap) since desktop row-gap is 0.
     {% endcomment %}
     #{{ section_id }} .game-gallery-lore__grid > .game-gallery-lore__heading {
       grid-column: 1 / -1;
@@ -133,19 +133,7 @@
     }
 
     #{{ section_id }} .game-gallery-lore__gallery {
-      align-self: center;
-    }
-
-    {% comment %}
-      The grid gap is zeroed; each column gets half-gap padding on the
-      inner side so content does not touch across the centre line.
-    {% endcomment %}
-    #{{ section_id }} .game-gallery-lore__lore {
-      padding-right: calc(var(--_gl-gap) / 2);
-    }
-
-    #{{ section_id }} .game-gallery-lore__gallery {
-      padding-left: calc(var(--_gl-gap) / 2);
+      align-self: start;
     }
   }
 
