@@ -91,7 +91,9 @@
           {%- if edition_badge != blank -%}
             <span class="editions-grid__badge">{{ edition_badge }}</span>
           {%- endif -%}
-          <h3 class="editions-grid__title">{{ edition_label }}</h3>
+          {%- if edition_label != blank -%}
+            <h3 class="editions-grid__title">{{ edition_label }}</h3>
+          {%- endif -%}
           <span class="editions-grid__price">{{ product.price | money }}</span>
           {%- if is_sold_out -%}
             <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>

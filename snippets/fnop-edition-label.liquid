@@ -7,12 +7,17 @@
   3. Strip a known game-name prefix (for titles with no dash)
   4. Full product title unchanged
 
+  Guard: if the result is empty or just boilerplate ("Pinball Machine",
+  "Pinball", "Machine"), output nothing — the card renders without a
+  title line rather than printing junk.
+
   Usage:
     {%- capture edition_label -%}{%- render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name -%}{%- endcapture -%}
 
   Input:  fnop_product   — the product object
           fnop_game_name — the derived game name (from fnop-game-name snippet)
-  Output: the edition label (printed as text, capture it in the caller)
+  Output: the edition label (printed as text, capture it in the caller);
+          blank when nothing meaningful remains.
 {%- endcomment -%}
 
 {%- liquid
@@ -43,6 +48,13 @@
         endif
       endif
     endif
+  endif
+
+  comment — Guard: suppress boilerplate-only labels
+  endcomment
+  assign _label_down = _label | strip | downcase
+  if _label_down == 'pinball machine' or _label_down == 'pinball' or _label_down == 'machine'
+    assign _label = ''
   endif
 -%}
 {{- _label -}}
