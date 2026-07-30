@@ -108,6 +108,15 @@
   -%}
 {%- endif -%}
 
+{% style %}
+  {% comment %} Centre the heading on the full-bleed section, not the old page container {% endcomment %}
+  #{{ section_id }} .fnop-gc__heading {
+    max-width: none;
+    padding-inline: 0;
+    text-align: center;
+  }
+{% endstyle %}
+
 {% schema %}
 {
   "name": "Brand games strip",
