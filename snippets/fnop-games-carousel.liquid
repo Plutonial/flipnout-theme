@@ -69,6 +69,9 @@
         <a class="fnop-gc__nav fnop-gc__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
         <a class="fnop-gc__nav fnop-gc__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
       </div>
+
+      {% comment %} Dotnav — only rendered in carousel mode; JS hides in centred mode {% endcomment %}
+      <ul class="uk-slider-nav uk-dotnav fnop-gc__dotnav"></ul>
     </div>
   </section>
 
@@ -104,10 +107,14 @@
           section.classList.toggle('fnop-gc--centred', !overflows);
           section.classList.toggle('fnop-gc--carousel', overflows);
 
-          /* Hide/show arrows */
+          /* Hide/show arrows and dotnav */
           section.querySelectorAll('.fnop-gc__nav').forEach(function(nav) {
             if (overflows) { nav.removeAttribute('hidden'); } else { nav.setAttribute('hidden', ''); }
           });
+          var dotnav = section.querySelector('.fnop-gc__dotnav');
+          if (dotnav) {
+            if (overflows) { dotnav.removeAttribute('hidden'); } else { dotnav.setAttribute('hidden', ''); }
+          }
 
           /* In fits mode: remove uk-slider so no transform is applied.
              In overflow mode: restore it so the carousel works with center + loop. */
@@ -172,7 +179,12 @@
       --_gc-arrow-size: calc(var(--font-size--4xl) * 1.6);
       --_gc-arrow-inset: clamp(8px, 2vw, 24px);
 
-      padding: clamp(40px, 6vw, 80px) 0;
+      --_gc-pad-top: clamp(56px, 8vw, 112px);
+      --_gc-heading-h: calc(var(--font-size--4xl) * 1.2);
+      --_gc-pad-bottom: calc(var(--_gc-pad-top) + var(--_gc-heading-h));
+
+      padding-top: var(--_gc-pad-top);
+      padding-bottom: var(--_gc-pad-bottom);
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__heading {
@@ -261,13 +273,40 @@
       right: var(--_gc-arrow-inset);
     }
 
-    /* Mobile: larger cards, hide arrows (J-B) */
+    /* Dotnav styling — matches the gallery dot style */
+    #{{ fnop_carousel_id }} .fnop-gc__dotnav {
+      justify-content: center;
+      margin-top: 24px;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      gap: 8px;
+    }
+
+    #{{ fnop_carousel_id }} .fnop-gc__dotnav > * > * {
+      background: var(--color-foreground-secondary, #888);
+    }
+
+    #{{ fnop_carousel_id }} .fnop-gc__dotnav > .uk-active > * {
+      background: var(--color-foreground, #333);
+    }
+
+    /* Centred mode — hide dotnav */
+    #{{ fnop_carousel_id }}.fnop-gc--centred .fnop-gc__dotnav {
+      display: none;
+    }
+
+    /* Mobile: larger cards, hide arrows and dotnav (J-B) */
     @media (max-width: 749px) {
       #{{ fnop_carousel_id }} {
         --_gc-card-w: 60vw;
       }
 
       #{{ fnop_carousel_id }} .fnop-gc__nav {
+        display: none;
+      }
+
+      #{{ fnop_carousel_id }} .fnop-gc__dotnav {
         display: none;
       }
     }

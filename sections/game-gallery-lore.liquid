@@ -156,12 +156,14 @@
   }
 
   #{{ section_id }} .game-gallery-lore__img {
+    --_gallery-shadow: 0 6px 18px 0 rgba(0, 0, 0, 0.12);
     max-width: 100%;
     max-height: 100%;
     width: auto;
     height: auto;
     object-fit: contain;
     border-radius: var(--radius-sm, 8px);
+    box-shadow: var(--_gallery-shadow);
   }
 
   {% comment %} ── Lore column: left-aligned at desktop, centres at mobile via shared snippet ── {% endcomment %}
