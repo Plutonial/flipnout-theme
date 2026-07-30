@@ -142,14 +142,10 @@
 
         var maxPos = Math.max(0, count - perView);
 
-        /* Build position stops: 0, perView, 2*perView, … each clamped to maxPos */
+        /* Build position stops: one per card, 0 through maxPos */
         var positions = [];
-        for (var p = 0; p < count; p += perView) {
-          positions.push(Math.min(p, maxPos));
-        }
-        /* Deduplicate in case the last step lands on maxPos twice */
-        if (positions.length > 1 && positions[positions.length - 1] === positions[positions.length - 2]) {
-          positions.pop();
+        for (var p = 0; p <= maxPos; p += 1) {
+          positions.push(p);
         }
 
         return { perView: perView, maxPos: maxPos, positions: positions, slot: slot };
