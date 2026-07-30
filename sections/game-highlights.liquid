@@ -14,28 +14,26 @@
     <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
     {% comment %}
-      Desktop path: plain list, paged by JS. No UIkit, no duplicates.
-      Mobile path: UIkit slider with rotation + duplicates for infinite loop.
-      The two are toggled via a class on the section: --desktop / --mobile.
+      Desktop path: UIkit slider with center: false, no duplicates.
+      Mobile path: UIkit slider with center: true, rotation + duplicates for infinite loop.
+      The two are toggled via hidden attr on the wraps.
     {% endcomment %}
 
-    {% comment %} ── Desktop: natural order, no duplicates ── {% endcomment %}
-    <div class="game-highlights__desktop-wrap">
-      <div class="game-highlights__track-wrap">
-        <div class="game-highlights__container">
-          <ul class="game-highlights__list game-highlights__list--desktop">
-            {%- for feature in highlights -%}
-              {%- render 'fnop-highlight-card', fnop_hl_feature: feature, fnop_hl_is_dup: false -%}
-            {%- endfor -%}
-          </ul>
-        </div>
+    {% comment %} ── Desktop: UIkit slider, center: false, no duplicates ── {% endcomment %}
+    <div class="game-highlights__desktop-wrap" uk-lightbox="animation: fade">
+      <div class="game-highlights__slider--desktop" data-gh-desktop-slider-opts="finite: false; center: false; autoplay: false">
+        <div class="game-highlights__track-wrap uk-position-relative">
+          <div class="uk-slider-container game-highlights__container">
+            <ul class="uk-slider-items game-highlights__list game-highlights__list--desktop">
+              {%- for feature in highlights -%}
+                {%- render 'fnop-highlight-card', fnop_hl_feature: feature, fnop_hl_is_dup: false -%}
+              {%- endfor -%}
+            </ul>
+          </div>
 
-        <button type="button" class="game-highlights__nav game-highlights__nav--prev" aria-label="Previous highlights">
-          <svg width="20" height="20" viewBox="0 0 20 20"><polyline fill="none" stroke="currentColor" stroke-width="1.4" points="13 16 7 10 13 4"></polyline></svg>
-        </button>
-        <button type="button" class="game-highlights__nav game-highlights__nav--next" aria-label="Next highlights">
-          <svg width="20" height="20" viewBox="0 0 20 20"><polyline fill="none" stroke="currentColor" stroke-width="1.4" points="7 4 13 10 7 16"></polyline></svg>
-        </button>
+          <a class="game-highlights__nav game-highlights__nav--prev" href uk-slidenav-previous uk-slider-item="previous" aria-label="Previous highlights"></a>
+          <a class="game-highlights__nav game-highlights__nav--next" href uk-slidenav-next uk-slider-item="next" aria-label="Next highlights"></a>
+        </div>
       </div>
     </div>
 
@@ -70,14 +68,6 @@
       </div>
     </div>
 
-    {% comment %} Desktop lightbox: rendered separately since desktop cards are outside uk-lightbox {% endcomment %}
-    <div class="game-highlights__lightbox-desktop" uk-lightbox="animation: fade" hidden>
-      {%- for feature in highlights -%}
-        {%- if feature.image != blank -%}
-          <a href="{{ feature.image | image_url: width: 2400 }}" data-caption="{{ feature.name }}" data-type="image"></a>
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
   </section>
 </div>
 
@@ -105,111 +95,33 @@
       mobileWrap.hidden = !mobile;
 
       if (!mobile) {
-        initDesktopPaging(section);
+        initDesktopSlider(section);
       } else {
         initMobileSlider(section);
       }
     }
 
-    /* ── Desktop: sliding navigation ── */
-    function initDesktopPaging(section) {
-      var list = section.querySelector('.game-highlights__list--desktop');
-      if (!list) return;
+    /* ── Desktop: UIkit slider with center: false ── */
+    function initDesktopSlider(section) {
+      var sliderEl = section.querySelector('.game-highlights__slider--desktop');
+      if (!sliderEl || !window.UIkit) return;
 
-      var items = list.querySelectorAll('.game-highlights__item');
+      var items = section.querySelectorAll('.game-highlights__list--desktop .game-highlights__item');
       var count = items.length;
-      if (count === 0) return;
 
-      var trackEl = section.querySelector('.game-highlights__container');
-
-      /* Persistent position index across clicks — lives in this closure */
-      var currentIdx = 0;
-
-      /**
-       * Measure geometry from the live DOM at call time.
-       * Returns { perView, maxPos, positions } or null if layout is not ready.
-       */
-      function measureGeometry() {
-        var gap = parseFloat(getComputedStyle(list).columnGap) || 0;
-        var cardW = items[0].getBoundingClientRect().width || 0;
-        var slot = cardW + gap;
-        var trackW = trackEl ? trackEl.getBoundingClientRect().width : 0;
-
-        if (!isFinite(slot) || slot <= 0) return null;
-
-        var perView = Math.floor((trackW + gap) / slot);
-        if (!isFinite(perView) || perView < 1) return null;
-
-        var maxPos = Math.max(0, count - perView);
-
-        /* Build position stops: one per card, 0 through maxPos */
-        var positions = [];
-        for (var p = 0; p <= maxPos; p += 1) {
-          positions.push(p);
-        }
-
-        return { perView: perView, maxPos: maxPos, positions: positions, slot: slot };
-      }
-
-      function slideTo(idx) {
-        var geo = measureGeometry();
-        if (!geo || geo.positions.length === 0) return;
-
-        currentIdx = ((idx % geo.positions.length) + geo.positions.length) % geo.positions.length;
-        var pos = geo.positions[currentIdx];
-        if (pos === 0) {
-          list.style.transform = 'none';
-        } else {
-          /* offset = -pos * slot, using the measured slot from live geometry */
-          list.style.transform = 'translateX(' + (-pos * geo.slot) + 'px)';
-        }
-      }
-
+      /* Hide arrows if all items fit (n <= 3) */
       var prevBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--prev');
       var nextBtn = section.querySelector('.game-highlights__desktop-wrap .game-highlights__nav--next');
-
-      if (prevBtn) {
-        prevBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          slideTo(currentIdx - 1);
-        });
+      if (count <= 3) {
+        if (prevBtn) prevBtn.setAttribute('hidden', '');
+        if (nextBtn) nextBtn.setAttribute('hidden', '');
+        return; /* No slider needed */
       }
 
-      if (nextBtn) {
-        nextBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          slideTo(currentIdx + 1);
-        });
+      if (!sliderEl.hasAttribute('uk-slider')) {
+        sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gh-desktop-slider-opts'));
       }
-
-      /* Set up lightbox click handlers for desktop cards */
-      var lightboxContainer = section.querySelector('.game-highlights__lightbox-desktop');
-      if (lightboxContainer) {
-        var imageLinks = section.querySelectorAll('.game-highlights__list--desktop .game-highlights__image-wrap');
-        imageLinks.forEach(function(link, idx) {
-          link.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (window.UIkit && lightboxContainer) {
-              lightboxContainer.hidden = false;
-              var lb = UIkit.lightbox(lightboxContainer);
-              lb.show(idx);
-              lightboxContainer.hidden = true;
-            }
-          });
-        });
-      }
-
-      /* Position 0 — transform: none (already the default) */
-      slideTo(0);
-
-      /* Hide arrows if all fit without sliding — measure now, and re-check on resize */
-      function updateArrowVisibility() {
-        var geo = measureGeometry();
-        var hide = !geo || geo.positions.length <= 1;
-        if (prevBtn) { hide ? prevBtn.setAttribute('hidden', '') : prevBtn.removeAttribute('hidden'); }
-        if (nextBtn) { hide ? nextBtn.setAttribute('hidden', '') : nextBtn.removeAttribute('hidden'); }
-      }
-      updateArrowVisibility();
+      UIkit.slider(sliderEl, { finite: false, center: false, autoplay: false });
     }
 
     /* ── Mobile: UIkit slider ── */
@@ -279,13 +191,6 @@
     padding: 0;
     gap: var(--_gh-card-gap);
     align-items: stretch;
-    transition: transform var(--surface-transition-duration) var(--surface-transition-timing);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #{{ section_id }} .game-highlights__list--desktop {
-      transition-duration: 0s;
-    }
   }
 
   #{{ section_id }} .game-highlights__item {
