@@ -162,8 +162,9 @@
 
 {% style %}
   #{{ section_id }} {
-    --_gh-card-w: 440px;
     --_gh-card-gap: 24px;
+    --_gh-track-w: min(var(--game-band-w), 100vw - 2 * var(--game-band-gutter));
+    --_gh-card-w: calc((var(--_gh-track-w) - 2 * var(--_gh-card-gap)) / 3);
     --_gh-arrow-size: calc(var(--font-size--4xl) * 1.6);
     --_gh-arrow-inset: clamp(8px, 2vw, 24px);
 
@@ -180,7 +181,6 @@
      UIkit overwrites transform on init, so CSS owns the position
      until JS runs, then UIkit owns it — no stacking. */
   #{{ section_id }} .game-highlights__list {
-    --_gh-track-w: min(var(--game-band-w), 100vw - 2 * var(--game-band-gutter));
     transform: translateX(calc((var(--_gh-track-w) - var(--_gh-card-w)) / 2));
     list-style: none;
     margin: 0;
@@ -320,8 +320,9 @@
   {% comment %} ── Mobile: wider cards, no arrows (K-fix-3: < 750px) ── {% endcomment %}
   @media (max-width: 749px) {
     #{{ section_id }} {
-      --_gh-card-w: 75vw;
       --_gh-card-gap: 12px;
+      --_gh-track-w: 100vw;
+      --_gh-card-w: 75vw;
       width: 100%;
       padding-inline: 0;
     }
