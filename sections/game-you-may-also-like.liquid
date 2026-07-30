@@ -1,8 +1,8 @@
 {%- liquid
   comment
     "You May Also Like" — other games by the same manufacturer.
-    Full-bleed infinite UIkit slider with large arrows.
     Renders nothing when there are zero other games (e.g. Turner / Yukon Yeti).
+    Uses the shared fnop-games-carousel snippet for the full-bleed carousel.
   endcomment
 
   assign section_id = 'game-ymal-' | append: section.id
@@ -83,216 +83,15 @@
         endif
       endfor
     endfor
+
+    assign sorted_handles_str = sorted_handles | join: '|'
   -%}
 
-  <section id="{{ section_id }}" class="game-ymal" data-ymal-count="{{ games_count }}">
-    <h2 class="game-ymal__heading game-section-heading">You May Also Like</h2>
-
-    <div class="game-ymal__slider" uk-slider="finite: false; autoplay: false; center: true" data-ymal-slider-opts="finite: false; autoplay: false; center: true">
-      <div class="uk-position-relative">
-        <div class="uk-slider-container game-ymal__container">
-          <ul class="uk-slider-items game-ymal__list">
-            {%- for handle in sorted_handles -%}
-              {%- assign game_col = collections[handle] -%}
-              {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
-
-              <li class="game-ymal__item">
-                {%- render 'fnop-game-card',
-                  fnop_game_col: game_col,
-                  fnop_card_class: 'game-ymal__card',
-                  fnop_img_class: 'game-ymal__img',
-                  fnop_hide_label: true
-                -%}
-              </li>
-            {%- endfor -%}
-          </ul>
-        </div>
-
-        <a class="game-ymal__nav game-ymal__nav--prev" href uk-slidenav-previous uk-slider-item="previous"></a>
-        <a class="game-ymal__nav game-ymal__nav--next" href uk-slidenav-next uk-slider-item="next"></a>
-      </div>
-    </div>
-  </section>
-
-  <script>
-    (function() {
-      var sectionId = '{{ section_id }}';
-
-      function updateMode() {
-        try {
-          var section = document.getElementById(sectionId);
-          if (!section) return;
-
-          var sliderEl = section.querySelector('[uk-slider]');
-          if (!sliderEl) return;
-
-          var list = section.querySelector('.game-ymal__list');
-          if (!list) return;
-
-          var items = list.querySelectorAll('.game-ymal__item');
-          if (!items.length) return;
-
-          var item = items[0];
-          var listStyle = getComputedStyle(list);
-          var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
-          var itemW = item.offsetWidth + gapVal;
-          if (!isFinite(itemW) || itemW <= 0) return;
-
-          var setW = itemW * items.length;
-          var containerW = section.querySelector('.game-ymal__container').offsetWidth;
-          var overflows = setW > containerW;
-
-          /* Toggle mode class — JS only toggles state, never rebuilds markup */
-          section.classList.toggle('game-ymal--centred', !overflows);
-          section.classList.toggle('game-ymal--carousel', overflows);
-
-          /* Hide/show arrows */
-          section.querySelectorAll('.game-ymal__nav').forEach(function(nav) {
-            if (overflows) { nav.removeAttribute('hidden'); } else { nav.setAttribute('hidden', ''); }
-          });
-
-          /* In fits mode: remove uk-slider so no transform is applied.
-             In overflow mode: restore it so the carousel works with center + loop. */
-          if (window.UIkit) {
-            if (overflows) {
-              if (!sliderEl.hasAttribute('uk-slider')) {
-                sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-ymal-slider-opts'));
-                UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
-              }
-            } else {
-              var slider = UIkit.slider(sliderEl);
-              if (slider) {
-                slider.$destroy();
-              }
-              sliderEl.removeAttribute('uk-slider');
-              /* Clear any leftover transform */
-              list.style.transform = 'none';
-            }
-          }
-        } catch (e) {
-          /* Fail toward visible: leave server markup untouched */
-        }
-      }
-
-      /* Run after layout */
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { setTimeout(updateMode, 100); });
-      } else {
-        setTimeout(updateMode, 100);
-      }
-
-      /* Recompute on resize (debounced) */
-      var resizeTimer;
-      window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(updateMode, 200);
-      });
-
-      /* Theme editor support */
-      document.addEventListener('shopify:section:load', function() { setTimeout(updateMode, 200); });
-    })();
-  </script>
-
-  {% style %}
-    #{{ section_id }} {
-      --_ymal-card-gap: 24px;
-      --_ymal-card-w: 280px;
-      --_ymal-arrow-size: calc(var(--font-size--4xl) * 1.6);
-      --_ymal-arrow-inset: clamp(8px, 2vw, 24px);
-
-      padding: clamp(40px, 6vw, 80px) 0;
-    }
-
-    #{{ section_id }} .game-ymal__heading {
-      max-width: var(--page-content-width, 1200px);
-      margin-inline: auto;
-      padding-inline: var(--page-margin, 16px);
-      margin-bottom: 32px;
-    }
-
-    #{{ section_id }} .game-ymal__container {
-      min-width: 0;
-    }
-
-    #{{ section_id }} .game-ymal__list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: var(--_ymal-card-gap);
-    }
-
-    #{{ section_id }} .game-ymal__item {
-      width: var(--_ymal-card-w);
-      flex-shrink: 0;
-    }
-
-    #{{ section_id }} .game-ymal__card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    #{{ section_id }} .game-ymal__img {
-      display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      border-radius: var(--radius-sm, 8px);
-    }
-
-    /* Centred mode — static row, no slider behaviour, no arrows */
-    #{{ section_id }}.game-ymal--centred .game-ymal__list {
-      justify-content: center;
-    }
-
-    #{{ section_id }}.game-ymal--centred .game-ymal__nav {
-      display: none;
-    }
-
-    /* Overlay arrows — translucent dark circle + white chevron (carousel mode) */
-    #{{ section_id }} .game-ymal__nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: var(--_ymal-arrow-size);
-      height: var(--_ymal-arrow-size);
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.45);
-      color: #fff;
-      padding: 0;
-      text-decoration: none;
-    }
-
-    #{{ section_id }} .game-ymal__nav:hover {
-      background: rgba(0, 0, 0, 0.65);
-    }
-
-    #{{ section_id }} .game-ymal__nav svg {
-      width: calc(var(--_ymal-arrow-size) * 0.45);
-      height: calc(var(--_ymal-arrow-size) * 0.45);
-      color: inherit;
-    }
-
-    #{{ section_id }} .game-ymal__nav--prev {
-      left: var(--_ymal-arrow-inset);
-    }
-
-    #{{ section_id }} .game-ymal__nav--next {
-      right: var(--_ymal-arrow-inset);
-    }
-
-    /* Mobile: stack-friendly */
-    @media (max-width: 749px) {
-      #{{ section_id }} {
-        --_ymal-card-w: 60vw;
-      }
-    }
-  {% endstyle %}
+  {%- render 'fnop-games-carousel',
+    fnop_carousel_id: section_id,
+    fnop_carousel_heading: 'You May Also Like',
+    fnop_carousel_handles: sorted_handles_str
+  -%}
 {%- endif -%}
 
 {% schema %}
