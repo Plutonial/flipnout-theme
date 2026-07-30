@@ -17,7 +17,7 @@
   assign hl_tail = hl_count | minus: hl_start
 -%}
 <div class="game-section-band game-section-band--cream">
-  <section id="{{ section_id }}" class="game-highlights" data-gh-count="{{ hl_count }}">
+  <section id="{{ section_id }}" class="game-highlights game-highlights--carousel" data-gh-count="{{ hl_count }}">
     <h2 class="game-highlights__heading game-section-heading">Highlights</h2>
 
     <div uk-lightbox="animation: fade">
@@ -174,8 +174,13 @@
     margin-inline: auto;
   }
 
+  /* Fix 1: centre offset so pre-JS paint already has item 0 centred.
+     padding-inline-start shifts the track start so the first card
+     lands on the container axis. UIkit center:true for index 0
+     produces transform:translate(0) which stacks as a no-op. */
   #{{ section_id }} .game-highlights__container {
     min-width: 0;
+    padding-inline-start: calc(50% - var(--_gh-card-w) / 2);
   }
 
   #{{ section_id }} .game-highlights__list {
@@ -318,6 +323,8 @@
   @media (max-width: 749px) {
     #{{ section_id }} {
       --_gh-card-w: 75vw;
+      --_gh-card-gap: 12px;
+      padding-inline: 0;
     }
 
     #{{ section_id }} .game-highlights__nav {
