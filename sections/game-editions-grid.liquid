@@ -58,19 +58,48 @@
       {%- assign product = collection.products | where: 'handle', handle | first -%}
       {%- if product == blank -%}{%- continue -%}{%- endif -%}
       {%- liquid
+        assign card_image = product.metafields.custom.backglass
+        unless card_image
+          assign card_image = product.featured_image
+        endunless
         assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
         capture edition_label
           render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
         endcapture
         assign edition_label = edition_label | strip
+        assign is_sold_out = false
+        if product.tags contains 'sold-out'
+          assign is_sold_out = true
+        endif
       -%}
 
-      {%- render 'fnop-product-card',
-        product_card_product: product,
-        product_card_title: edition_label,
-        product_card_link: false,
-        product_card_badge: edition_badge
-      -%}
+      <div class="editions-grid__card">
+        {%- if card_image -%}
+          <div class="editions-grid__art">
+            {{ card_image | image_url: width: 800 | image_tag:
+              loading: 'lazy',
+              class: 'editions-grid__img',
+              sizes: '(min-width: 750px) 25vw, 100vw',
+              widths: '400,600,800'
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="editions-grid__info">
+          {%- if edition_badge != blank -%}
+            <span class="editions-grid__badge">{{ edition_badge }}</span>
+          {%- endif -%}
+          {%- if edition_label != blank -%}
+            <h3 class="editions-grid__title">{{ edition_label }}</h3>
+          {%- endif -%}
+          <span class="editions-grid__price">{{ product.price | money }}</span>
+          {%- if is_sold_out -%}
+            <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
+          {%- else -%}
+            <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
+          {%- endif -%}
+        </div>
+      </div>
     {%- endfor -%}
   </div>
 </section>
@@ -134,7 +163,7 @@
   }
 
   .editions-grid[data-editions-n="1"] {
-    grid-template-columns: minmax(0, 50%);
+    grid-template-columns: minmax(0, var(--_card-max-w));
   }
 
   .editions-grid[data-editions-n="2"] {
@@ -169,6 +198,90 @@
     }
   }
 
+  .editions-grid__card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-sm, 8px);
+    overflow: hidden;
+    background: var(--color-surface, #f5f5f5);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .editions-grid__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  }
+
+  .editions-grid__art {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+  }
+
+  .editions-grid__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .editions-grid__info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .editions-grid__badge {
+    display: inline-block;
+    font-size: var(--font-size--2xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent, #666);
+  }
+
+  .editions-grid__title {
+    font-size: var(--font-size--xl);
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+    color: var(--color-foreground, #333);
+  }
+
+  .editions-grid__price {
+    font-size: var(--font-size--xl);
+    font-weight: 500;
+    color: var(--color-foreground, #333);
+  }
+
+  .editions-grid__btn {
+    display: inline-block;
+    margin-top: auto;
+    padding: 12px 24px;
+    background: var(--color-logo-red, #FF0000);
+    color: #fff;
+    font-size: var(--font-size--xl);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    text-align: center;
+    border-radius: var(--radius-sm, 8px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .editions-grid__btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+  }
+
+  .editions-grid__btn--sold-out {
+    background: #999;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 {% endstyle %}
 
 {% schema %}

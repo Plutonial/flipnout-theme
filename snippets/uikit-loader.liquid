@@ -9,7 +9,6 @@
 {% endcomment %}
 
 {% if template.name == 'product' or template.suffix == 'game' or template.suffix == 'brand' %}
-  {{ 'fnop-product-card.css' | asset_url | stylesheet_tag }}
   {{ 'fnop-uikit-components.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'fnop-uikit.min.js' | asset_url }}" defer></script>
   <script src="{{ 'fnop-uikit-icons.min.js' | asset_url }}" defer></script>

@@ -17,14 +17,16 @@
   font-display: swap;
 }
 
-{% comment %} ── Hero band: content-driven height with aspect-ratio as a floor ── {% endcomment %}
+{% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
 #{{ hero_id }} {
   --_bg-color: {{ _bg_color }};
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: min(420px, 62svh);
+  aspect-ratio: 4 / 5;
+  min-height: 420px;
+  max-height: min(560px, 62svh);
   background: var(--_bg-color);
   overflow: hidden;
 }
@@ -78,7 +80,7 @@
   align-items: flex-start;
   gap: 12px;
   text-align: left;
-  max-width: min(90%, 1100px);
+  max-width: 700px;
 }
 
 {% comment %} ── Logo: height-constrained ── {% endcomment %}
@@ -93,12 +95,6 @@
 }
 
 {% comment %} ── H1: Phosphate, 5xl — shared by game and brand heroes ── {% endcomment %}
-{% comment %}
-  The H1 is 2–5 words of display type and needs a wider measure than the
-  subtitle's 700px cap. The stack is set to min(90%, 1100px) so titles fit
-  on one line in most cases; the subtitle has its own 700px max-width.
-  text-wrap: balance gives a cleaner break when the H1 does wrap.
-{% endcomment %}
 #{{ hero_id }} .collection-hero__h1 {
   color: white;
   font-family: "Phosphate", var(--font-h1--family), sans-serif;
@@ -107,7 +103,6 @@
   font-weight: 600;
   margin: 0;
   text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
-  text-wrap: balance;
 }
 
 {% comment %} ── Subtitle ── {% endcomment %}
@@ -117,14 +112,14 @@
   line-height: 1.5;
   font-weight: 400;
   margin: 0;
-  max-width: 700px;
   text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
 }
 
 {% comment %} ── Tablet: 16:9 band ── {% endcomment %}
 @media (min-width: 701px) {
   #{{ hero_id }} {
-    min-height: clamp(340px, calc(100vw / (16 / 9)), min(560px, 62svh));
+    aspect-ratio: 16 / 9;
+    min-height: 340px;
   }
 
   #{{ hero_id }} .collection-hero__logo {
@@ -144,7 +139,7 @@
 {% comment %} ── Desktop: 4.2:1 cinematic band ── {% endcomment %}
 @media (min-width: 1025px) {
   #{{ hero_id }} {
-    min-height: clamp(340px, calc(100vw / 4.2), min(560px, 62svh));
+    aspect-ratio: 4.2 / 1;
   }
 
   #{{ hero_id }} .collection-hero__logo {
