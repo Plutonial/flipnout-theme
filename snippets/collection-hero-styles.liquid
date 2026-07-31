@@ -80,7 +80,7 @@
   align-items: flex-start;
   gap: 12px;
   text-align: left;
-  max-width: 700px;
+  max-width: min(90%, 1100px);
 }
 
 {% comment %} ── Logo: height-constrained ── {% endcomment %}
@@ -95,6 +95,12 @@
 }
 
 {% comment %} ── H1: Phosphate, 5xl — shared by game and brand heroes ── {% endcomment %}
+{% comment %}
+  The H1 is 2–5 words of display type and needs a wider measure than the
+  subtitle's 700px cap. The stack is set to min(90%, 1100px) so titles fit
+  on one line in most cases; the subtitle has its own 700px max-width.
+  text-wrap: balance gives a cleaner break when the H1 does wrap.
+{% endcomment %}
 #{{ hero_id }} .collection-hero__h1 {
   color: white;
   font-family: "Phosphate", var(--font-h1--family), sans-serif;
@@ -103,6 +109,7 @@
   font-weight: 600;
   margin: 0;
   text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+  text-wrap: balance;
 }
 
 {% comment %} ── Subtitle ── {% endcomment %}
@@ -112,6 +119,7 @@
   line-height: 1.5;
   font-weight: 400;
   margin: 0;
+  max-width: 700px;
   text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
 }
 
