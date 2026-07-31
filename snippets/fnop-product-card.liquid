@@ -19,8 +19,14 @@
     assign pc_image = pc_product.featured_image
   endunless
 
+  comment
+    Sold-out logic: tag is an explicit override; otherwise fall back to
+    real availability so untagged unavailable products show "Sold Out".
+  endcomment
   assign pc_sold_out = false
   if pc_product.tags contains 'sold-out'
+    assign pc_sold_out = true
+  elsif pc_product.available == false
     assign pc_sold_out = true
   endif
 -%}
