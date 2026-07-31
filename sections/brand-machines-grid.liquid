@@ -221,10 +221,17 @@
         {%- endif -%}
         {%- assign product = all_products[ph] -%}
         {%- if product == blank -%}{%- continue -%}{%- endif -%}
+        {%- assign card_game_name = '' -%}
+        {%- if games_count > 0 and pg != blank -%}
+          {%- for gh in gn_handle_arr -%}
+            {%- if gh == pg -%}
+              {%- assign card_game_name = gn_label_arr[forloop.index0] -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
         <li class="bmg__item" data-game="{{ pg }}" id="{{ section.id }}-{{ product.id }}">
-          {% # theme-check-disable %}
-          {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
-          {% # theme-check-enable %}
+          {%- render 'brand-machine-card', product: product, game_name: card_game_name -%}
         </li>
       {%- endfor -%}
     </ul>
@@ -435,6 +442,71 @@
   .bmg__more:hover {
     background: rgb(var(--color-foreground-rgb));
     color: rgb(var(--color-background-rgb));
+  }
+
+  {% comment %} ── Brand machine card (bmc) ── {% endcomment %}
+  .bmc {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .bmc__poster {
+    position: relative;
+    aspect-ratio: 1600 / 2050;
+    border-radius: var(--radius-sm, 8px);
+    overflow: hidden;
+    background: rgb(var(--color-foreground-rgb) / 0.04);
+  }
+
+  .bmc__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .bmc__badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgb(var(--color-foreground-rgb) / 0.85);
+    color: rgb(var(--color-background-rgb));
+    font-size: var(--font-size--3xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+
+  .bmc__game {
+    margin-top: 10px;
+    font-size: var(--font-size--3xs);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgb(var(--color-foreground-rgb) / 0.5);
+    line-height: 1.2;
+  }
+
+  .bmc__title {
+    margin: 4px 0 0;
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .bmc__price {
+    margin-top: 4px;
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    color: rgb(var(--color-foreground-rgb) / 0.8);
   }
 {% endstyle %}
 

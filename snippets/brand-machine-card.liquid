@@ -1,0 +1,37 @@
+{%- comment -%}
+  Brand machine card — renders a product card for the brand machines grid.
+
+  Params:
+    product    — the product object
+    game_name  — derived game name (from fnop-game-name snippet); empty in mode 2
+{%- endcomment -%}
+
+{%- liquid
+  assign is_sold_out = false
+  if product.tags contains 'sold-out'
+    assign is_sold_out = true
+  endif
+-%}
+
+<a class="bmc" href="{{ product.url }}">
+  <div class="bmc__poster">
+    {%- if product.featured_media -%}
+      {{ product.featured_media | image_url: width: 800 | image_tag:
+        loading: 'lazy',
+        class: 'bmc__img',
+        sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
+        widths: '200,400,600,800'
+      }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+    {%- endif -%}
+    {%- if is_sold_out -%}
+      <span class="bmc__badge">Sold Out</span>
+    {%- endif -%}
+  </div>
+  {%- if game_name != blank -%}
+    <span class="bmc__game">{{ game_name }}</span>
+  {%- endif -%}
+  <h3 class="bmc__title">{{ product.title }}</h3>
+  <span class="bmc__price">{{ product.price | money_without_decimals }}</span>
+</a>
