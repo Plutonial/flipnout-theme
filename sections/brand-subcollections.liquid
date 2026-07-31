@@ -12,12 +12,10 @@
 {% paginate collection.products by 50 %}
   {%- assign accessory_count = 0 -%}
   {%- for p in collection.products -%}
-    {%- if p.product_type == 'Accessory' -%}
+    {%- if p.type == 'Accessory' -%}
       {%- assign accessory_count = accessory_count | plus: 1 -%}
     {%- endif -%}
   {%- endfor -%}
-
-  <!-- acc_debug count={{ accessory_count }} total={{ collection.products.size }} handle={{ collection.handle }} -->
 
   {%- if accessory_count > 0 -%}
 
@@ -28,7 +26,7 @@
 
       <ul class="bacc__grid" role="list">
         {%- for p in collection.products -%}
-          {%- if p.product_type == 'Accessory' -%}
+          {%- if p.type == 'Accessory' -%}
             <li class="bacc__item" id="{{ section.id }}-acc-{{ p.id }}">
               <div class="bmc--square">
                 {%- render 'brand-machine-card', product: p, game_name: '' -%}
