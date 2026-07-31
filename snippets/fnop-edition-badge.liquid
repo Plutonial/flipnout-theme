@@ -12,7 +12,18 @@
   if _edition_meta != blank and _edition_meta.size > 0
     assign _first = _edition_meta | first
     if _first != blank
-      assign _badge_text = _first.system.display_name | default: _first.display_name | default: _first
+      assign _badge_text = _first.system.display_name | default: _first.display_name | default: _first.name | default: _first.label
+      comment — If all named fields are blank, derive from the handle (e.g. "pro" → "Pro")
+      endcomment
+      if _badge_text == blank or _badge_text contains 'MetaobjectDrop'
+        assign _handle_parts = _first.system.handle | default: _first.handle | split: '.'
+        assign _handle_slug = _handle_parts | last | default: _handle_parts | first
+        if _handle_slug != blank
+          assign _badge_text = _handle_slug | replace: '-', ' ' | capitalize
+        else
+          assign _badge_text = ''
+        endif
+      endif
     endif
   endif
 -%}

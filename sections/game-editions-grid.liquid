@@ -71,7 +71,16 @@
         if _ed_meta != blank and _ed_meta.size > 0
           assign _first_ed = _ed_meta | first
           if _first_ed != blank
-            assign _ed_badge_text = _first_ed.system.display_name | default: _first_ed.display_name | default: _first_ed
+            assign _ed_badge_text = _first_ed.system.display_name | default: _first_ed.display_name | default: _first_ed.name | default: _first_ed.label
+            if _ed_badge_text == blank or _ed_badge_text contains 'MetaobjectDrop'
+              assign _ed_handle_parts = _first_ed.system.handle | default: _first_ed.handle | split: '.'
+              assign _ed_handle_slug = _ed_handle_parts | last | default: _ed_handle_parts | first
+              if _ed_handle_slug != blank
+                assign _ed_badge_text = _ed_handle_slug | replace: '-', ' ' | capitalize
+              else
+                assign _ed_badge_text = ''
+              endif
+            endif
           endif
         endif
 
