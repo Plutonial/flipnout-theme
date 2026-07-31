@@ -58,10 +58,7 @@
       {%- assign product = collection.products | where: 'handle', handle | first -%}
       {%- if product == blank -%}{%- continue -%}{%- endif -%}
       {%- liquid
-        assign card_image = product.metafields.custom.backglass
-        unless card_image
-          assign card_image = product.featured_image
-        endunless
+        assign card_image = product.featured_image
         capture edition_label
           render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
         endcapture
