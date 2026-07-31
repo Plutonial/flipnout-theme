@@ -211,29 +211,41 @@
     {%- endif -%}
 
     <ul class="bmg__grid">
-      {%- for i in (0..999) -%}
-        {%- if i >= total_machines -%}{%- break -%}{%- endif -%}
-        {%- assign ph = product_handle_arr[i] -%}
-        {%- if games_count > 0 -%}
+      {%- if games_count > 0 -%}
+        {%- comment %} Mode 1: iterate each sorted game, then its edition-ordered products {% endcomment -%}
+        {%- for i in (0..999) -%}
+          {%- if i >= total_machines -%}{%- break -%}{%- endif -%}
+          {%- assign ph = product_handle_arr[i] -%}
           {%- assign pg = product_game_arr[i] -%}
-        {%- else -%}
-          {%- assign pg = '' -%}
-        {%- endif -%}
-        {%- assign product = all_products[ph] -%}
-        {%- if product == blank -%}{%- continue -%}{%- endif -%}
-        {%- assign card_game_name = '' -%}
-        {%- if games_count > 0 and pg != blank -%}
+          {%- assign game_col = collections[pg] -%}
+          {%- assign card_product = blank -%}
+          {%- for p in game_col.products -%}
+            {%- if p.handle == ph -%}
+              {%- assign card_product = p -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if card_product == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign card_game_name = '' -%}
           {%- for gh in gn_handle_arr -%}
             {%- if gh == pg -%}
               {%- assign card_game_name = gn_label_arr[forloop.index0] -%}
               {%- break -%}
             {%- endif -%}
           {%- endfor -%}
-        {%- endif -%}
-        <li class="bmg__item" data-game="{{ pg }}" id="{{ section.id }}-{{ product.id }}">
-          {%- render 'brand-machine-card', product: product, game_name: card_game_name -%}
-        </li>
-      {%- endfor -%}
+          <li class="bmg__item" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
+            {%- render 'brand-machine-card', product: card_product, game_name: card_game_name -%}
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- comment %} Mode 2: flat grid from collection.products {% endcomment -%}
+        {%- for p in collection.products -%}
+          {%- if p.type == 'Accessory' -%}{%- continue -%}{%- endif -%}
+          <li class="bmg__item" data-game="" id="{{ section.id }}-{{ p.id }}">
+            {%- render 'brand-machine-card', product: p, game_name: '' -%}
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
     </ul>
 
     {%- if games_count > 0 -%}
