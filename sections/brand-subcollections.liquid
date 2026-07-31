@@ -1,52 +1,131 @@
 {%- liquid
-  assign section_id = 'brand-subcollections-' | append: section.id
+  comment
+    Brand Accessories Grid.
+    Uses paginate to access up to 50 products (Shopify's max page size).
+    Only page 1 is rendered — Shopify Liquid cannot server-render beyond 50
+    in a single section without pagination controls. The "View all" CTA
+    links to the full filtered listing for brands that exceed 50 accessories.
+  endcomment
 -%}
 
-{% comment %} ── ACCESSORIES GRID ── {% endcomment %}
-{%- assign accessory_count = 0 -%}
-{%- for p in collection.products -%}
-  {%- if p.product_type == 'Accessory' -%}
-    {%- assign accessory_count = accessory_count | plus: 1 -%}
-  {%- endif -%}
-{%- endfor -%}
+{%- comment %} ── Count accessories and collect them via paginate ── {% endcomment %}
+{% paginate collection.products by 50 %}
+  {%- assign accessory_count = 0 -%}
+  {%- for p in collection.products -%}
+    {%- if p.type == 'Accessory' -%}
+      {%- assign accessory_count = accessory_count | plus: 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
 
-{%- if accessory_count > 0 -%}
-<section id="brand-accessories" class="brand-accessories">
-  <div class="brand-section__container">
-    <h2 class="brand-section__heading">{{ collection.title }} {{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
+  {%- if accessory_count > 0 -%}
 
-    <div class="brand-accessories__grid" role="list">
-      {%- assign shown = 0 -%}
-      {%- for product in collection.products -%}
-        {%- if shown >= 12 -%}{% break %}{%- endif -%}
-        {%- if product.type contains 'Accessory' -%}
-          <article role="listitem" class="brand-accessories__card">
-            <a href="{{ product.url }}" class="brand-accessories__link">
-              {%- if product.featured_media -%}
-                {{ product.featured_media | image_url: width: 400 | image_tag: class: 'brand-accessories__image', loading: 'lazy', sizes: '(min-width: 750px) 16vw, 45vw', widths: '200,300,400' }}
-              {%- else -%}
-                {{ 'product-1' | placeholder_svg_tag: 'brand-accessories__image brand-accessories__image--placeholder' }}
-              {%- endif -%}
-              <div class="brand-accessories__meta">
-                <h3 class="brand-accessories__title">{{ product.title }}</h3>
-                {% render 'price', product_resource: product, show_unit_price: true %}
+<brand-accessories-grid class="bacc" data-initial="12" data-step="12">
+  <section id="brand-accessories">
+    <div class="brand-section__container">
+      <h2 class="brand-section__heading">{{ collection.title }} {{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
+
+      <ul class="bacc__grid" role="list">
+        {%- for p in collection.products -%}
+          {%- if p.type == 'Accessory' -%}
+            <li class="bacc__item" id="{{ section.id }}-acc-{{ p.id }}">
+              <div class="bmc--square">
+                {%- render 'brand-machine-card', product: p, game_name: '' -%}
               </div>
-            </a>
-          </article>
-          {%- assign shown = shown | plus: 1 -%}
-        {%- endif -%}
-      {%- endfor -%}
-    </div>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
 
-    <div class="brand-section__cta-wrap">
-      <a class="brand-section__cta" href="/collections/{{ collection.handle }}?filter.product_type=Accessory">
-        View all {{ collection.title }} accessories
-      </a>
-    </div>
-  </div>
-</section>
-{%- endif -%}
+      <button class="bacc__more" type="button" hidden>Show more</button>
 
+      <div class="brand-section__cta-wrap">
+        <a class="brand-section__cta" href="/collections/{{ collection.handle }}?filter.product_type=Accessory">
+          View all {{ collection.title }} accessories
+        </a>
+      </div>
+    </div>
+  </section>
+</brand-accessories-grid>
+
+{%- comment %} ── Web Component: brand-accessories-grid (reveal mechanic) ── {% endcomment %}
+<script>
+  if (!customElements.get('brand-accessories-grid')) {
+    class BrandAccessoriesGrid extends HTMLElement {
+      connectedCallback() {
+        this.grid = this.querySelector('.bacc__grid');
+        this.items = Array.from(this.querySelectorAll('.bacc__item'));
+        this.btn = this.querySelector('.bacc__more');
+        this.initial = parseInt(this.dataset.initial, 10) || 12;
+        this.step = parseInt(this.dataset.step, 10) || 12;
+        this.clicks = 0;
+
+        this.update();
+
+        if (this.btn) {
+          this.btn.addEventListener('click', () => {
+            var limit = this.revealLimit(this.items.length, this.clicks);
+            if (limit >= this.items.length) {
+              this.clicks = 0;
+            } else {
+              this.clicks++;
+            }
+            this.update();
+          });
+        }
+
+        this._onResize = () => this.update();
+        window.addEventListener('resize', this._onResize);
+      }
+
+      disconnectedCallback() {
+        window.removeEventListener('resize', this._onResize);
+      }
+
+      get columns() {
+        var t = getComputedStyle(this.grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
+      }
+
+      revealLimit(total, clicks) {
+        var target = this.initial + clicks * this.step;
+        var cols = this.columns;
+        return Math.min(total, Math.ceil(target / cols) * cols);
+      }
+
+      update() {
+        var total = this.items.length;
+        var limit = this.revealLimit(total, this.clicks);
+
+        for (var i = 0; i < total; i++) {
+          if (i >= limit) {
+            this.items[i].classList.add('bacc__item--beyond');
+          } else {
+            this.items[i].classList.remove('bacc__item--beyond');
+          }
+        }
+
+        if (this.btn) {
+          if (total <= this.initial) {
+            this.btn.hidden = true;
+          } else if (limit >= total) {
+            this.btn.hidden = false;
+            this.btn.textContent = 'Show less';
+          } else {
+            this.btn.hidden = false;
+            var nextLimit = this.revealLimit(total, this.clicks + 1);
+            var more = nextLimit - limit;
+            var remaining = total - limit;
+            this.btn.textContent = 'Show ' + more + ' more \u00B7 ' + remaining + ' remaining';
+          }
+        }
+      }
+    }
+    customElements.define('brand-accessories-grid', BrandAccessoriesGrid);
+  }
+</script>
+
+  {%- endif -%}
+{% endpaginate %}
 
 {% style %}
   {% comment %} ── Shared section styles ── {% endcomment %}
@@ -74,7 +153,7 @@
     padding: 12px 28px;
     border: 2px solid currentColor;
     border-radius: var(--radius-sm, 8px);
-    font-size: 14px;
+    font-size: var(--font-size--sm);
     font-weight: 600;
     text-decoration: none;
     transition: background 0.2s, color 0.2s;
@@ -85,68 +164,71 @@
     color: rgb(var(--color-background-rgb));
   }
 
-  {% comment %} ── Accessories section ── {% endcomment %}
+  {% comment %} ── Accessories grid ── {% endcomment %}
   #brand-accessories {
     padding-block: clamp(48px, 8vw, 120px);
   }
 
-  .brand-accessories__grid {
+  .bacc__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   @media (min-width: 750px) {
-    .brand-accessories__grid {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 28px;
+    .bacc__grid {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
-  @media (min-width: 1100px) {
-    .brand-accessories__grid {
-      grid-template-columns: repeat(5, 1fr);
+  @media (min-width: 900px) {
+    .bacc__grid {
+      grid-template-columns: repeat(4, 1fr);
       gap: 32px;
     }
   }
 
-  .brand-accessories__card {
+  @media (min-width: 1200px) {
+    .bacc__grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  .bacc__item {
+    min-width: 0;
+  }
+
+  .bacc__item--beyond {
+    display: none;
+  }
+
+  {% comment %} Square aspect-ratio modifier for accessory cards {% endcomment %}
+  .bmc--square .bmc__poster {
+    aspect-ratio: 1 / 1;
+  }
+
+  .bacc__more[hidden] { display: none; }
+
+  .bacc__more {
+    display: block;
+    margin: 32px auto 0;
+    padding: 12px 28px;
+    border: 2px solid rgba(0, 0, 0, 0.81);
     border-radius: var(--radius-sm, 8px);
-    overflow: hidden;
-    background: rgb(var(--color-background-rgb));
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  .brand-accessories__card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
-  }
-
-  .brand-accessories__link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-  }
-
-  .brand-accessories__image {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-  }
-
-  .brand-accessories__meta {
-    padding: 12px;
-    display: grid;
-    gap: 4px;
-  }
-
-  .brand-accessories__title {
-    font: inherit;
+    font-size: var(--font-size--sm);
     font-weight: 600;
-    font-size: 13px;
-    margin: 0;
+    background-color: transparent;
+    color: rgba(0, 0, 0, 0.81);
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .bacc__more:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
   }
 {% endstyle %}
 
