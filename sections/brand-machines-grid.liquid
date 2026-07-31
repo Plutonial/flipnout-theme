@@ -173,6 +173,42 @@
 {%- comment %} Don't render anything if zero machines {% endcomment -%}
 {%- if total_machines > 0 -%}
 
+{%- comment %} Count sold-out machines by tag {% endcomment -%}
+{%- liquid
+  assign sold_out_count = 0
+  if games_count > 0
+    for i in (0..999)
+      if i >= total_machines
+        break
+      endif
+      assign ph = product_handle_arr[i]
+      assign pg = product_game_arr[i]
+      assign game_col = collections[pg]
+      for p in game_col.products
+        if p.handle == ph
+          if p.tags contains 'sold-out'
+            assign sold_out_count = sold_out_count | plus: 1
+          endif
+          break
+        endif
+      endfor
+    endfor
+  else
+    for p in collection.products
+      if p.type == 'Accessory'
+        continue
+      endif
+      if p.tags contains 'sold-out'
+        assign sold_out_count = sold_out_count | plus: 1
+      endif
+    endfor
+  endif
+  assign show_oos_switch = false
+  if sold_out_count > 0 and sold_out_count < total_machines
+    assign show_oos_switch = true
+  endif
+-%}
+
 {%- comment %} Build game name lookup for dropdown labels {% endcomment -%}
 {%- if games_count > 0 -%}
   {%- assign game_name_handles = '' -%}
@@ -206,7 +242,13 @@
             <option value="{{ gn_handle_arr[i] }}">{{ gn_label_arr[i] }}</option>
           {%- endfor -%}
         </select>
-        <span class="bmg__count">{{ total_machines }} machines</span>
+        {%- if show_oos_switch -%}
+          <label class="bmg__switch">
+            <input type="checkbox" role="switch" checked class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
       </div>
     {%- endif -%}
 
@@ -233,7 +275,7 @@
               {%- break -%}
             {%- endif -%}
           {%- endfor -%}
-          <li class="bmg__item" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
+          <li class="bmg__item{% if card_product.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
             {%- render 'brand-machine-card', product: card_product, game_name: card_game_name -%}
           </li>
         {%- endfor -%}
@@ -241,13 +283,14 @@
         {%- comment %} Mode 2: flat grid from collection.products {% endcomment -%}
         {%- for p in collection.products -%}
           {%- if p.type == 'Accessory' -%}{%- continue -%}{%- endif -%}
-          <li class="bmg__item" data-game="" id="{{ section.id }}-{{ p.id }}">
+          <li class="bmg__item{% if p.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="" id="{{ section.id }}-{{ p.id }}">
             {%- render 'brand-machine-card', product: p, game_name: '' -%}
           </li>
         {%- endfor -%}
       {%- endif -%}
     </ul>
 
+    <div class="bmg__empty" hidden>No machines match. Try showing out of stock.</div>
     {%- if games_count > 0 -%}
       <button class="bmg__more" type="button" hidden>Show more</button>
     {%- endif -%}
@@ -263,15 +306,24 @@
         this.items = Array.from(this.querySelectorAll('.bmg__item'));
         this.select = this.querySelector('.bmg__select');
         this.btn = this.querySelector('.bmg__more');
-        this.countEl = this.querySelector('.bmg__count');
+        this.emptyEl = this.querySelector('.bmg__empty');
+        this.switchInput = this.querySelector('.bmg__switch-input');
+        this.resultLine = null;
         this.initial = parseInt(this.dataset.initial, 10) || 12;
         this.step = parseInt(this.dataset.step, 10) || 12;
         this.clicks = 0;
+        this.totalMachines = this.items.length;
 
         this.update();
 
         if (this.select) {
           this.select.addEventListener('change', () => {
+            this.clicks = 0;
+            this.update();
+          });
+        }
+        if (this.switchInput) {
+          this.switchInput.addEventListener('change', () => {
             this.clicks = 0;
             this.update();
           });
@@ -302,11 +354,17 @@
         return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
       }
 
+      get showOOS() {
+        return this.switchInput ? this.switchInput.checked : true;
+      }
+
       get visibleItems() {
         var filter = this.select ? this.select.value : 'all';
+        var showOOS = this.showOOS;
         return this.items.filter(function(item) {
-          if (filter === 'all') return true;
-          return item.dataset.game === filter;
+          var matchesGame = filter === 'all' || item.dataset.game === filter;
+          var matchesOOS = showOOS || !item.classList.contains('bmg__item--sold-out');
+          return matchesGame && matchesOOS;
         });
       }
 
@@ -316,36 +374,79 @@
         return Math.min(total, Math.ceil(target / cols) * cols);
       }
 
+      get isFilterActive() {
+        var gameFilter = this.select ? this.select.value !== 'all' : false;
+        var oosFilter = this.switchInput ? !this.switchInput.checked : false;
+        return gameFilter || oosFilter;
+      }
+
+      updateResultLine(vis) {
+        var toolbar = this.querySelector('.bmg__toolbar');
+        if (!toolbar) return;
+
+        if (this.isFilterActive) {
+          if (!this.resultLine) {
+            this.resultLine = document.createElement('div');
+            this.resultLine.className = 'bmg__result-line';
+            this.resultLine.setAttribute('aria-live', 'polite');
+          }
+          var limit = this.revealLimit(vis.length, this.clicks);
+          var shown = Math.min(limit, vis.length);
+          this.resultLine.textContent = 'Showing ' + shown + ' of ' + vis.length;
+          if (!this.resultLine.parentNode) {
+            toolbar.insertAdjacentElement('afterend', this.resultLine);
+          }
+        } else {
+          if (this.resultLine && this.resultLine.parentNode) {
+            this.resultLine.parentNode.removeChild(this.resultLine);
+          }
+        }
+      }
+
       update() {
         var filter = this.select ? this.select.value : 'all';
+        var showOOS = this.showOOS;
         var vis = this.visibleItems;
         var limit = this.revealLimit(vis.length, this.clicks);
         var visIndex = 0;
 
         for (var i = 0; i < this.items.length; i++) {
           var item = this.items[i];
-          var matchesFilter = filter === 'all' || item.dataset.game === filter;
+          var matchesGame = filter === 'all' || item.dataset.game === filter;
+          var matchesOOS = showOOS || !item.classList.contains('bmg__item--sold-out');
 
-          if (!matchesFilter) {
+          if (!matchesGame) {
             item.classList.add('bmg__item--filtered');
-            item.classList.remove('bmg__item--beyond');
           } else {
             item.classList.remove('bmg__item--filtered');
+          }
+
+          if (!matchesOOS) {
+            item.classList.add('bmg__item--oos-hidden');
+          } else {
+            item.classList.remove('bmg__item--oos-hidden');
+          }
+
+          if (matchesGame && matchesOOS) {
             if (visIndex >= limit) {
               item.classList.add('bmg__item--beyond');
             } else {
               item.classList.remove('bmg__item--beyond');
             }
             visIndex++;
+          } else {
+            item.classList.remove('bmg__item--beyond');
           }
         }
 
-        if (this.countEl) {
-          this.countEl.textContent = vis.length + ' machine' + (vis.length !== 1 ? 's' : '');
+        this.updateResultLine(vis);
+
+        if (this.emptyEl) {
+          this.emptyEl.hidden = vis.length > 0;
         }
 
         if (this.btn) {
-          if (vis.length <= this.initial) {
+          if (vis.length === 0 || vis.length <= this.initial) {
             this.btn.hidden = true;
           } else if (limit >= vis.length) {
             this.btn.hidden = false;
@@ -374,7 +475,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 20px;
     margin-bottom: 32px;
     flex-wrap: wrap;
   }
@@ -394,9 +495,81 @@
     background-position: right 14px center;
   }
 
-  .bmg__count {
+  .bmg__result-line {
+    text-align: center;
     font-size: var(--font-size--xs);
-    color: rgb(var(--color-foreground-rgb) / 0.6);
+    color: rgba(0, 0, 0, 0.6);
+    margin-top: -16px;
+    margin-bottom: 32px;
+  }
+
+  .bmg__switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .bmg__switch-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .bmg__switch-input:focus-visible + .bmg__switch-track {
+    outline: 2px solid;
+    outline-offset: 2px;
+  }
+
+  .bmg__switch-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    border: 2px solid rgba(0, 0, 0, 0.81);
+    border-radius: 999px;
+    background: transparent;
+    transition: background-color 0.18s, border-color 0.18s;
+    flex-shrink: 0;
+  }
+
+  .bmg__switch-input:checked + .bmg__switch-track {
+    background: rgb(255, 0, 0);
+    border-color: rgb(255, 0, 0);
+  }
+
+  .bmg__switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.18s;
+  }
+
+  .bmg__switch-input:checked + .bmg__switch-track .bmg__switch-thumb {
+    transform: translateX(20px);
+  }
+
+  .bmg__switch-label {
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.81);
+  }
+
+  .bmg__empty {
+    text-align: center;
+    font-size: var(--font-size--xs);
+    color: rgba(0, 0, 0, 0.6);
+    padding: 48px 0;
   }
 
   .bmg__grid {
@@ -434,7 +607,8 @@
   }
 
   .bmg__item--filtered,
-  .bmg__item--beyond {
+  .bmg__item--beyond,
+  .bmg__item--oos-hidden {
     display: none;
   }
 
@@ -527,6 +701,19 @@
   }
 
   @media (max-width: 749px) {
+    .bmg__toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .bmg__toolbar .bmg__select {
+      width: 100%;
+    }
+
+    .bmg__toolbar .bmg__switch {
+      justify-content: center;
+    }
+
     .bmc__title,
     .bmc__price {
       font-size: var(--font-size--md);
