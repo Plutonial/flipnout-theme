@@ -9,7 +9,8 @@
 -%}
 
 {%- comment %} ── Count accessories and collect them via paginate ── {% endcomment %}
-{% paginate collection.products by 50 %}
+{%- assign page_size = 50 -%}
+{% paginate collection.products by page_size %}
   {%- assign accessory_count = 0 -%}
   {%- for p in collection.products -%}
     {%- if p.type == 'Accessory' -%}
@@ -38,11 +39,13 @@
 
       <button class="bacc__more" type="button" hidden>Show more</button>
 
+      {%- if collection.products_count > page_size -%}
       <div class="brand-section__cta-wrap">
         <a class="brand-section__cta" href="/collections/{{ collection.handle }}?filter.product_type=Accessory">
           View all {{ collection.title }} accessories
         </a>
       </div>
+      {%- endif -%}
     </div>
   </section>
 </brand-accessories-grid>
