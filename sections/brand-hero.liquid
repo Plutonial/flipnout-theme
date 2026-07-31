@@ -74,15 +74,10 @@
     }
   }
 
-  {% comment %} ── Part A: Mobile — centre content + bigger logo ── {% endcomment %}
-  @media (max-width: 700px) {
+  {% comment %} ── Part A: Mobile — bigger logo (centring handled by shared snippet at ≤749px) ── {% endcomment %}
+  @media (max-width: 749px) {
     #{{ section_id }} .collection-hero__content {
       justify-content: center;
-    }
-
-    #{{ section_id }} .collection-hero__stack {
-      align-items: center;
-      text-align: center;
     }
 
     #{{ section_id }} .collection-hero__logo {

@@ -10,6 +10,13 @@
   assign _bg_position = hero_bg_position | default: 'center'
 -%}
 
+{% comment %} Phosphate: Apple system font, verify web licensing before production launch {% endcomment %}
+@font-face {
+  font-family: "Phosphate";
+  src: url("{{ 'PhosphateSolid.ttf' | asset_url }}") format("truetype");
+  font-display: swap;
+}
+
 {% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
 #{{ hero_id }} {
   --_bg-color: {{ _bg_color }};
@@ -87,10 +94,11 @@
   margin-bottom: 12px;
 }
 
-{% comment %} ── H1 ── {% endcomment %}
+{% comment %} ── H1: Phosphate, 5xl — shared by game and brand heroes ── {% endcomment %}
 #{{ hero_id }} .collection-hero__h1 {
   color: white;
-  font-size: var(--font-size--4xl);
+  font-family: "Phosphate", var(--font-h1--family), sans-serif;
+  font-size: var(--font-size--5xl);
   line-height: 1.1;
   font-weight: 600;
   margin: 0;
@@ -117,6 +125,14 @@
   #{{ hero_id }} .collection-hero__logo {
     max-height: clamp(100px, 10vw, 150px);
     max-width: 320px;
+  }
+}
+
+{% comment %} ── Mobile: centre the hero text block ── {% endcomment %}
+@media (max-width: 749px) {
+  #{{ hero_id }} .collection-hero__stack {
+    align-items: center;
+    text-align: center;
   }
 }
 
