@@ -30,66 +30,6 @@
       "settings": {
         "heading_accessories": "Accessories"
       }
-    },
-    "brand-reviews": {
-      "type": "brand-reviews",
-      "settings": {
-        "heading": "What pinball enthusiasts say"
-      },
-      "blocks": {
-        "review-1": {
-          "type": "review",
-          "settings": {
-            "text": "Absolutely thrilled with my new Stern Godzilla — shipping was fast and FNO’s support was top-notch.",
-            "rating": 5,
-            "reviewer": "Alex M.",
-            "machine": "Stern Godzilla Premium"
-          }
-        },
-        "review-2": {
-          "type": "review",
-          "settings": {
-            "text": "Impeccable setup and careful delivery. Plays butter-smooth right out of the box.",
-            "rating": 5,
-            "reviewer": "Renee P.",
-            "machine": "Stern Foo Fighters Pro"
-          }
-        },
-        "review-3": {
-          "type": "review",
-          "settings": {
-            "text": "Great communication throughout. These folks really know pinball.",
-            "rating": 5,
-            "reviewer": "Chris D.",
-            "machine": "Stern Jurassic Park Premium"
-          }
-        },
-        "review-4": {
-          "type": "review",
-          "settings": {
-            "text": "Flawless experience from purchase to first flip. Highly recommend.",
-            "rating": 5,
-            "reviewer": "Sam K.",
-            "machine": "Stern Deadpool Pro"
-          }
-        },
-        "review-5": {
-          "type": "review",
-          "settings": {
-            "text": "Second machine from FNO and they never disappoint. White-glove delivery and perfectly leveled.",
-            "rating": 5,
-            "reviewer": "Jordan T.",
-            "machine": "Stern Venom Premium"
-          }
-        }
-      },
-      "block_order": [
-        "review-1",
-        "review-2",
-        "review-3",
-        "review-4",
-        "review-5"
-      ]
     }
   },
   "order": [
@@ -97,7 +37,6 @@
     "brand-about",
     "brand-games-strip",
     "brand-machines-grid",
-    "brand-subcollections",
-    "brand-reviews"
+    "brand-subcollections"
   ]
 }
