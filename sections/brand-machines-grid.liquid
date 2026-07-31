@@ -314,6 +314,11 @@
         this.clicks = 0;
         this.totalMachines = this.items.length;
 
+        this.switchEl = this.querySelector('.bmg__switch');
+        if (this.switchEl) {
+          this.switchEl.classList.toggle('bmg__switch--on', this.showOOS);
+        }
+
         this.update();
 
         if (this.select) {
@@ -325,6 +330,9 @@
         if (this.switchInput) {
           this.switchInput.addEventListener('change', () => {
             this.clicks = 0;
+            if (this.switchEl) {
+              this.switchEl.classList.toggle('bmg__switch--on', this.showOOS);
+            }
             this.update();
           });
         }
@@ -527,7 +535,7 @@
     border: 0;
   }
 
-  .bmg__switch-input:focus-visible + .bmg__switch-track {
+  .bmg__switch:focus-within .bmg__switch-track {
     outline: 2px solid;
     outline-offset: 2px;
   }
@@ -543,7 +551,7 @@
     flex-shrink: 0;
   }
 
-  .bmg__switch-input:checked + .bmg__switch-track {
+  .bmg__switch--on .bmg__switch-track {
     background: rgb(var(--color-foreground-rgb) / 0.81);
   }
 
@@ -555,10 +563,11 @@
     height: 16px;
     border-radius: 50%;
     background: white;
+    transform: translateX(0);
     transition: transform 0.18s;
   }
 
-  .bmg__switch-input:checked + .bmg__switch-track .bmg__switch-thumb {
+  .bmg__switch--on .bmg__switch-thumb {
     transform: translateX(20px);
   }
 
