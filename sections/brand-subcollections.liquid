@@ -3,16 +3,23 @@
 -%}
 
 {% comment %} ── ACCESSORIES GRID ── {% endcomment %}
-{%- assign brand_accessories = collection.products | where: 'product_type', 'Accessory' -%}
-{%- if brand_accessories.size > 0 -%}
+{%- assign accessory_count = 0 -%}
+{%- for p in collection.products -%}
+  {%- if p.product_type == 'Accessory' -%}
+    {%- assign accessory_count = accessory_count | plus: 1 -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if accessory_count > 0 -%}
 <section id="brand-accessories" class="brand-accessories">
   <div class="brand-section__container">
     <h2 class="brand-section__heading">{{ collection.title }} {{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
 
     <div class="brand-accessories__grid" role="list">
       {%- assign shown = 0 -%}
-      {%- for product in brand_accessories -%}
+      {%- for product in collection.products -%}
         {%- if shown >= 12 -%}{% break %}{%- endif -%}
+        {%- if product.type contains 'Accessory' -%}
           <article role="listitem" class="brand-accessories__card">
             <a href="{{ product.url }}" class="brand-accessories__link">
               {%- if product.featured_media -%}
@@ -27,6 +34,7 @@
             </a>
           </article>
           {%- assign shown = shown | plus: 1 -%}
+        {%- endif -%}
       {%- endfor -%}
     </div>
 
