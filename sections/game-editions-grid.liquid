@@ -62,7 +62,6 @@
         unless card_image
           assign card_image = product.featured_image
         endunless
-        assign edition_badge = product.metafields.shopify.pinball_machine_edition.value
         capture edition_label
           render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
         endcapture
@@ -86,9 +85,6 @@
         {%- endif -%}
 
         <div class="editions-grid__info">
-          {%- if edition_badge != blank -%}
-            <span class="editions-grid__badge">{{ edition_badge }}</span>
-          {%- endif -%}
           {%- if edition_label != blank -%}
             <h3 class="editions-grid__title">{{ edition_label }}</h3>
           {%- endif -%}
@@ -234,14 +230,6 @@
     flex: 1;
   }
 
-  .editions-grid__badge {
-    display: inline-block;
-    font-size: var(--font-size--2xs);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-accent, #666);
-  }
 
   .editions-grid__title {
     font-size: var(--font-size--xl);
