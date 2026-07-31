@@ -17,16 +17,14 @@
   font-display: swap;
 }
 
-{% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
+{% comment %} ── Hero band: content-driven height with aspect-ratio as a floor ── {% endcomment %}
 #{{ hero_id }} {
   --_bg-color: {{ _bg_color }};
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  min-height: 420px;
-  max-height: min(560px, 62svh);
+  min-height: min(420px, 62svh);
   background: var(--_bg-color);
   overflow: hidden;
 }
@@ -126,8 +124,7 @@
 {% comment %} ── Tablet: 16:9 band ── {% endcomment %}
 @media (min-width: 701px) {
   #{{ hero_id }} {
-    aspect-ratio: 16 / 9;
-    min-height: 340px;
+    min-height: clamp(340px, calc(100vw / (16 / 9)), min(560px, 62svh));
   }
 
   #{{ hero_id }} .collection-hero__logo {
@@ -147,7 +144,7 @@
 {% comment %} ── Desktop: 4.2:1 cinematic band ── {% endcomment %}
 @media (min-width: 1025px) {
   #{{ hero_id }} {
-    aspect-ratio: 4.2 / 1;
+    min-height: clamp(340px, calc(100vw / 4.2), min(560px, 62svh));
   }
 
   #{{ hero_id }} .collection-hero__logo {
