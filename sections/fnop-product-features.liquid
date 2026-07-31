@@ -1,0 +1,167 @@
+{%- comment -%}
+  Product features — two lists:
+  1. "What {Edition} Adds" → product.metafields.custom.edition_features
+  2. "Game Features" → game.metafields.custom.base_features
+  Each heading + list hidden entirely when its data source is empty.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = 'fnop-product-features-' | append: section.id
+
+  assign edition_features = product.metafields.custom.edition_features.value
+  assign has_edition_features = false
+  if edition_features != blank and edition_features.size > 0
+    assign has_edition_features = true
+  endif
+
+  comment — Resolve game collection
+  endcomment
+  capture _game_handle
+    render 'fnop-product-game-resolve', fnop_product: product
+  endcapture
+  assign _game_handle = _game_handle | strip
+  assign game = false
+  if _game_handle != blank
+    assign game = collections[_game_handle]
+  endif
+
+  assign base_features = false
+  assign has_base_features = false
+  assign game_name = ''
+  if game != false and game != blank
+    assign base_features = game.metafields.custom.base_features.value
+    if base_features != blank and base_features.size > 0
+      assign has_base_features = true
+    endif
+    capture game_name
+      render 'fnop-game-name', fnop_game_col: game
+    endcapture
+    assign game_name = game_name | strip
+  endif
+
+  comment — Derive edition label for heading
+  endcomment
+  assign edition_label = ''
+  if has_edition_features
+    capture edition_label
+      render 'fnop-edition-label', fnop_product: product, fnop_game_name: game_name
+    endcapture
+    assign edition_label = edition_label | strip
+  endif
+
+  assign show_section = false
+  if has_edition_features or has_base_features
+    assign show_section = true
+  endif
+-%}
+
+{%- if show_section -%}
+<div class="game-section-band game-section-band--cream">
+  <section id="{{ section_id }}" class="fnop-product-features">
+
+    {%- if has_edition_features -%}
+      <div class="fnop-product-features__block">
+        {%- if edition_label != blank -%}
+          <h2 class="fnop-product-features__heading game-section-heading">What {{ edition_label }} Adds</h2>
+        {%- else -%}
+          <h2 class="fnop-product-features__heading game-section-heading">Edition Features</h2>
+        {%- endif -%}
+        <ul class="fnop-product-features__list">
+          {%- for feature in edition_features -%}
+            {%- if feature != blank -%}
+              <li class="fnop-product-features__item">{{ feature }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+    {%- if has_base_features -%}
+      <div class="fnop-product-features__block">
+        <h2 class="fnop-product-features__heading game-section-heading">{{ game_name }} Pinball Game Features</h2>
+        <ul class="fnop-product-features__list">
+          {%- for feature in base_features -%}
+            {%- if feature != blank -%}
+              <li class="fnop-product-features__item">{{ feature }}</li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+
+  </section>
+</div>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) 0;
+    width: min(var(--game-band-w, var(--page-content-width, 1440px)), 100% - 2 * var(--game-band-gutter, var(--page-margin, 40px)));
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .fnop-product-features__block + .fnop-product-features__block {
+    margin-top: clamp(32px, 4vw, 56px);
+  }
+
+  #{{ section_id }} .fnop-product-features__list {
+    columns: 3;
+    column-gap: var(--gap-2xl, 32px);
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  #{{ section_id }} .fnop-product-features__item {
+    --fnop-bullet-size: 1cap;
+    --fnop-bullet-gap: 10px;
+    --item-padding-top: 6px;
+    font-family: var(--font-h1--family), sans-serif;
+    font-size: var(--font-size--xl);
+    line-height: 1.7;
+    break-inside: avoid;
+    padding-block: var(--item-padding-top);
+    padding-left: calc(var(--fnop-bullet-size) + var(--fnop-bullet-gap));
+    position: relative;
+    list-style: none;
+  }
+
+  @supports not (width: 1cap) {
+    #{{ section_id }} .fnop-product-features__item {
+      --fnop-bullet-size: 0.72em;
+    }
+  }
+
+  #{{ section_id }} .fnop-product-features__item::before {
+    content: "";
+    display: inline-block;
+    width: var(--fnop-bullet-size);
+    height: var(--fnop-bullet-size);
+    background-image: url('{{ 'fnop-bullet.png' | asset_url }}');
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: absolute;
+    left: 0;
+    top: calc(var(--item-padding-top) + (1.7em - var(--fnop-bullet-size)) / 2 + 0.11em);
+  }
+
+  @media (max-width: 989px) {
+    #{{ section_id }} .fnop-product-features__list {
+      columns: 2;
+    }
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} .fnop-product-features__list {
+      columns: 1;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product features",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

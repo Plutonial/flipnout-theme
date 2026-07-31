@@ -1,0 +1,36 @@
+{%- comment -%}
+  Renders the edition badge from shopify["pinball-machine-edition"] metafield.
+  Uses bracket notation because the key contains hyphens.
+  The type is list.metaobject_reference — render the display_name of the first entry.
+  Hidden when the metafield is empty.
+  Usage: {% render 'fnop-edition-badge' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign _edition_meta = product.metafields.shopify["pinball-machine-edition"].value
+  assign _badge_text = ''
+  if _edition_meta != blank and _edition_meta.size > 0
+    assign _first = _edition_meta | first
+    if _first != blank
+      assign _badge_text = _first.system.display_name | default: _first.display_name | default: _first
+    endif
+  endif
+-%}
+
+{%- if _badge_text != blank -%}
+<span class="fnop-edition-badge">{{ _badge_text }}</span>
+<style>
+  .fnop-edition-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: var(--font-size--xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--color-logo-red, #FF0000);
+    color: #fff;
+    border-radius: 4px;
+    line-height: 1.4;
+  }
+</style>
+{%- endif -%}

@@ -1,0 +1,41 @@
+{%- comment -%}
+  Renders the game logo in the product buy box.
+  Hidden when game has no logo or product has no game collection.
+  Usage: {% render 'fnop-product-game-logo' %}
+{%- endcomment -%}
+
+{%- liquid
+  capture _game_handle
+    render 'fnop-product-game-resolve', fnop_product: product
+  endcapture
+  assign _game_handle = _game_handle | strip
+  assign _game = false
+  if _game_handle != blank
+    assign _game = collections[_game_handle]
+  endif
+
+  assign _logo = false
+  if _game != false and _game != blank
+    assign _logo = _game.metafields.custom.logo.value
+  endif
+-%}
+
+{%- if _logo != false and _logo != blank -%}
+<div class="fnop-game-logo">
+  {{ _logo | image_url: width: 280 | image_tag:
+    loading: 'eager',
+    class: 'fnop-game-logo__img',
+    alt: _game.title
+  }}
+</div>
+<style>
+  .fnop-game-logo {
+    max-width: 180px;
+  }
+  .fnop-game-logo__img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>
+{%- endif -%}

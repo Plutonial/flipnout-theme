@@ -1,0 +1,86 @@
+{%- comment -%}
+  Lore teaser — short excerpt from the game collection's Body HTML.
+  Hidden entirely when game is nil or game has no description.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = 'fnop-lore-teaser-' | append: section.id
+
+  comment — Resolve game collection
+  endcomment
+  capture _game_handle
+    render 'fnop-product-game-resolve', fnop_product: product
+  endcapture
+  assign _game_handle = _game_handle | strip
+  assign game = false
+  if _game_handle != blank
+    assign game = collections[_game_handle]
+  endif
+
+  assign show_lore = false
+  assign game_name = ''
+  assign lore_excerpt = ''
+  if game != false and game != blank and game.description != blank
+    assign show_lore = true
+    capture game_name
+      render 'fnop-game-name', fnop_game_col: game
+    endcapture
+    assign game_name = game_name | strip
+
+    comment — Extract first paragraph as teaser (strip HTML, truncate to ~200 chars)
+    endcomment
+    assign lore_excerpt = game.description | strip_html | truncatewords: 40
+  endif
+-%}
+
+{%- if show_lore -%}
+<div class="game-section-band game-section-band--white">
+  <section id="{{ section_id }}" class="fnop-lore-teaser">
+    <h2 class="fnop-lore-teaser__heading game-section-heading">About {{ game_name }}</h2>
+    <div class="fnop-lore-teaser__body">
+      <p>{{ lore_excerpt }}</p>
+      <a href="{{ game.url }}" class="fnop-lore-teaser__link">Read the full story →</a>
+    </div>
+  </section>
+</div>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding: clamp(40px, 6vw, 80px) 0;
+    width: min(var(--game-band-w, var(--page-content-width, 1440px)), 100% - 2 * var(--game-band-gutter, var(--page-margin, 40px)));
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .fnop-lore-teaser__body {
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  #{{ section_id }} .fnop-lore-teaser__body p {
+    font-size: var(--font-size--lg);
+    line-height: 1.7;
+    margin: 0 0 16px;
+    color: var(--color-foreground);
+  }
+
+  #{{ section_id }} .fnop-lore-teaser__link {
+    font-size: var(--font-size--md);
+    color: var(--color-logo-red, #FF0000);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  #{{ section_id }} .fnop-lore-teaser__link:hover {
+    text-decoration: underline;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Lore teaser",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

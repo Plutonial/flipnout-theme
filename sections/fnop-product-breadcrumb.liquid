@@ -1,0 +1,120 @@
+{%- comment -%}
+  Product breadcrumb: Manufacturer / Game / Edition
+  Falls back to Manufacturer / Edition when game is nil.
+  Uses product.vendor as manufacturer fallback when no game collection.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = 'fnop-breadcrumb-' | append: section.id
+
+  comment — Resolve game collection
+  endcomment
+  capture _game_handle
+    render 'fnop-product-game-resolve', fnop_product: product
+  endcapture
+  assign _game_handle = _game_handle | strip
+  assign game = false
+  if _game_handle != blank
+    assign game = collections[_game_handle]
+  endif
+
+  comment — Resolve manufacturer
+  endcomment
+  assign mfr_title = ''
+  assign mfr_url = ''
+  if game != false and game != blank
+    assign mfr = game.metafields.custom.manufacturer.value
+    if mfr != blank and mfr.title != blank
+      assign mfr_title = mfr.title
+      assign mfr_url = mfr.url
+    endif
+  endif
+  if mfr_title == blank and product.vendor != blank
+    assign mfr_title = product.vendor
+    comment — Try to find vendor collection
+    endcomment
+    assign _vendor_handle = product.vendor | handleize
+    assign _vendor_col = collections[_vendor_handle]
+    if _vendor_col != blank
+      assign mfr_url = _vendor_col.url
+    endif
+  endif
+
+  comment — Resolve game name
+  endcomment
+  assign game_name = ''
+  if game != false and game != blank
+    capture game_name
+      render 'fnop-game-name', fnop_game_col: game
+    endcapture
+    assign game_name = game_name | strip
+  endif
+-%}
+
+{%- if mfr_title != blank -%}
+<nav id="{{ section_id }}" class="fnop-breadcrumb" aria-label="Breadcrumb">
+  <ol class="fnop-breadcrumb__list">
+    {%- if mfr_url != blank -%}
+      <li class="fnop-breadcrumb__item"><a href="{{ mfr_url }}">{{ mfr_title }}</a></li>
+    {%- else -%}
+      <li class="fnop-breadcrumb__item"><span>{{ mfr_title }}</span></li>
+    {%- endif -%}
+
+    {%- if game != false and game != blank and game_name != blank -%}
+      <li class="fnop-breadcrumb__item"><a href="{{ game.url }}">{{ game_name }}</a></li>
+    {%- endif -%}
+
+    <li class="fnop-breadcrumb__item" aria-current="page"><span>{{ product.title }}</span></li>
+  </ol>
+</nav>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    width: min(var(--page-content-width, 1440px), 100% - 2 * var(--page-margin, 40px));
+    margin-inline: auto;
+    padding-block: 12px 0;
+  }
+
+  #{{ section_id }} .fnop-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size--sm);
+    color: var(--color-foreground);
+  }
+
+  #{{ section_id }} .fnop-breadcrumb__item + .fnop-breadcrumb__item::before {
+    content: '/';
+    margin-inline: 0.5em;
+    opacity: 0.5;
+  }
+
+  #{{ section_id }} .fnop-breadcrumb__item a {
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  #{{ section_id }} .fnop-breadcrumb__item a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  #{{ section_id }} .fnop-breadcrumb__item[aria-current="page"] span {
+    opacity: 0.5;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product breadcrumb",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

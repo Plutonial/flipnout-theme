@@ -1,0 +1,23 @@
+{%- comment -%}
+  Resolve the game collection for a product.
+  Loops product.collections looking for one with custom.is_game == true.
+  Returns nil if no game collection exists (33 of 127 machines have none).
+
+  Usage:
+    {%- render 'fnop-product-game-resolve', fnop_product: product -%}
+  Capture the output handle, then look up the collection:
+    {%- capture _game_handle -%}{%- render 'fnop-product-game-resolve', fnop_product: product -%}{%- endcapture -%}
+    {%- assign _game_handle = _game_handle | strip -%}
+    {%- if _game_handle != blank -%}
+      {%- assign game = collections[_game_handle] -%}
+    {%- endif -%}
+{%- endcomment -%}
+
+{%- liquid
+  for c in fnop_product.collections
+    if c.metafields.custom.is_game == true or c.metafields.custom.is_game == 'true'
+      echo c.handle
+      break
+    endif
+  endfor
+-%}
