@@ -1,0 +1,456 @@
+{%- liquid
+  comment
+    Brand Machines Grid — replaces the old machines carousel.
+    Game collection logic (pass 1 + 2) duplicated from brand-games-strip.liquid
+    (source of truth). Extract to shared snippet is a separate task.
+  endcomment
+
+  assign brand_id = collection.id
+  assign heading = section.settings.heading | default: 'Machines'
+  assign cols_desktop = section.settings.columns_desktop | default: 4
+  assign gap_h = section.settings.gap_horizontal | default: 32
+  assign gap_v = section.settings.gap_vertical | default: 32
+  assign reveal_initial = section.settings.reveal_initial | default: 12
+  assign reveal_step = section.settings.reveal_step | default: 12
+
+  comment
+    ── Pass 1: collect game collections for this brand ──
+    See brand-games-strip.liquid lines ~20-48 for the canonical version.
+  endcomment
+  assign game_handles = ''
+  assign game_dates = ''
+
+  for c in collections
+    assign is_game = c.metafields.collection.is_game
+    if is_game
+      assign mfr_ref = c.metafields.custom.manufacturer.value
+      if mfr_ref and mfr_ref.id == brand_id
+        assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+        if game_handles == ''
+          assign game_handles = c.handle
+          assign game_dates = rd
+        else
+          assign game_handles = game_handles | append: '|' | append: c.handle
+          assign game_dates = game_dates | append: '|' | append: rd
+        endif
+      endif
+    endif
+  endfor
+
+  assign games_count = 0
+  if game_handles != ''
+    assign game_handle_arr = game_handles | split: '|'
+    assign game_date_arr = game_dates | split: '|'
+    assign games_count = game_handle_arr.size
+  endif
+-%}
+
+{%- liquid
+  comment
+    ── Mode 1: brand has game collections ──
+  endcomment
+  if games_count > 0
+    comment
+      Pass 2: sort by release_date descending (bubble sort).
+      Copied from brand-games-strip.liquid lines ~52-98.
+    endcomment
+    assign sorted_handles = game_handle_arr
+    assign sorted_dates = game_date_arr
+
+    assign n = games_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_dates[j]
+        assign date_b = sorted_dates[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_handles[j]
+          assign tmp_d = sorted_dates[j]
+
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_handles[j1]
+              assign d_val = sorted_dates[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_handles[k]
+              assign d_val = sorted_dates[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_handles = new_handles | split: '|'
+          assign sorted_dates = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+
+    comment
+      Pass 3+4: for each game (sorted), collect products sorted by edition_order,
+      excluding accessories. Pattern from game-editions-grid.liquid lines 14-36.
+    endcomment
+    assign all_product_handles = ''
+    assign all_product_games = ''
+    assign total_machines = 0
+
+    for gh in sorted_handles
+      assign game_col = collections[gh]
+      for pos in (1..10)
+        assign pos_str = pos | append: ''
+        for p in game_col.products
+          if p.type == 'Accessory'
+            continue
+          endif
+          assign eo = p.metafields.product.edition_order.value | append: ''
+          if eo == pos_str
+            if all_product_handles == ''
+              assign all_product_handles = p.handle
+              assign all_product_games = gh
+            else
+              assign all_product_handles = all_product_handles | append: '|' | append: p.handle
+              assign all_product_games = all_product_games | append: '|' | append: gh
+            endif
+            assign total_machines = total_machines | plus: 1
+          endif
+        endfor
+      endfor
+      for p in game_col.products
+        if p.type == 'Accessory'
+          continue
+        endif
+        assign eo = p.metafields.product.edition_order.value
+        if eo == blank
+          if all_product_handles == ''
+            assign all_product_handles = p.handle
+            assign all_product_games = gh
+          else
+            assign all_product_handles = all_product_handles | append: '|' | append: p.handle
+            assign all_product_games = all_product_games | append: '|' | append: gh
+          endif
+          assign total_machines = total_machines | plus: 1
+        endif
+      endfor
+    endfor
+
+    assign product_handle_arr = all_product_handles | split: '|'
+    assign product_game_arr = all_product_games | split: '|'
+
+  else
+    comment
+      ── Mode 2: no game collections — flat grid from collection.products ──
+      If a brand ever exceeds 50 products this grid will truncate silently
+      (Shopify caps collection.products at 50 without paginate).
+    endcomment
+    assign all_product_handles = ''
+    assign total_machines = 0
+
+    for p in collection.products
+      if p.type == 'Accessory'
+        continue
+      endif
+      if all_product_handles == ''
+        assign all_product_handles = p.handle
+      else
+        assign all_product_handles = all_product_handles | append: '|' | append: p.handle
+      endif
+      assign total_machines = total_machines | plus: 1
+    endfor
+
+    assign product_handle_arr = all_product_handles | split: '|'
+  endif
+-%}
+
+{%- comment %} Don't render anything if zero machines {% endcomment -%}
+{%- if total_machines > 0 -%}
+
+{%- comment %} Build game name lookup for dropdown labels {% endcomment -%}
+{%- if games_count > 0 -%}
+  {%- assign game_name_handles = '' -%}
+  {%- assign game_name_labels = '' -%}
+  {%- for gh in sorted_handles -%}
+    {%- assign game_col = collections[gh] -%}
+    {%- capture gn -%}{%- render 'fnop-game-name', fnop_game_col: game_col -%}{%- endcapture -%}
+    {%- assign gn = gn | strip -%}
+    {%- if game_name_handles == '' -%}
+      {%- assign game_name_handles = gh -%}
+      {%- assign game_name_labels = gn -%}
+    {%- else -%}
+      {%- assign game_name_handles = game_name_handles | append: '|' | append: gh -%}
+      {%- assign game_name_labels = game_name_labels | append: '|' | append: gn -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- assign gn_handle_arr = game_name_handles | split: '|' -%}
+  {%- assign gn_label_arr = game_name_labels | split: '|' -%}
+{%- endif -%}
+
+<brand-machines-grid class="bmg" data-initial="{{ reveal_initial }}" data-step="{{ reveal_step }}">
+  <div class="brand-section__container">
+    <h2 class="brand-section__heading">{{ collection.title }} {{ heading }}</h2>
+
+    {%- if games_count > 0 -%}
+      <div class="bmg__toolbar">
+        <select class="bmg__select" aria-label="Filter by game">
+          <option value="all">All games ({{ games_count }})</option>
+          {%- for i in (0..999) -%}
+            {%- if i >= games_count -%}{%- break -%}{%- endif -%}
+            <option value="{{ gn_handle_arr[i] }}">{{ gn_label_arr[i] }}</option>
+          {%- endfor -%}
+        </select>
+        <span class="bmg__count">{{ total_machines }} machines</span>
+      </div>
+    {%- endif -%}
+
+    <ul class="bmg__grid">
+      {%- for i in (0..999) -%}
+        {%- if i >= total_machines -%}{%- break -%}{%- endif -%}
+        {%- assign ph = product_handle_arr[i] -%}
+        {%- if games_count > 0 -%}
+          {%- assign pg = product_game_arr[i] -%}
+        {%- else -%}
+          {%- assign pg = '' -%}
+        {%- endif -%}
+        {%- assign product = all_products[ph] -%}
+        {%- if product == blank -%}{%- continue -%}{%- endif -%}
+        <li class="bmg__item" data-game="{{ pg }}" id="{{ section.id }}-{{ product.id }}">
+          {% # theme-check-disable %}
+          {% content_for 'block', type: '_product-card', id: 'product-card', closest.product: product %}
+          {% # theme-check-enable %}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if games_count > 0 -%}
+      <button class="bmg__more" type="button" hidden>Show more</button>
+    {%- endif -%}
+  </div>
+</brand-machines-grid>
+
+{% comment %} ── Web Component: brand-machines-grid ── {% endcomment %}
+<script>
+  if (!customElements.get('brand-machines-grid')) {
+    class BrandMachinesGrid extends HTMLElement {
+      connectedCallback() {
+        this.grid = this.querySelector('.bmg__grid');
+        this.items = Array.from(this.querySelectorAll('.bmg__item'));
+        this.select = this.querySelector('.bmg__select');
+        this.btn = this.querySelector('.bmg__more');
+        this.countEl = this.querySelector('.bmg__count');
+        this.initial = parseInt(this.dataset.initial, 10) || 12;
+        this.step = parseInt(this.dataset.step, 10) || 12;
+        this.clicks = 0;
+
+        this.update();
+
+        if (this.select) {
+          this.select.addEventListener('change', () => {
+            this.clicks = 0;
+            this.update();
+          });
+        }
+        if (this.btn) {
+          this.btn.addEventListener('click', () => {
+            var vis = this.visibleItems;
+            var limit = this.revealLimit(vis.length, this.clicks);
+            if (limit >= vis.length) {
+              this.clicks = 0;
+            } else {
+              this.clicks++;
+            }
+            this.update();
+          });
+        }
+
+        this._onResize = () => this.update();
+        window.addEventListener('resize', this._onResize);
+      }
+
+      disconnectedCallback() {
+        window.removeEventListener('resize', this._onResize);
+      }
+
+      get columns() {
+        var t = getComputedStyle(this.grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
+      }
+
+      get visibleItems() {
+        var filter = this.select ? this.select.value : 'all';
+        return this.items.filter(function(item) {
+          if (filter === 'all') return true;
+          return item.dataset.game === filter;
+        });
+      }
+
+      revealLimit(total, clicks) {
+        var target = this.initial + clicks * this.step;
+        var cols = this.columns;
+        return Math.min(total, Math.ceil(target / cols) * cols);
+      }
+
+      update() {
+        var filter = this.select ? this.select.value : 'all';
+        var vis = this.visibleItems;
+        var limit = this.revealLimit(vis.length, this.clicks);
+        var visIndex = 0;
+
+        for (var i = 0; i < this.items.length; i++) {
+          var item = this.items[i];
+          var matchesFilter = filter === 'all' || item.dataset.game === filter;
+
+          if (!matchesFilter) {
+            item.classList.add('bmg__item--filtered');
+            item.classList.remove('bmg__item--beyond');
+          } else {
+            item.classList.remove('bmg__item--filtered');
+            if (visIndex >= limit) {
+              item.classList.add('bmg__item--beyond');
+            } else {
+              item.classList.remove('bmg__item--beyond');
+            }
+            visIndex++;
+          }
+        }
+
+        if (this.countEl) {
+          this.countEl.textContent = vis.length + ' machine' + (vis.length !== 1 ? 's' : '');
+        }
+
+        if (this.btn) {
+          if (vis.length <= this.initial) {
+            this.btn.hidden = true;
+          } else if (limit >= vis.length) {
+            this.btn.hidden = false;
+            this.btn.textContent = 'Show less';
+          } else {
+            this.btn.hidden = false;
+            var nextLimit = this.revealLimit(vis.length, this.clicks + 1);
+            var more = nextLimit - limit;
+            var remaining = vis.length - limit;
+            this.btn.textContent = 'Show ' + more + ' more \u00B7 ' + remaining + ' remaining';
+          }
+        }
+      }
+    }
+    customElements.define('brand-machines-grid', BrandMachinesGrid);
+  }
+</script>
+
+{% style %}
+  .bmg {
+    display: block;
+    padding-block: clamp(48px, 8vw, 120px);
+  }
+
+  .bmg__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .bmg__select {
+    font-size: var(--font-size--sm);
+    padding: 8px 32px 8px 12px;
+    border: 1px solid rgb(var(--color-border-rgb) / 20%);
+    border-radius: var(--radius-sm, 8px);
+    background: rgb(var(--color-background-rgb));
+    color: rgb(var(--color-foreground-rgb));
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23333' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+
+  .bmg__count {
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+  }
+
+  .bmg__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--bmg-cols, {{ cols_desktop }}), 1fr);
+    column-gap: {{ gap_h }}px;
+    row-gap: {{ gap_v }}px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (max-width: 899px) {
+    .bmg__grid {
+      --bmg-cols: 2;
+      column-gap: 20px;
+      row-gap: 20px;
+    }
+  }
+
+  @media (min-width: 900px) and (max-width: 1199px) {
+    .bmg__grid {
+      --bmg-cols: 3;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .bmg__grid {
+      --bmg-cols: {{ cols_desktop }};
+    }
+  }
+
+  .bmg__item {
+    min-width: 0;
+  }
+
+  .bmg__item--filtered,
+  .bmg__item--beyond {
+    display: none;
+  }
+
+  .bmg__more {
+    display: block;
+    margin: 32px auto 0;
+    padding: 12px 28px;
+    border: 2px solid currentColor;
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    background: transparent;
+    color: rgb(var(--color-foreground-rgb));
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .bmg__more:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+{% endstyle %}
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Brand machines grid",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Machines" },
+    { "type": "range", "id": "columns_desktop", "label": "Desktop columns", "min": 3, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "gap_horizontal", "label": "Horizontal gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
+    { "type": "range", "id": "gap_vertical", "label": "Vertical gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
+    { "type": "range", "id": "reveal_initial", "label": "Initial cards shown", "min": 4, "max": 40, "step": 4, "default": 12 },
+    { "type": "range", "id": "reveal_step", "label": "Cards per click", "min": 4, "max": 40, "step": 4, "default": 12 }
+  ],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

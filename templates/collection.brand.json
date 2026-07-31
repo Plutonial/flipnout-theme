@@ -21,10 +21,13 @@
       "type": "brand-about",
       "settings": {}
     },
+    "brand-machines-grid": {
+      "type": "brand-machines-grid",
+      "settings": {}
+    },
     "brand-subcollections": {
       "type": "brand-subcollections",
       "settings": {
-        "heading_machines": "Machines",
         "heading_accessories": "Accessories"
       }
     },
@@ -93,6 +96,7 @@
     "brand-hero",
     "brand-about",
     "brand-games-strip",
+    "brand-machines-grid",
     "brand-subcollections",
     "brand-reviews"
   ]
