@@ -3,8 +3,7 @@
     Brand Accessories Grid.
     Uses paginate to access up to 50 products (Shopify's max page size).
     Only page 1 is rendered — Shopify Liquid cannot server-render beyond 50
-    in a single section without pagination controls. The "View all" CTA
-    links to the full filtered listing for brands that exceed 50 accessories.
+    in a single section without pagination controls.
   endcomment
 -%}
 
@@ -30,7 +29,7 @@
           {%- if p.type == 'Accessory' -%}
             <li class="bacc__item" id="{{ section.id }}-acc-{{ p.id }}">
               <div class="bmc--square">
-                {%- render 'brand-machine-card', product: p, game_name: '' -%}
+                {%- render 'brand-machine-card', product: p -%}
               </div>
             </li>
           {%- endif -%}
@@ -38,14 +37,6 @@
       </ul>
 
       <button class="bacc__more" type="button" hidden>Show more</button>
-
-      {%- if collection.products_count > page_size -%}
-      <div class="brand-section__cta-wrap">
-        <a class="brand-section__cta" href="/collections/{{ collection.handle }}?filter.product_type=Accessory">
-          View all {{ collection.title }} accessories
-        </a>
-      </div>
-      {%- endif -%}
     </div>
   </section>
 </brand-accessories-grid>
@@ -144,27 +135,6 @@
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0 0 clamp(32px, 4vw, 56px);
-  }
-
-  .brand-section__cta-wrap {
-    text-align: center;
-    margin-top: clamp(24px, 3vw, 40px);
-  }
-
-  .brand-section__cta {
-    display: inline-block;
-    padding: 12px 28px;
-    border: 2px solid currentColor;
-    border-radius: var(--radius-sm, 8px);
-    font-size: var(--font-size--sm);
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .brand-section__cta:hover {
-    background: rgb(var(--color-foreground-rgb));
-    color: rgb(var(--color-background-rgb));
   }
 
   {% comment %} ── Accessories grid ── {% endcomment %}

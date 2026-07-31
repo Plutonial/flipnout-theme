@@ -3,7 +3,6 @@
 
   Params:
     product    — the product object
-    game_name  — derived game name (from fnop-game-name snippet); empty in mode 2
 {%- endcomment -%}
 
 {%- liquid
@@ -31,9 +30,6 @@
       <span class="bmc__badge">Sold Out</span>
     {%- endif -%}
   </div>
-  {%- if game_name != blank -%}
-    <span class="bmc__game">{{ game_name }}</span>
-  {%- endif -%}
   <h3 class="bmc__title">{{ display_title }}</h3>
   <span class="bmc__price">{{ product.price | money }}</span>
 </a>
