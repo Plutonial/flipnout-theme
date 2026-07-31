@@ -17,16 +17,14 @@
   font-display: swap;
 }
 
-{% comment %} ── Hero band: aspect-ratio driven, not fixed height ── {% endcomment %}
+{% comment %} ── Hero band: min-height driven (not aspect-ratio capped) ── {% endcomment %}
 #{{ hero_id }} {
   --_bg-color: {{ _bg_color }};
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  min-height: 420px;
-  max-height: min(560px, 62svh);
+  min-height: min(420px, 62svh);
   background: var(--_bg-color);
   overflow: hidden;
 }
@@ -80,7 +78,7 @@
   align-items: flex-start;
   gap: 12px;
   text-align: left;
-  max-width: 700px;
+  max-width: min(90%, 1100px);
 }
 
 {% comment %} ── Logo: height-constrained ── {% endcomment %}
@@ -103,6 +101,7 @@
   font-weight: 600;
   margin: 0;
   text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+  text-wrap: balance;
 }
 
 {% comment %} ── Subtitle ── {% endcomment %}
@@ -113,13 +112,13 @@
   font-weight: 400;
   margin: 0;
   text-shadow: 0 1px 4px rgb(0 0 0 / 40%);
+  max-width: 700px;
 }
 
-{% comment %} ── Tablet: 16:9 band ── {% endcomment %}
+{% comment %} ── Tablet: 16:9 proportioned band ── {% endcomment %}
 @media (min-width: 701px) {
   #{{ hero_id }} {
-    aspect-ratio: 16 / 9;
-    min-height: 340px;
+    min-height: clamp(340px, calc(100vw / (16 / 9)), min(560px, 62svh));
   }
 
   #{{ hero_id }} .collection-hero__logo {
@@ -139,7 +138,7 @@
 {% comment %} ── Desktop: 4.2:1 cinematic band ── {% endcomment %}
 @media (min-width: 1025px) {
   #{{ hero_id }} {
-    aspect-ratio: 4.2 / 1;
+    min-height: clamp(340px, calc(100vw / 4.2), min(560px, 62svh));
   }
 
   #{{ hero_id }} .collection-hero__logo {
