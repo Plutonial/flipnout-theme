@@ -1,0 +1,131 @@
+{%- comment -%}
+  Accessories row — reads complementary_products metafield directly.
+  The Shopify recommendations API returns empty for complementary products,
+  so we read the metafield via bracket notation (namespace contains dashes).
+  Hidden entirely when no accessories exist — no heading, no wrapper, no spacing.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = 'fnop-accessories-' | append: section.id
+  assign accessories = product.metafields["shopify--discovery--product_recommendation"]["complementary_products"].value
+  assign has_accessories = false
+  if accessories != blank and accessories.size > 0
+    assign has_accessories = true
+  endif
+-%}
+
+{%- if has_accessories -%}
+<section id="{{ section_id }}" class="fnop-accessories">
+  <div class="fnop-accessories__container">
+    <h2 class="fnop-accessories__heading game-section-heading">Accessories for this machine</h2>
+    <div class="fnop-accessories__grid">
+      {%- for accessory in accessories -%}
+        {%- if accessory == blank -%}{%- continue -%}{%- endif -%}
+        <a href="{{ accessory.url }}" class="fnop-accessories__card">
+          {%- if accessory.featured_image != blank -%}
+            {{ accessory.featured_image | image_url: width: 400 | image_tag:
+              loading: 'lazy',
+              class: 'fnop-accessories__img',
+              alt: accessory.title,
+              widths: '200,300,400'
+            }}
+          {%- else -%}
+            <div class="fnop-accessories__placeholder">
+              {{ 'product-1' | placeholder_svg_tag: 'fnop-accessories__placeholder-svg' }}
+            </div>
+          {%- endif -%}
+          <div class="fnop-accessories__info">
+            <span class="fnop-accessories__title">{{ accessory.title }}</span>
+            <span class="fnop-accessories__price">{{ accessory.price | money }}</span>
+          </div>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+{%- endif -%}
+
+{% style %}
+  #{{ section_id }} {
+    padding-block: 48px;
+  }
+
+  #{{ section_id }} .fnop-accessories__container {
+    width: min(var(--page-content-width, 1440px), 100% - 2 * var(--page-margin, 40px));
+    margin-inline: auto;
+  }
+
+  #{{ section_id }} .fnop-accessories__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px 12px;
+  }
+
+  #{{ section_id }} .fnop-accessories__card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  #{{ section_id }} .fnop-accessories__card:hover .fnop-accessories__title {
+    text-decoration: underline;
+  }
+
+  #{{ section_id }} .fnop-accessories__img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    display: block;
+    background: var(--color-background, #fff);
+    border-radius: var(--radius-sm, 0);
+  }
+
+  #{{ section_id }} .fnop-accessories__placeholder {
+    aspect-ratio: 1 / 1;
+    background: var(--color-background-secondary, #f5f5f5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm, 0);
+  }
+
+  #{{ section_id }} .fnop-accessories__placeholder-svg {
+    width: 60%;
+    height: auto;
+    opacity: 0.3;
+  }
+
+  #{{ section_id }} .fnop-accessories__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  #{{ section_id }} .fnop-accessories__title {
+    font-size: var(--font-size--md);
+    line-height: 1.4;
+  }
+
+  #{{ section_id }} .fnop-accessories__price {
+    font-size: var(--font-size--md);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 989px) {
+    #{{ section_id }} .fnop-accessories__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product accessories",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
