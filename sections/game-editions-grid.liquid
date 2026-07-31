@@ -73,33 +73,12 @@
         endif
       -%}
 
-      <div class="editions-grid__card">
-        {%- if card_image -%}
-          <div class="editions-grid__art">
-            {{ card_image | image_url: width: 800 | image_tag:
-              loading: 'lazy',
-              class: 'editions-grid__img',
-              sizes: '(min-width: 750px) 25vw, 100vw',
-              widths: '400,600,800'
-            }}
-          </div>
-        {%- endif -%}
-
-        <div class="editions-grid__info">
-          {%- if edition_badge != blank -%}
-            <span class="editions-grid__badge">{{ edition_badge }}</span>
-          {%- endif -%}
-          {%- if edition_label != blank -%}
-            <h3 class="editions-grid__title">{{ edition_label }}</h3>
-          {%- endif -%}
-          <span class="editions-grid__price">{{ product.price | money }}</span>
-          {%- if is_sold_out -%}
-            <span class="editions-grid__btn editions-grid__btn--sold-out" aria-disabled="true">Sold Out</span>
-          {%- else -%}
-            <a href="{{ product.url }}" class="editions-grid__btn">Shop Now</a>
-          {%- endif -%}
-        </div>
-      </div>
+      {%- render 'fnop-product-card',
+        product_card_product: product,
+        product_card_title: edition_label,
+        product_card_link: false,
+        product_card_badge: edition_badge
+      -%}
     {%- endfor -%}
   </div>
 </section>
@@ -198,7 +177,8 @@
     }
   }
 
-  .editions-grid__card {
+  {% comment %} ── Shared fnop-product-card component ── {% endcomment %}
+  .fnop-product-card {
     display: flex;
     flex-direction: column;
     text-decoration: none;
@@ -209,24 +189,24 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .editions-grid__card:hover {
+  .fnop-product-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   }
 
-  .editions-grid__art {
+  .fnop-product-card__art {
     position: relative;
     aspect-ratio: 3 / 4;
     overflow: hidden;
   }
 
-  .editions-grid__img {
+  .fnop-product-card__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .editions-grid__info {
+  .fnop-product-card__info {
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -234,7 +214,7 @@
     flex: 1;
   }
 
-  .editions-grid__badge {
+  .fnop-product-card__badge {
     display: inline-block;
     font-size: var(--font-size--2xs);
     font-weight: 600;
@@ -243,7 +223,7 @@
     color: var(--color-accent, #666);
   }
 
-  .editions-grid__title {
+  .fnop-product-card__title {
     font-size: var(--font-size--xl);
     font-weight: 600;
     margin: 0;
@@ -251,13 +231,22 @@
     color: var(--color-foreground, #333);
   }
 
-  .editions-grid__price {
+  .fnop-product-card__title-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .fnop-product-card__title-link:hover {
+    text-decoration: underline;
+  }
+
+  .fnop-product-card__price {
     font-size: var(--font-size--xl);
     font-weight: 500;
     color: var(--color-foreground, #333);
   }
 
-  .editions-grid__btn {
+  .fnop-product-card__btn {
     display: inline-block;
     margin-top: auto;
     padding: 12px 24px;
@@ -272,12 +261,12 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .editions-grid__btn:hover {
+  .fnop-product-card__btn:hover {
     transform: scale(1.03);
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
   }
 
-  .editions-grid__btn--sold-out {
+  .fnop-product-card__btn--sold-out {
     background: #999;
     cursor: not-allowed;
     pointer-events: none;

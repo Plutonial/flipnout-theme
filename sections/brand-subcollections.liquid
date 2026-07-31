@@ -13,19 +13,13 @@
         {%- for product in collection.products -%}
           {%- if shown >= 12 -%}{% break %}{%- endif -%}
           {%- if product.type contains 'Pinball Machine' or product.type contains 'Arcade Machine' -%}
-            <article role="listitem" class="brand-slider__slide brand-machines__card">
-              <a href="{{ product.url }}" class="brand-machines__link">
-                {%- if product.featured_media -%}
-                  {{ product.featured_media | image_url: width: 800 | image_tag: class: 'brand-machines__image', loading: 'lazy', sizes: '(min-width: 750px) 33vw, 70vw', widths: '300,400,600,800' }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'brand-machines__image brand-machines__image--placeholder' }}
-                {%- endif -%}
-                <div class="brand-machines__meta">
-                  <h3 class="brand-machines__title">{{ product.title }}</h3>
-                  {% render 'price', product_resource: product, show_unit_price: true %}
-                </div>
-              </a>
-            </article>
+            <div role="listitem" class="brand-slider__slide">
+              {%- render 'fnop-product-card',
+                product_card_product: product,
+                product_card_title: product.title,
+                product_card_link: true
+              -%}
+            </div>
             {%- assign shown = shown | plus: 1 -%}
           {%- endif -%}
         {%- endfor -%}
@@ -242,44 +236,6 @@
     }
   }
 
-  .brand-machines__card {
-    border-radius: var(--radius-sm, 8px);
-    overflow: hidden;
-    background: rgb(var(--color-background-rgb));
-    border: 1px solid rgb(var(--color-border-rgb) / 12%);
-  }
-
-  .brand-machines__link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-  }
-
-  .brand-machines__image {
-    width: 100%;
-    height: 320px;
-    object-fit: cover;
-    display: block;
-  }
-
-  @media (min-width: 750px) {
-    .brand-machines__image {
-      height: 400px;
-    }
-  }
-
-  .brand-machines__meta {
-    padding: 16px;
-    display: grid;
-    gap: 4px;
-  }
-
-  .brand-machines__title {
-    font: inherit;
-    font-weight: 600;
-    font-size: 15px;
-    margin: 0;
-  }
 
   {% comment %} ── Slider arrows ── {% endcomment %}
   .brand-slider__arrow {
