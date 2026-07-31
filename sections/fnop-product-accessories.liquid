@@ -3,10 +3,12 @@
   The Shopify recommendations API returns empty for complementary products,
   so we read the metafield via bracket notation (namespace contains dashes).
   Hidden entirely when no accessories exist — no heading, no wrapper, no spacing.
+
+  Reuses the brand-machine-card snippet and bacc/bmc grid classes from
+  brand-machines-grid / brand-subcollections so both pages render identical cards.
 {%- endcomment -%}
 
 {%- liquid
-  assign section_id = 'fnop-accessories-' | append: section.id
   assign accessories = product.metafields["shopify--discovery--product_recommendation"]["complementary_products"].value
   assign has_accessories = false
   if accessories != blank and accessories.size > 0
@@ -15,109 +17,154 @@
 -%}
 
 {%- if has_accessories -%}
-<section id="{{ section_id }}" class="fnop-accessories">
-  <div class="fnop-accessories__container">
-    <h2 class="fnop-accessories__heading game-section-heading">Accessories for this machine</h2>
-    <div class="fnop-accessories__grid">
+<section id="fnop-accessories-{{ section.id }}" class="fnop-pacc">
+  <div class="brand-section__container">
+    <h2 class="brand-section__heading game-section-heading">Accessories for this machine</h2>
+
+    <ul class="bacc__grid fnop-pacc__grid" role="list">
       {%- for accessory in accessories -%}
         {%- if accessory == blank -%}{%- continue -%}{%- endif -%}
-        <a href="{{ accessory.url }}" class="fnop-accessories__card">
-          {%- if accessory.featured_image != blank -%}
-            {{ accessory.featured_image | image_url: width: 400 | image_tag:
-              loading: 'lazy',
-              class: 'fnop-accessories__img',
-              alt: accessory.title,
-              widths: '200,300,400'
-            }}
-          {%- else -%}
-            <div class="fnop-accessories__placeholder">
-              {{ 'product-1' | placeholder_svg_tag: 'fnop-accessories__placeholder-svg' }}
-            </div>
-          {%- endif -%}
-          <div class="fnop-accessories__info">
-            <span class="fnop-accessories__title">{{ accessory.title }}</span>
-            <span class="fnop-accessories__price">{{ accessory.price | money }}</span>
+        <li class="bacc__item">
+          <div class="bmc--square">
+            {%- render 'brand-machine-card', product: accessory -%}
           </div>
-        </a>
+        </li>
       {%- endfor -%}
-    </div>
+    </ul>
   </div>
 </section>
 {%- endif -%}
 
 {% style %}
-  #{{ section_id }} {
-    padding-block: 48px;
+  #fnop-accessories-{{ section.id }} {
+    padding-block: clamp(48px, 8vw, 120px);
+    --bmc-title-lines: 2;
   }
 
-  #{{ section_id }} .fnop-accessories__container {
-    width: min(var(--page-content-width, 1440px), 100% - 2 * var(--page-margin, 40px));
+  {% comment %} ── Container (mirrors brand-section__container) ── {% endcomment %}
+  #fnop-accessories-{{ section.id }} .brand-section__container {
+    max-width: var(--page-width, 1520px);
     margin-inline: auto;
+    padding-inline: var(--page-margin, 16px);
   }
 
-  #{{ section_id }} .fnop-accessories__grid {
+  #fnop-accessories-{{ section.id }} .brand-section__heading {
+    text-align: center;
+    font-size: var(--font-size--4xl);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 clamp(32px, 4vw, 56px);
+  }
+
+  {% comment %} ── Grid (mirrors bacc__grid from brand-subcollections) ── {% endcomment %}
+  #fnop-accessories-{{ section.id }} .bacc__grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: stretch;
   }
 
-  #{{ section_id }} .fnop-accessories__card {
+  @media (min-width: 750px) {
+    #fnop-accessories-{{ section.id }} .bacc__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    #fnop-accessories-{{ section.id }} .bacc__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    #fnop-accessories-{{ section.id }} .bacc__grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  #fnop-accessories-{{ section.id }} .bacc__item {
+    min-width: 0;
+  }
+
+  {% comment %} ── Card (mirrors bmc from brand-machines-grid) ── {% endcomment %}
+  #fnop-accessories-{{ section.id }} .bmc {
     display: flex;
     flex-direction: column;
-    gap: 8px;
     text-decoration: none;
-    color: var(--color-foreground);
+    color: inherit;
+    background: rgb(var(--color-foreground-rgb) / 0.04);
+    border-radius: var(--radius-sm, 8px);
+    padding: 12px;
+    height: 100%;
   }
 
-  #{{ section_id }} .fnop-accessories__card:hover .fnop-accessories__title {
-    text-decoration: underline;
+  #fnop-accessories-{{ section.id }} .bmc__poster {
+    position: relative;
+    border-radius: calc(var(--radius-sm, 8px) - 12px);
+    overflow: hidden;
+    background: rgb(var(--color-foreground-rgb) / 0.04);
   }
 
-  #{{ section_id }} .fnop-accessories__img {
+  #fnop-accessories-{{ section.id }} .bmc--square .bmc__poster {
+    aspect-ratio: 1 / 1;
+  }
+
+  #fnop-accessories-{{ section.id }} .bmc__img {
     width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
     display: block;
-    background: var(--color-background, #fff);
-    border-radius: var(--radius-sm, 0);
   }
 
-  #{{ section_id }} .fnop-accessories__placeholder {
-    aspect-ratio: 1 / 1;
-    background: var(--color-background-secondary, #f5f5f5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm, 0);
+  #fnop-accessories-{{ section.id }} .bmc__badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgb(255 0 0 / 0.7);
+    color: rgb(var(--color-background-rgb));
+    font-size: var(--font-size--2xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
   }
 
-  #{{ section_id }} .fnop-accessories__placeholder-svg {
-    width: 60%;
-    height: auto;
-    opacity: 0.3;
-  }
-
-  #{{ section_id }} .fnop-accessories__info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  #{{ section_id }} .fnop-accessories__title {
-    font-size: var(--font-size--md);
-    line-height: 1.4;
-  }
-
-  #{{ section_id }} .fnop-accessories__price {
-    font-size: var(--font-size--md);
+  #fnop-accessories-{{ section.id }} .bmc__title {
+    margin: 10px 0 0;
+    font-size: var(--font-size--xl);
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: var(--bmc-title-lines);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: calc(var(--bmc-title-lines) * 1.3em);
   }
 
-  @media (max-width: 989px) {
-    #{{ section_id }} .fnop-accessories__grid {
-      grid-template-columns: repeat(2, 1fr);
+  #fnop-accessories-{{ section.id }} .bmc__price {
+    margin-top: 4px;
+    font-size: var(--font-size--xl);
+    font-weight: 500;
+    color: rgb(var(--color-foreground-rgb) / 0.8);
+  }
+
+  @media (max-width: 749px) {
+    #fnop-accessories-{{ section.id }} {
+      --bmc-title-lines: 3;
+    }
+
+    #fnop-accessories-{{ section.id }} .bmc__title {
+      font-size: var(--font-size--md);
+    }
+
+    #fnop-accessories-{{ section.id }} .bmc__price {
+      font-size: var(--font-size--md);
     }
   }
 {% endstyle %}

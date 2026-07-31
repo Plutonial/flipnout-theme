@@ -1,30 +1,16 @@
 {%- comment -%}
-  Renders the edition badge from shopify["pinball-machine-edition"] metafield.
-  Uses bracket notation because the key contains hyphens.
-  The type is list.metaobject_reference — render the display_name of the first entry.
-  Hidden when the metafield is empty.
+  Renders the edition badge derived from the product title.
+  Expects titles in the format "<Game> Pinball Machine - <Edition Name>".
+  The edition name is everything after the last " - ".
+  Products with no " - " in the title render no badge.
   Usage: {% render 'fnop-edition-badge' %}
 {%- endcomment -%}
 
 {%- liquid
-  assign _edition_meta = product.metafields.shopify["pinball-machine-edition"].value
+  assign _parts = product.title | split: ' - '
   assign _badge_text = ''
-  if _edition_meta != blank and _edition_meta.size > 0
-    assign _first = _edition_meta | first
-    if _first != blank
-      assign _badge_text = _first.system.display_name | default: _first.display_name | default: _first.name | default: _first.label
-      comment — If all named fields are blank, derive from the handle (e.g. "pro" → "Pro")
-      endcomment
-      if _badge_text == blank or _badge_text contains 'MetaobjectDrop'
-        assign _handle_parts = _first.system.handle | default: _first.handle | split: '.'
-        assign _handle_slug = _handle_parts | last | default: _handle_parts | first
-        if _handle_slug != blank
-          assign _badge_text = _handle_slug | replace: '-', ' ' | capitalize
-        else
-          assign _badge_text = ''
-        endif
-      endif
-    endif
+  if _parts.size > 1
+    assign _badge_text = _parts | last | strip
   endif
 -%}
 
