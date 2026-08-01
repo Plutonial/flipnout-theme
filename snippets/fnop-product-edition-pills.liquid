@@ -118,7 +118,7 @@
   }
 
   .fnop-edition-pills__name {
-    font-family: var(--font-heading-family);
+    font-family: var(--font-heading--family);
     font-size: var(--font-size--xl);
     font-weight: 600;
     text-transform: uppercase;
@@ -126,9 +126,13 @@
     line-height: 1.1;
   }
 
+  .fnop-edition-pills {
+    margin-bottom: 0;
+  }
+
   .fnop-edition-pills__compare {
     display: inline-block;
-    margin-top: 18px;
+    margin-top: 16px;
     font-size: var(--font-size--xs);
     color: var(--color-logo-red, #FF0000);
     text-decoration: none;
@@ -139,3 +143,41 @@
   }
 </style>
 {%- endif -%}
+
+{%- comment -%}
+  P8: Buy box styles — always rendered regardless of edition count.
+  Price styling, vertical rhythm, and content width cap.
+{%- endcomment -%}
+<style>
+  /* Price: Oswald 600 + top margin */
+  product-price,
+  product-price .price {
+    font-weight: 600;
+  }
+  product-price {
+    display: block;
+    margin-top: 36px;
+  }
+
+  /* Description separator + spacing */
+  .product-details .block-divider + .text-block,
+  .product-details [data-block-id] + .text-block {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    max-width: 620px;
+  }
+
+  /* Cap description, quantity row and buttons at 620px */
+  .product-details buy-buttons,
+  .product-details .buy-buttons,
+  .product-details quantity-input,
+  .product-details .quantity-selector {
+    max-width: 620px;
+  }
+
+  /* Quantity row top margin */
+  .product-details buy-buttons {
+    margin-top: 36px;
+  }
+</style>

@@ -84,13 +84,6 @@
               },
               "blocks": {}
             },
-            "edition_badge_fnop": {
-              "type": "custom-liquid",
-              "settings": {
-                "custom_liquid": "{% render 'fnop-edition-badge' %}"
-              },
-              "blocks": {}
-            },
             "group_icgrde": {
               "type": "group",
               "name": "Header",
@@ -137,15 +130,15 @@
                     "show_sale_price_first": true,
                     "show_installments": false,
                     "show_tax_info": false,
-                    "type_preset": "paragraph",
+                    "type_preset": "custom",
                     "width": "100%",
                     "alignment": "left",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
+                    "font": "var(--font-heading--family)",
+                    "font_size": "var(--font-size--4xl)",
+                    "line_height": "1.05",
                     "letter_spacing": "normal",
                     "case": "none",
-                    "color": "var(--color-foreground)",
+                    "color": "rgba(0, 0, 0, 0.9)",
                     "padding-block-start": 4,
                     "padding-block-end": 0,
                     "padding-inline-start": 0,
@@ -251,7 +244,6 @@
           },
           "block_order": [
             "edition_pills_fnop",
-            "edition_badge_fnop",
             "group_icgrde",
             "divider_VJhene",
             "text_description",
