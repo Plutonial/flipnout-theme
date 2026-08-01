@@ -1,8 +1,8 @@
 {%- liquid
   comment
     Brand Accessories Grid.
-    Page 1 is server-rendered (SEO floor / no-JS fallback).
-    Subsequent pages are fetched on demand via the Section Rendering API.
+    Server-renders up to 50 accessories (SEO floor / no-JS fallback).
+    "See all" links to /collections/accessories filtered by vendor.
   endcomment
 -%}
 
@@ -18,7 +18,9 @@
 
   {%- if accessory_count > 0 -%}
 
-<brand-accessories-grid class="bacc" data-initial="12" data-step="12" data-pages="{{ paginate.pages }}">
+    {%- assign vendor = collection.products.first.vendor -%}
+
+<brand-accessories-grid class="bacc" data-initial-rows="3" data-step-rows="3">
   <section id="brand-accessories">
     <div class="brand-section__container">
       <h2 class="brand-section__heading">{{ collection.title }} {{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
@@ -35,12 +37,15 @@
         {%- endfor -%}
       </ul>
 
-      <button class="bacc__more" type="button" hidden>Show more</button>
+      <div class="bacc__controls">
+        <button class="bacc__more" type="button" hidden>Show more</button>
+        <a class="bacc__see-all" href="/collections/accessories?filter.p.vendor={{ vendor | url_encode }}">See all</a>
+      </div>
     </div>
   </section>
 </brand-accessories-grid>
 
-{%- comment %} ── Web Component: brand-accessories-grid (reveal + Section Rendering API fetch) ── {% endcomment %}
+{%- comment %} ── Web Component: brand-accessories-grid (reveal mechanic, no network) ── {% endcomment %}
 <script>
   if (!customElements.get('brand-accessories-grid')) {
     class BrandAccessoriesGrid extends HTMLElement {
@@ -48,21 +53,22 @@
         this.grid = this.querySelector('.bacc__grid');
         this.items = Array.from(this.querySelectorAll('.bacc__item'));
         this.btn = this.querySelector('.bacc__more');
-        this.initial = parseInt(this.dataset.initial, 10) || 12;
-        this.step = parseInt(this.dataset.step, 10) || 12;
+        this.initialRows = parseInt(this.dataset.initialRows, 10) || 3;
+        this.stepRows = parseInt(this.dataset.stepRows, 10) || 3;
         this.clicks = 0;
-
-        this.totalPages = parseInt(this.dataset.pages, 10) || 1;
-        this.nextPage = 2;
-        this.fetching = false;
-        this.allPagesFetched = this.totalPages <= 1;
-
-        this.sectionId = this.closest('.shopify-section').id.replace('shopify-section-', '');
 
         this.update();
 
         if (this.btn) {
-          this.btn.addEventListener('click', () => this.handleClick());
+          this.btn.addEventListener('click', () => {
+            var limit = this.revealLimit(this.items.length, this.clicks);
+            if (limit >= this.items.length) {
+              this.clicks = 0;
+            } else {
+              this.clicks++;
+            }
+            this.update();
+          });
         }
 
         this._onResize = () => this.update();
@@ -79,62 +85,9 @@
       }
 
       revealLimit(total, clicks) {
-        var target = this.initial + clicks * this.step;
         var cols = this.columns;
-        return Math.min(total, Math.ceil(target / cols) * cols);
-      }
-
-      handleClick() {
-        var limit = this.revealLimit(this.items.length, this.clicks);
-
-        if (limit >= this.items.length && this.allPagesFetched) {
-          this.clicks = 0;
-          this.update();
-          return;
-        }
-
-        this.clicks++;
-        var newLimit = this.revealLimit(this.items.length, this.clicks);
-
-        if (newLimit >= this.items.length && !this.allPagesFetched) {
-          this.fetchNextPage().then(() => this.update());
-        } else {
-          this.update();
-        }
-      }
-
-      async fetchNextPage() {
-        if (this.fetching || this.allPagesFetched) return;
-        this.fetching = true;
-        this.btn.disabled = true;
-
-        try {
-          var url = window.location.pathname + '?section_id=' + encodeURIComponent(this.sectionId) + '&page=' + this.nextPage;
-          var resp = await fetch(url);
-          if (!resp.ok) throw new Error(resp.status);
-
-          var html = await resp.text();
-          var doc = new DOMParser().parseFromString(html, 'text/html');
-          var cards = doc.querySelectorAll('.bacc__item');
-
-          if (cards.length === 0) {
-            this.allPagesFetched = true;
-          } else {
-            cards.forEach(function(card) {
-              this.grid.appendChild(card);
-            }.bind(this));
-            this.items = Array.from(this.querySelectorAll('.bacc__item'));
-            this.nextPage++;
-            if (this.nextPage > this.totalPages) {
-              this.allPagesFetched = true;
-            }
-          }
-        } catch (e) {
-          /* On failure, leave existing cards alone — button re-enabled below */
-        }
-
-        this.fetching = false;
-        this.btn.disabled = false;
+        var rows = this.initialRows + clicks * this.stepRows;
+        return Math.min(total, rows * cols);
       }
 
       update() {
@@ -150,18 +103,16 @@
         }
 
         if (this.btn) {
-          if (total <= this.initial && this.allPagesFetched) {
+          var initialLimit = this.revealLimit(total, 0);
+          if (total <= initialLimit) {
             this.btn.hidden = true;
-          } else if (limit >= total && this.allPagesFetched) {
+          } else if (limit >= total) {
             this.btn.hidden = false;
             this.btn.textContent = 'Show less';
-          } else if (!this.allPagesFetched) {
-            this.btn.hidden = false;
-            this.btn.textContent = 'Show 12 more';
           } else {
             this.btn.hidden = false;
             var remaining = total - limit;
-            this.btn.textContent = 'Show 12 more \u00B7 ' + remaining + ' remaining';
+            this.btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
           }
         }
       }
@@ -235,11 +186,26 @@
     aspect-ratio: 1 / 1;
   }
 
+  {% comment %} ── Controls ── {% endcomment %}
+  .bacc__controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 749px) {
+    .bacc__controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
   .bacc__more[hidden] { display: none; }
 
   .bacc__more {
     display: block;
-    margin: 32px auto 0;
     padding: 12px 28px;
     border: 2px solid rgba(0, 0, 0, 0.81);
     border-radius: var(--radius-sm, 8px);
@@ -254,6 +220,21 @@
   .bacc__more:hover {
     background: rgb(var(--color-foreground-rgb));
     color: rgb(var(--color-background-rgb));
+  }
+
+  .bacc__see-all {
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bacc__see-all:hover {
+    color: rgb(var(--color-foreground-rgb));
   }
 {% endstyle %}
 
