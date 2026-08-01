@@ -160,19 +160,16 @@
   }
 
   /* Description separator + spacing */
-  .product-details .block-divider + .text-block,
-  .product-details [data-block-id] + .text-block {
+  .product-details .group-block-content > .divider + .text-block {
     margin-top: 32px;
     padding-top: 28px;
     border-top: 1px solid rgba(0, 0, 0, 0.12);
-    max-width: 620px;
   }
 
-  /* Cap description, quantity row and buttons at 620px */
-  .product-details buy-buttons,
-  .product-details .buy-buttons,
-  .product-details quantity-input,
-  .product-details .quantity-selector {
+  /* Cap divider and everything after it (description, buttons, etc.) at 620px.
+     Edition tabs and price sit before the divider and stay full-width. */
+  .product-details .group-block-content > .divider,
+  .product-details .group-block-content > .divider ~ * {
     max-width: 620px;
   }
 
