@@ -414,119 +414,6 @@
   </div>
 </category-brand-grids>
 
-{% comment %} ── Web Component: category-brand-grids ── {% endcomment %}
-<script>
-  if (!customElements.get('category-brand-grids')) {
-    class CategoryBrandGrids extends HTMLElement {
-      connectedCallback() {
-        this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
-        this.breakpoints = [
-          window.matchMedia('(min-width: 1200px)'),
-          window.matchMedia('(min-width: 900px)'),
-          window.matchMedia('(min-width: 750px)')
-        ];
-        this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
-        this.blocks.forEach(block => {
-          const btn = block.querySelector('.cbg__more');
-          if (btn) {
-            btn.addEventListener('click', () => this.handleClick(block));
-          }
-        });
-        this.updateAll();
-      }
-
-      getColumns(grid) {
-        const t = getComputedStyle(grid).gridTemplateColumns;
-        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
-      }
-
-      updateAll() {
-        this.blocks.forEach(block => this.updateBlock(block));
-      }
-
-      updateBlock(block) {
-        const grid = block.querySelector('.cbg__grid');
-        const btn = block.querySelector('.cbg__more');
-        const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const total = items.length;
-        const cols = this.getColumns(grid);
-        const rows = parseInt(block.dataset.rows || '2', 10);
-        const visible = rows * cols;
-
-        if (btn) {
-          if (total > visible) {
-            btn.hidden = false;
-            if (!grid.classList.contains('cbg--precut')) {
-              const remaining = total - visible;
-              btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
-              items.forEach((item, i) => {
-                item.classList.toggle('cbg__item--beyond', i >= visible);
-              });
-            } else {
-              const cssVisible = items.filter(e => e.offsetParent !== null).length;
-              const remaining = total - cssVisible;
-              btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
-            }
-          } else {
-            btn.hidden = true;
-            if (!grid.classList.contains('cbg--precut')) {
-              items.forEach(item => item.classList.remove('cbg__item--beyond'));
-            }
-          }
-        }
-      }
-
-      handleClick(block) {
-        const grid = block.querySelector('.cbg__grid');
-        const btn = block.querySelector('.cbg__more');
-        const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const total = items.length;
-        const cols = this.getColumns(grid);
-        let rows = parseInt(block.dataset.rows || '2', 10);
-
-        if (grid.classList.contains('cbg--precut')) {
-          grid.classList.remove('cbg--precut');
-          rows = 2;
-        }
-
-        const currentVisible = rows * cols;
-
-        if (currentVisible >= total) {
-          rows = 2;
-          block.dataset.rows = rows;
-          const visible = rows * cols;
-          items.forEach((item, i) => {
-            item.classList.toggle('cbg__item--beyond', i >= visible);
-          });
-          if (total > visible) {
-            const remaining = total - visible;
-            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
-          } else {
-            btn.hidden = true;
-          }
-          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          rows += 2;
-          block.dataset.rows = rows;
-          const visible = Math.min(rows * cols, total);
-          items.forEach((item, i) => {
-            item.classList.toggle('cbg__item--beyond', i >= visible);
-          });
-          if (visible >= total) {
-            btn.textContent = 'Show less';
-          } else {
-            const remaining = total - visible;
-            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
-          }
-        }
-      }
-    }
-    customElements.define('category-brand-grids', CategoryBrandGrids);
-  }
-</script>
-
-{%- endif -%}
-
 {% style %}
   {%- render 'brand-grid-styles' -%}
 
@@ -598,6 +485,119 @@
     --bmc-title-lines: 2;
   }
 {% endstyle %}
+
+{% comment %} ── Web Component: category-brand-grids ── {% endcomment %}
+<script>
+  if (!customElements.get('category-brand-grids')) {
+    class CategoryBrandGrids extends HTMLElement {
+      connectedCallback() {
+        this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
+        this.breakpoints = [
+          window.matchMedia('(min-width: 1200px)'),
+          window.matchMedia('(min-width: 900px)'),
+          window.matchMedia('(min-width: 750px)')
+        ];
+        this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
+        this.blocks.forEach(block => {
+          const btn = block.querySelector('.cbg__more');
+          if (btn) {
+            btn.addEventListener('click', () => this.handleClick(block));
+          }
+        });
+        this.updateAll();
+        if (document.readyState === 'complete') {
+          requestAnimationFrame(() => this.updateAll());
+        } else {
+          window.addEventListener('load', () => this.updateAll(), { once: true });
+        }
+      }
+
+      getColumns(grid) {
+        const t = getComputedStyle(grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
+      }
+
+      updateAll() {
+        this.blocks.forEach(block => this.updateBlock(block));
+      }
+
+      updateBlock(block) {
+        const grid = block.querySelector('.cbg__grid');
+        const btn = block.querySelector('.cbg__more');
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const total = items.length;
+        const cols = this.getColumns(grid);
+        const rows = parseInt(block.dataset.rows || '2', 10);
+
+        if (btn) {
+          const visible = Math.min(rows * cols, total);
+          if (total > visible) {
+            btn.hidden = false;
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
+            if (!grid.classList.contains('cbg--precut')) {
+              items.forEach((item, i) => {
+                item.classList.toggle('cbg__item--beyond', i >= visible);
+              });
+            }
+          } else {
+            btn.hidden = true;
+            if (!grid.classList.contains('cbg--precut')) {
+              items.forEach(item => item.classList.remove('cbg__item--beyond'));
+            }
+          }
+        }
+      }
+
+      handleClick(block) {
+        const grid = block.querySelector('.cbg__grid');
+        const btn = block.querySelector('.cbg__more');
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const total = items.length;
+        const cols = this.getColumns(grid);
+        let rows = parseInt(block.dataset.rows || '2', 10);
+
+        if (grid.classList.contains('cbg--precut')) {
+          grid.classList.remove('cbg--precut');
+          rows = 2;
+        }
+
+        const currentVisible = rows * cols;
+
+        if (currentVisible >= total) {
+          rows = 2;
+          block.dataset.rows = rows;
+          const visible = rows * cols;
+          items.forEach((item, i) => {
+            item.classList.toggle('cbg__item--beyond', i >= visible);
+          });
+          if (total > visible) {
+            const remaining = total - visible;
+            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+          } else {
+            btn.hidden = true;
+          }
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          rows += 2;
+          block.dataset.rows = rows;
+          const visible = Math.min(rows * cols, total);
+          items.forEach((item, i) => {
+            item.classList.toggle('cbg__item--beyond', i >= visible);
+          });
+          if (visible >= total) {
+            btn.textContent = 'Show less';
+          } else {
+            const remaining = total - visible;
+            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+          }
+        }
+      }
+    }
+    customElements.define('category-brand-grids', CategoryBrandGrids);
+  }
+</script>
+
+{%- endif -%}
 
 {% schema %}
 {
