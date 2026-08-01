@@ -371,6 +371,23 @@
 {%- if final_brand_arr.size > 0 -%}
 <category-brand-grids class="cbg">
   <div class="brand-section__container">
+    <div class="bmg__toolbar cbg__toolbar">
+      <select class="bmg__select cbg__select" aria-label="Filter by brand">
+        <option value="all">All brands ({{ final_brand_arr.size }})</option>
+        {%- for bh in final_brand_arr -%}
+          {%- assign brand_opt = collections[bh] -%}
+          {%- assign brand_total = final_total_arr[forloop.index0] | plus: 0 -%}
+          <option value="{{ brand_opt.handle }}">{{ brand_opt.title }} ({{ brand_total }})</option>
+        {%- endfor -%}
+      </select>
+
+      <label class="bmg__switch cbg__switch bmg__switch--on">
+        <input type="checkbox" role="switch" checked class="bmg__switch-input">
+        <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+        <span class="bmg__switch-label">Show Out of Stock</span>
+      </label>
+    </div>
+    <p class="bmg__empty cbg__empty" hidden>No machines in stock right now.</p>
     {%- for bh in final_brand_arr -%}
       {%- assign brand = collections[bh] -%}
       {%- assign product_pairs = final_products_arr[forloop.index0] | split: ',' -%}
@@ -399,7 +416,7 @@
               {%- endif -%}
             {%- endfor -%}
             {%- if card_product != blank -%}
-              <li class="cbg__item">
+              <li class="cbg__item"{% if card_product.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
                 {%- render 'brand-machine-card', product: card_product -%}
               </li>
             {%- endif -%}
@@ -416,6 +433,10 @@
 
 {% style %}
   {%- render 'brand-grid-styles' -%}
+  {%- render 'brand-toolbar-styles' -%}
+
+  .cbg__block--hidden { display: none; }
+  .cbg__item--oos { display: none; }
 
   .cbg__grid {
     display: grid;
@@ -492,6 +513,18 @@
     class CategoryBrandGrids extends HTMLElement {
       connectedCallback() {
         this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
+        this.showOOS = true;
+        this.selectEl = this.querySelector('.cbg__select');
+        this.switchInput = this.querySelector('.bmg__switch-input');
+        this.switchLabel = this.querySelector('.cbg__switch');
+        this.emptyMsg = this.querySelector('.cbg__empty');
+
+        /* Store original totals for dropdown labels */
+        this.originalTotals = {};
+        this.blocks.forEach(block => {
+          this.originalTotals[block.dataset.brand] = block.querySelectorAll('.cbg__item').length;
+        });
+
         this.breakpoints = [
           window.matchMedia('(min-width: 1200px)'),
           window.matchMedia('(min-width: 900px)'),
@@ -504,6 +537,32 @@
             btn.addEventListener('click', () => this.handleClick(block));
           }
         });
+
+        if (this.selectEl) {
+          this.selectEl.addEventListener('change', () => this.applyFilters());
+        }
+        if (this.switchInput) {
+          this.switchInput.addEventListener('change', () => {
+            this.showOOS = this.switchInput.checked;
+            if (this.switchLabel) this.switchLabel.classList.toggle('bmg__switch--on', this.showOOS);
+            if (this.showOOS) {
+              this.restorePrecut();
+              /* Re-apply dropdown filter after restore */
+              const selectedBrand = this.selectEl ? this.selectEl.value : 'all';
+              if (selectedBrand !== 'all') {
+                this.blocks.forEach(block => {
+                  if (block.dataset.brand !== selectedBrand) {
+                    block.classList.add('cbg__block--hidden');
+                  }
+                });
+              }
+              this.updateAll();
+            } else {
+              this.applyFilters();
+            }
+          });
+        }
+
         this.updateAll();
         if (document.readyState === 'complete') {
           requestAnimationFrame(() => this.updateAll());
@@ -517,15 +576,121 @@
         return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
       }
 
+      applyFilters() {
+        const selectedBrand = this.selectEl ? this.selectEl.value : 'all';
+        let anyVisible = false;
+
+        this.blocks.forEach(block => {
+          const brand = block.dataset.brand;
+          const hiddenByDropdown = selectedBrand !== 'all' && brand !== selectedBrand;
+
+          /* Apply OOS hiding */
+          const items = Array.from(block.querySelectorAll('.cbg__item'));
+          items.forEach(item => {
+            item.classList.toggle('cbg__item--oos', !this.showOOS && item.hasAttribute('data-sold-out'));
+          });
+
+          const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+          const grid = block.querySelector('.cbg__grid');
+
+          /* If toggle changed, remove precut so JS owns visibility */
+          if (!this.showOOS) {
+            if (grid.classList.contains('cbg--precut')) {
+              grid.classList.remove('cbg--precut');
+              /* Reset rows so reveal starts from 2 */
+              block.dataset.rows = '2';
+            }
+          }
+
+          /* Hide block if dropdown-filtered or zero eligible */
+          if (hiddenByDropdown || eligible.length === 0) {
+            block.classList.add('cbg__block--hidden');
+          } else {
+            block.classList.remove('cbg__block--hidden');
+            anyVisible = true;
+          }
+        });
+
+        /* Update dropdown labels */
+        this.updateDropdownLabels();
+
+        /* Show empty message if nothing visible */
+        if (this.emptyMsg) {
+          this.emptyMsg.hidden = anyVisible;
+        }
+
+        this.updateAll();
+      }
+
+      updateDropdownLabels() {
+        if (!this.selectEl) return;
+        const options = Array.from(this.selectEl.options);
+        options.forEach(opt => {
+          if (opt.value === 'all') return;
+          const block = this.blocks.find(b => b.dataset.brand === opt.value);
+          if (!block) return;
+          const items = Array.from(block.querySelectorAll('.cbg__item'));
+          const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+          const brand = block.querySelector('.brand-section__heading');
+          const name = brand ? brand.textContent.trim() : opt.value;
+          opt.textContent = name + ' (' + eligible.length + ')';
+          opt.hidden = eligible.length === 0;
+        });
+      }
+
+      restorePrecut() {
+        /* When toggle goes back ON, restore precut for blocks that were never expanded */
+        this.blocks.forEach(block => {
+          const grid = block.querySelector('.cbg__grid');
+          const rows = parseInt(block.dataset.rows || '2', 10);
+          /* Only restore precut if rows is still at the initial 2 */
+          if (rows === 2) {
+            grid.classList.add('cbg--precut');
+            /* Clear JS visibility classes */
+            block.querySelectorAll('.cbg__item').forEach(item => {
+              item.classList.remove('cbg__item--beyond');
+              item.classList.remove('cbg__item--oos');
+            });
+          } else {
+            /* Block was expanded — just clear OOS */
+            block.querySelectorAll('.cbg__item').forEach(item => {
+              item.classList.remove('cbg__item--oos');
+            });
+          }
+          block.classList.remove('cbg__block--hidden');
+        });
+
+        /* Restore dropdown labels to original totals */
+        if (this.selectEl) {
+          Array.from(this.selectEl.options).forEach(opt => {
+            if (opt.value === 'all') return;
+            const block = this.blocks.find(b => b.dataset.brand === opt.value);
+            if (!block) return;
+            const total = this.originalTotals[opt.value] || 0;
+            const brand = block.querySelector('.brand-section__heading');
+            const name = brand ? brand.textContent.trim() : opt.value;
+            opt.textContent = name + ' (' + total + ')';
+            opt.hidden = false;
+          });
+        }
+
+        if (this.emptyMsg) this.emptyMsg.hidden = true;
+      }
+
       updateAll() {
-        this.blocks.forEach(block => this.updateBlock(block));
+        this.blocks.forEach(block => {
+          if (!block.classList.contains('cbg__block--hidden')) {
+            this.updateBlock(block);
+          }
+        });
       }
 
       updateBlock(block) {
         const grid = block.querySelector('.cbg__grid');
         const btn = block.querySelector('.cbg__more');
         const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const total = items.length;
+        const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+        const total = eligible.length;
         const cols = this.getColumns(grid);
         const rows = parseInt(block.dataset.rows || '2', 10);
 
@@ -535,8 +700,11 @@
             btn.hidden = false;
             btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
             if (!grid.classList.contains('cbg--precut')) {
-              items.forEach((item, i) => {
-                item.classList.toggle('cbg__item--beyond', i >= visible);
+              let idx = 0;
+              items.forEach(item => {
+                if (item.classList.contains('cbg__item--oos')) return;
+                item.classList.toggle('cbg__item--beyond', idx >= visible);
+                idx++;
               });
             }
           } else {
@@ -552,7 +720,8 @@
         const grid = block.querySelector('.cbg__grid');
         const btn = block.querySelector('.cbg__more');
         const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const total = items.length;
+        const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+        const total = eligible.length;
         const cols = this.getColumns(grid);
         let rows = parseInt(block.dataset.rows || '2', 10);
 
@@ -567,12 +736,14 @@
           rows = 2;
           block.dataset.rows = rows;
           const visible = rows * cols;
-          items.forEach((item, i) => {
-            item.classList.toggle('cbg__item--beyond', i >= visible);
+          let idx = 0;
+          items.forEach(item => {
+            if (item.classList.contains('cbg__item--oos')) return;
+            item.classList.toggle('cbg__item--beyond', idx >= visible);
+            idx++;
           });
           if (total > visible) {
-            const remaining = total - visible;
-            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
           } else {
             btn.hidden = true;
           }
@@ -581,14 +752,16 @@
           rows += 2;
           block.dataset.rows = rows;
           const visible = Math.min(rows * cols, total);
-          items.forEach((item, i) => {
-            item.classList.toggle('cbg__item--beyond', i >= visible);
+          let idx = 0;
+          items.forEach(item => {
+            if (item.classList.contains('cbg__item--oos')) return;
+            item.classList.toggle('cbg__item--beyond', idx >= visible);
+            idx++;
           });
           if (visible >= total) {
             btn.textContent = 'Show less';
           } else {
-            const remaining = total - visible;
-            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
           }
         }
       }
