@@ -57,7 +57,7 @@
         this.stepRows = parseInt(this.dataset.stepRows, 10) || 3;
         this.clicks = 0;
 
-        this.update();
+        requestAnimationFrame(() => this.update());
 
         if (this.btn) {
           this.btn.addEventListener('click', () => {
