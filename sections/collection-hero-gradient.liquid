@@ -3,7 +3,6 @@
   assign subtitle = collection.metafields.custom.subtitle
 -%}
 
-{{ 'fnop-category-grid.css' | asset_url | stylesheet_tag }}
 
 <section id="{{ section_id }}" class="collection-hero collection-hero--gradient">
   <div class="collection-hero__content">
@@ -35,6 +34,47 @@
     display: none;
   }
 
+  {% comment %} ── Category grid card overrides ── {% endcomment %}
+  [data-template="collection.category"] .product-grid {
+    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 750px) {
+    [data-template="collection.category"] .product-grid {
+      gap: 32px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    [data-template="collection.category"] .product-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    [data-template="collection.category"] .product-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  [data-template="collection.category"] .product-card-gallery {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  [data-template="collection.category"] .product-card h3.h4 {
+    font-family: var(--font-accent--family, var(--font-h1--family));
+    font-size: var(--font-size--xl);
+  }
+
+  [data-template="collection.category"] .product-card .price {
+    font-family: var(--font-body--family);
+    font-size: var(--font-size--xl);
+    font-weight: 500;
+  }
 {% endstyle %}
 
 {% schema %}
