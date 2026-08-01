@@ -1,0 +1,608 @@
+{%- liquid
+  comment
+    Category Brand Grids — renders one grid per brand on the pinball-machines
+    category page. Brand order comes from the main menu; a safety net appends
+    any brand collection missing from the menu.
+  endcomment
+
+  comment
+    ── Step 1: Walk the main menu to get brand collections in menu order ──
+  endcomment
+  assign ordered_ids = ''
+  assign ordered_handles = ''
+
+  for l1 in linklists['main-menu'].links
+    if l1.type == 'collection_link' and l1.object.template_suffix == 'brand'
+      assign bid = l1.object.id | append: ''
+      unless ordered_ids contains bid
+        if ordered_ids == ''
+          assign ordered_ids = bid
+          assign ordered_handles = l1.object.handle
+        else
+          assign ordered_ids = ordered_ids | append: '|' | append: bid
+          assign ordered_handles = ordered_handles | append: '|' | append: l1.object.handle
+        endif
+      endunless
+    endif
+    for l2 in l1.links
+      if l2.type == 'collection_link' and l2.object.template_suffix == 'brand'
+        assign bid = l2.object.id | append: ''
+        unless ordered_ids contains bid
+          if ordered_ids == ''
+            assign ordered_ids = bid
+            assign ordered_handles = l2.object.handle
+          else
+            assign ordered_ids = ordered_ids | append: '|' | append: bid
+            assign ordered_handles = ordered_handles | append: '|' | append: l2.object.handle
+          endif
+        endunless
+      endif
+      for l3 in l2.links
+        if l3.type == 'collection_link' and l3.object.template_suffix == 'brand'
+          assign bid = l3.object.id | append: ''
+          unless ordered_ids contains bid
+            if ordered_ids == ''
+              assign ordered_ids = bid
+              assign ordered_handles = l3.object.handle
+            else
+              assign ordered_ids = ordered_ids | append: '|' | append: bid
+              assign ordered_handles = ordered_handles | append: '|' | append: l3.object.handle
+            endif
+          endunless
+        endif
+      endfor
+    endfor
+  endfor
+
+  assign menu_id_arr = ordered_ids | split: '|'
+  assign menu_handle_arr = ordered_handles | split: '|'
+
+  comment
+    ── Step 2: For each menu brand, gather machines via game collections ──
+    We build parallel pipe-delimited strings for brand handles and their
+    product handle lists, skipping brands with 0 machines.
+  endcomment
+  assign brand_handles_str = ''
+  assign brand_totals_str = ''
+  assign brand_products_str = ''
+
+  for bh in menu_handle_arr
+    assign brand = collections[bh]
+    assign brand_id = brand.id
+
+    comment
+      Pass 1: collect game collections for this brand
+    endcomment
+    assign game_handles = ''
+    assign game_dates = ''
+
+    for c in collections
+      assign is_game = c.metafields.collection.is_game
+      if is_game
+        assign mfr_ref = c.metafields.custom.manufacturer.value
+        if mfr_ref and mfr_ref.id == brand_id
+          assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+          if game_handles == ''
+            assign game_handles = c.handle
+            assign game_dates = rd
+          else
+            assign game_handles = game_handles | append: '|' | append: c.handle
+            assign game_dates = game_dates | append: '|' | append: rd
+          endif
+        endif
+      endif
+    endfor
+
+    assign games_count = 0
+    if game_handles != ''
+      assign game_handle_arr = game_handles | split: '|'
+      assign game_date_arr = game_dates | split: '|'
+      assign games_count = game_handle_arr.size
+    endif
+
+    if games_count == 0
+      continue
+    endif
+
+    comment
+      Pass 2: sort by release_date descending (bubble sort)
+    endcomment
+    assign sorted_handles = game_handle_arr
+    assign sorted_dates = game_date_arr
+
+    assign n = games_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_dates[j]
+        assign date_b = sorted_dates[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_handles[j]
+          assign tmp_d = sorted_dates[j]
+
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_handles[j1]
+              assign d_val = sorted_dates[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_handles[k]
+              assign d_val = sorted_dates[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_handles = new_handles | split: '|'
+          assign sorted_dates = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+
+    comment
+      Pass 3+4: for each game (sorted), collect products sorted by edition_order,
+      excluding accessories.
+    endcomment
+    assign brand_product_handles = ''
+    assign total_machines = 0
+
+    for gh in sorted_handles
+      assign game_col = collections[gh]
+      for pos in (1..10)
+        assign pos_str = pos | append: ''
+        for p in game_col.products
+          if p.type == 'Accessory'
+            continue
+          endif
+          assign eo = p.metafields.product.edition_order.value | append: ''
+          if eo == pos_str
+            if brand_product_handles == ''
+              assign brand_product_handles = gh | append: ':' | append: p.handle
+            else
+              assign brand_product_handles = brand_product_handles | append: ',' | append: gh | append: ':' | append: p.handle
+            endif
+            assign total_machines = total_machines | plus: 1
+          endif
+        endfor
+      endfor
+      for p in game_col.products
+        if p.type == 'Accessory'
+          continue
+        endif
+        assign eo = p.metafields.product.edition_order.value
+        if eo == blank
+          if brand_product_handles == ''
+            assign brand_product_handles = gh | append: ':' | append: p.handle
+          else
+            assign brand_product_handles = brand_product_handles | append: ',' | append: gh | append: ':' | append: p.handle
+          endif
+          assign total_machines = total_machines | plus: 1
+        endif
+      endfor
+    endfor
+
+    if total_machines == 0
+      continue
+    endif
+
+    if brand_handles_str == ''
+      assign brand_handles_str = bh
+      assign brand_totals_str = total_machines | append: ''
+      assign brand_products_str = brand_product_handles
+    else
+      assign brand_handles_str = brand_handles_str | append: '||' | append: bh
+      assign brand_totals_str = brand_totals_str | append: '||' | append: total_machines
+      assign brand_products_str = brand_products_str | append: '||' | append: brand_product_handles
+    endif
+  endfor
+
+  comment
+    ── Step 3: Safety net — append brand collections not in the menu ──
+  endcomment
+  assign safety_handles = ''
+
+  for c in collections
+    if c.template_suffix != 'brand'
+      continue
+    endif
+    assign cid = c.id | append: ''
+    assign already = false
+    for mid in menu_id_arr
+      if mid == cid
+        assign already = true
+        break
+      endif
+    endfor
+    if already
+      continue
+    endif
+
+    comment
+      Gather machines for this brand the same way
+    endcomment
+    assign brand = c
+    assign brand_id = brand.id
+    assign game_handles = ''
+    assign game_dates = ''
+
+    for gc in collections
+      assign is_game = gc.metafields.collection.is_game
+      if is_game
+        assign mfr_ref = gc.metafields.custom.manufacturer.value
+        if mfr_ref and mfr_ref.id == brand_id
+          assign rd = gc.metafields.custom.release_date.value | default: '1970-01-01'
+          if game_handles == ''
+            assign game_handles = gc.handle
+            assign game_dates = rd
+          else
+            assign game_handles = game_handles | append: '|' | append: gc.handle
+            assign game_dates = game_dates | append: '|' | append: rd
+          endif
+        endif
+      endif
+    endfor
+
+    assign games_count = 0
+    if game_handles != ''
+      assign game_handle_arr = game_handles | split: '|'
+      assign game_date_arr = game_dates | split: '|'
+      assign games_count = game_handle_arr.size
+    endif
+
+    if games_count == 0
+      continue
+    endif
+
+    assign sorted_handles = game_handle_arr
+    assign sorted_dates = game_date_arr
+
+    assign n = games_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_dates[j]
+        assign date_b = sorted_dates[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_handles[j]
+          assign tmp_d = sorted_dates[j]
+
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_handles[j1]
+              assign d_val = sorted_dates[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_handles[k]
+              assign d_val = sorted_dates[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_handles = new_handles | split: '|'
+          assign sorted_dates = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+
+    assign brand_product_handles = ''
+    assign total_machines = 0
+
+    for gh in sorted_handles
+      assign game_col = collections[gh]
+      for pos in (1..10)
+        assign pos_str = pos | append: ''
+        for p in game_col.products
+          if p.type == 'Accessory'
+            continue
+          endif
+          assign eo = p.metafields.product.edition_order.value | append: ''
+          if eo == pos_str
+            if brand_product_handles == ''
+              assign brand_product_handles = gh | append: ':' | append: p.handle
+            else
+              assign brand_product_handles = brand_product_handles | append: ',' | append: gh | append: ':' | append: p.handle
+            endif
+            assign total_machines = total_machines | plus: 1
+          endif
+        endfor
+      endfor
+      for p in game_col.products
+        if p.type == 'Accessory'
+          continue
+        endif
+        assign eo = p.metafields.product.edition_order.value
+        if eo == blank
+          if brand_product_handles == ''
+            assign brand_product_handles = gh | append: ':' | append: p.handle
+          else
+            assign brand_product_handles = brand_product_handles | append: ',' | append: gh | append: ':' | append: p.handle
+          endif
+          assign total_machines = total_machines | plus: 1
+        endif
+      endfor
+    endfor
+
+    if total_machines == 0
+      continue
+    endif
+
+    if safety_handles == ''
+      assign safety_handles = c.handle
+    else
+      assign safety_handles = safety_handles | append: '|' | append: c.handle
+    endif
+
+    if brand_handles_str == ''
+      assign brand_handles_str = c.handle
+      assign brand_totals_str = total_machines | append: ''
+      assign brand_products_str = brand_product_handles
+    else
+      assign brand_handles_str = brand_handles_str | append: '||' | append: c.handle
+      assign brand_totals_str = brand_totals_str | append: '||' | append: total_machines
+      assign brand_products_str = brand_products_str | append: '||' | append: brand_product_handles
+    endif
+  endfor
+
+  assign final_brand_arr = brand_handles_str | split: '||'
+  assign final_total_arr = brand_totals_str | split: '||'
+  assign final_products_arr = brand_products_str | split: '||'
+  assign safety_arr = safety_handles | split: '|'
+-%}
+
+{%- if final_brand_arr.size > 0 -%}
+<category-brand-grids class="cbg">
+  <div class="brand-section__container">
+    {%- for bh in final_brand_arr -%}
+      {%- assign brand = collections[bh] -%}
+      {%- assign product_pairs = final_products_arr[forloop.index0] | split: ',' -%}
+      {%- assign total = final_total_arr[forloop.index0] | plus: 0 -%}
+
+      {%- comment %} Safety net HTML comment {% endcomment -%}
+      {%- for sh in safety_arr -%}
+        {%- if sh == bh -%}
+          <!-- brand not in main-menu: {{ bh }} -->
+        {%- endif -%}
+      {%- endfor -%}
+
+      <section class="cbg__block" data-brand="{{ brand.handle }}">
+        <h2 class="brand-section__heading">{{ brand.title }}</h2>
+        <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}">
+          {%- for pair in product_pairs -%}
+            {%- assign pair_parts = pair | split: ':' -%}
+            {%- assign gh = pair_parts[0] -%}
+            {%- assign ph = pair_parts[1] -%}
+            {%- assign game_col = collections[gh] -%}
+            {%- assign card_product = blank -%}
+            {%- for p in game_col.products -%}
+              {%- if p.handle == ph -%}
+                {%- assign card_product = p -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- if card_product != blank -%}
+              <li class="cbg__item">
+                {%- render 'brand-machine-card', product: card_product -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+        <div class="cbg__controls">
+          <button class="cbg__more" type="button" hidden>Show more</button>
+          <a class="cbg__all" href="{{ brand.url }}">View all</a>
+        </div>
+      </section>
+    {%- endfor -%}
+  </div>
+</category-brand-grids>
+
+{% comment %} ── Web Component: category-brand-grids ── {% endcomment %}
+<script>
+  if (!customElements.get('category-brand-grids')) {
+    class CategoryBrandGrids extends HTMLElement {
+      connectedCallback() {
+        this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
+        this.breakpoints = [
+          window.matchMedia('(min-width: 1200px)'),
+          window.matchMedia('(min-width: 900px)'),
+          window.matchMedia('(min-width: 750px)')
+        ];
+        this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
+        this.blocks.forEach(block => {
+          const btn = block.querySelector('.cbg__more');
+          if (btn) {
+            btn.addEventListener('click', () => this.handleClick(block));
+          }
+        });
+        this.updateAll();
+      }
+
+      getColumns(grid) {
+        const t = getComputedStyle(grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
+      }
+
+      updateAll() {
+        this.blocks.forEach(block => this.updateBlock(block));
+      }
+
+      updateBlock(block) {
+        const grid = block.querySelector('.cbg__grid');
+        const btn = block.querySelector('.cbg__more');
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const total = items.length;
+        const cols = this.getColumns(grid);
+        const rows = parseInt(block.dataset.rows || '2', 10);
+        const visible = rows * cols;
+
+        if (btn) {
+          if (total > visible) {
+            btn.hidden = false;
+            if (!grid.classList.contains('cbg--precut')) {
+              const remaining = total - visible;
+              btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+              items.forEach((item, i) => {
+                item.classList.toggle('cbg__item--beyond', i >= visible);
+              });
+            } else {
+              const cssVisible = items.filter(e => e.offsetParent !== null).length;
+              const remaining = total - cssVisible;
+              btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+            }
+          } else {
+            btn.hidden = true;
+            if (!grid.classList.contains('cbg--precut')) {
+              items.forEach(item => item.classList.remove('cbg__item--beyond'));
+            }
+          }
+        }
+      }
+
+      handleClick(block) {
+        const grid = block.querySelector('.cbg__grid');
+        const btn = block.querySelector('.cbg__more');
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const total = items.length;
+        const cols = this.getColumns(grid);
+        let rows = parseInt(block.dataset.rows || '2', 10);
+
+        if (grid.classList.contains('cbg--precut')) {
+          grid.classList.remove('cbg--precut');
+          rows = 2;
+        }
+
+        const currentVisible = rows * cols;
+
+        if (currentVisible >= total) {
+          rows = 2;
+          block.dataset.rows = rows;
+          const visible = rows * cols;
+          items.forEach((item, i) => {
+            item.classList.toggle('cbg__item--beyond', i >= visible);
+          });
+          if (total > visible) {
+            const remaining = total - visible;
+            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+          } else {
+            btn.hidden = true;
+          }
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          rows += 2;
+          block.dataset.rows = rows;
+          const visible = Math.min(rows * cols, total);
+          items.forEach((item, i) => {
+            item.classList.toggle('cbg__item--beyond', i >= visible);
+          });
+          if (visible >= total) {
+            btn.textContent = 'Show less';
+          } else {
+            const remaining = total - visible;
+            btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
+          }
+        }
+      }
+    }
+    customElements.define('category-brand-grids', CategoryBrandGrids);
+  }
+</script>
+
+{%- endif -%}
+
+{% style %}
+  {%- render 'brand-grid-styles' -%}
+
+  .cbg__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  @media (min-width: 750px)  { .cbg__grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 900px)  { .cbg__grid { grid-template-columns: repeat(4, 1fr); gap: 32px; } }
+  @media (min-width: 1200px) { .cbg__grid { grid-template-columns: repeat(5, 1fr); } }
+
+  .cbg__item { min-width: 0; }
+  .cbg__item--beyond { display: none; }
+
+  {% comment %} Pre-cut: 2 rows. N = 2 × columns + 1. {% endcomment %}
+  .cbg--precut .cbg__item:nth-child(n + 5) { display: none; }              /* 2 cols × 2 = 4  */
+  @media (min-width: 750px)  { .cbg--precut .cbg__item:nth-child(n + 5)  { display: list-item; }
+                               .cbg--precut .cbg__item:nth-child(n + 7)  { display: none; } }  /* 3 × 2 = 6  */
+  @media (min-width: 900px)  { .cbg--precut .cbg__item:nth-child(n + 7)  { display: list-item; }
+                               .cbg--precut .cbg__item:nth-child(n + 9)  { display: none; } }  /* 4 × 2 = 8  */
+  @media (min-width: 1200px) { .cbg--precut .cbg__item:nth-child(n + 9)  { display: list-item; }
+                               .cbg--precut .cbg__item:nth-child(n + 11) { display: none; } }  /* 5 × 2 = 10 */
+
+  .cbg__controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  @media (max-width: 749px) {
+    .cbg__controls { flex-direction: column; align-items: stretch; }
+  }
+  .cbg__block { padding-block: clamp(48px, 8vw, 120px); }
+
+  .cbg__more,
+  .cbg__all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 12px 28px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .cbg__more:hover,
+  .cbg__all:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+
+  .cbg__more[hidden] { display: none; }
+
+  .cbg {
+    --bmc-title-lines: 2;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Category brand grids",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

@@ -49,20 +49,7 @@
 {% endpaginate %}
 
 {% style %}
-  {% comment %} ── Shared section styles ── {% endcomment %}
-  .brand-section__container {
-    max-width: var(--page-width, 1520px);
-    margin-inline: auto;
-    padding-inline: var(--page-margin, 16px);
-  }
-
-  .brand-section__heading {
-    text-align: center;
-    font-size: var(--font-size--4xl);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin: 0 0 clamp(32px, 4vw, 56px);
-  }
+  {%- render 'brand-grid-styles' -%}
 
   {% comment %} ── Accessories grid ── {% endcomment %}
   #brand-accessories {
@@ -113,11 +100,6 @@
                                .bacc--precut .bacc__item:nth-child(n + 13) { display: none; } } /* 4 cols × 3 = 12 */
   @media (min-width: 1200px) { .bacc--precut .bacc__item:nth-child(n + 13) { display: list-item; }
                                .bacc--precut .bacc__item:nth-child(n + 16) { display: none; } } /* 5 cols × 3 = 15 */
-
-  {% comment %} Square aspect-ratio modifier for accessory cards {% endcomment %}
-  .bmc--square .bmc__poster {
-    aspect-ratio: 1 / 1;
-  }
 
   {% comment %} ── Controls ── {% endcomment %}
   .bacc__controls {

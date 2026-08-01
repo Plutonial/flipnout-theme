@@ -1,0 +1,7 @@
+{
+  "sections": {
+    "hero": { "type": "collection-hero-gradient", "settings": {} },
+    "brands": { "type": "category-brand-grids", "settings": {} }
+  },
+  "order": ["hero", "brands"]
+}
