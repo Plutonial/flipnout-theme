@@ -1,0 +1,45 @@
+{%- liquid
+  assign section_id = 'collection-hero-gradient-' | append: section.id
+  assign subtitle = collection.metafields.custom.subtitle
+-%}
+
+{{ 'fnop-category-grid.css' | asset_url | stylesheet_tag }}
+
+<section id="{{ section_id }}" class="collection-hero collection-hero--gradient">
+  <div class="collection-hero__content">
+    <div class="collection-hero__stack">
+      <h1 class="collection-hero__h1">{{ collection.title }}</h1>
+
+      {%- if subtitle != blank -%}
+        <p class="collection-hero__subtitle">{{ subtitle }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% style %}
+  {% comment %} ── Shared hero band styles (height, content layout, typography) ── {% endcomment %}
+  {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: '#14141F' -%}
+
+  {% comment %} ── Gradient modifier: layered radials over a dark base ── {% endcomment %}
+  #{{ section_id }}.collection-hero--gradient {
+    background-color: #14141F;
+    background-image:
+      radial-gradient(120% 90% at 12% 110%, rgb(255 0 0 / 0.55) 0%, transparent 60%),
+      radial-gradient(90% 70% at 88% -10%, rgb(255 0 0 / 0.22) 0%, transparent 55%),
+      linear-gradient(160deg, #1A1A2E 0%, #0B0B12 100%);
+  }
+
+  {% comment %} ── No scrim needed — gradient IS the background ── {% endcomment %}
+  #{{ section_id }}.collection-hero--gradient::before {
+    display: none;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Category hero (gradient)",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
