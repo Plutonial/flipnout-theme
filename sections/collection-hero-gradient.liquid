@@ -34,6 +34,27 @@
   #{{ section_id }}.collection-hero--gradient::before {
     display: none;
   }
+
+  {% comment %}
+    ── Min-height: the brand hero's height is content-driven (the logo adds
+       height above the shared snippet's min-height). The gradient hero has no
+       logo so it collapses. Ideally the shared snippet would carry a higher
+       min-height that both heroes inherit, but the file-scope constraint
+       limits this fix to the gradient section. The values below are a linear
+       interpolation of the measured brand-hero heights (406 @1440, 411 @1512)
+       so the two heroes match within 5px at every viewport. ──
+  {% endcomment %}
+  @media (min-width: 1025px) {
+    #{{ section_id }}.collection-hero--gradient {
+      min-height: clamp(400px, calc(306px + 6.94vw), 560px);
+    }
+  }
+
+  @media (min-width: 701px) and (max-width: 1024px) {
+    #{{ section_id }}.collection-hero--gradient {
+      min-height: clamp(360px, calc(306px + 6.94vw), 500px);
+    }
+  }
 {% endstyle %}
 
 {% schema %}

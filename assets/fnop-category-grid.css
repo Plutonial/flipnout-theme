@@ -45,13 +45,13 @@
 }
 
 /* Card title: Oswald (accent font), xl token */
-[data-template="collection.category"] .product-card [data-block-type="product-title"] {
+[data-template="collection.category"] .product-card h3.h4 {
   font-family: var(--font-accent--family, var(--font-h1--family));
   font-size: var(--font-size--xl);
 }
 
 /* Card price: Archivo (body font), xl token, weight 500 */
-[data-template="collection.category"] .product-card [data-block-type="price"] {
+[data-template="collection.category"] .product-card .price {
   font-family: var(--font-body--family);
   font-size: var(--font-size--xl);
   font-weight: 500;
