@@ -19,7 +19,7 @@
 
 {% style %}
   {% comment %} ── Shared hero band styles (height, content layout, typography) ── {% endcomment %}
-  {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: '#14141F' -%}
+  {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: '#14141F', hero_min_height: false -%}
 
   {% comment %} ── Gradient modifier: layered radials over a dark base ── {% endcomment %}
   #{{ section_id }}.collection-hero--gradient {
