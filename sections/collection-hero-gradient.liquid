@@ -20,13 +20,33 @@
   {% comment %} ── Shared hero band styles (height, content layout, typography) ── {% endcomment %}
   {%- render 'collection-hero-styles', hero_id: section_id, hero_bg_color: '#14141F', hero_min_height: false -%}
 
-  {% comment %} ── Gradient modifier: layered radials over a dark base ── {% endcomment %}
+  {% comment %} ── Category hero overrides (scoped — shared snippet stays untouched) ── {% endcomment %}
+  #{{ section_id }} .collection-hero__h1 {
+    font-family: var(--font-h2--family, var(--font-h1--family)), sans-serif;
+  }
+
+  #{{ section_id }} .collection-hero__stack {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  #{{ section_id }} .collection-hero__subtitle {
+    max-width: none;
+  }
+
+  #{{ section_id }} .collection-hero__content {
+    align-items: center;
+  }
+
+  {% comment %} ── Gradient modifier: red-top gradient over a dark base ── {% endcomment %}
   #{{ section_id }}.collection-hero--gradient {
     background-color: #14141F;
     background-image:
-      radial-gradient(120% 90% at 12% 110%, rgb(255 0 0 / 0.55) 0%, transparent 60%),
-      radial-gradient(90% 70% at 88% -10%, rgb(255 0 0 / 0.22) 0%, transparent 55%),
-      linear-gradient(160deg, #1A1A2E 0%, #0B0B12 100%);
+      radial-gradient(120% 100% at 20% -30%,
+        rgb(255 0 0 / 0.85) 0%,
+        rgb(255 0 0 / 0.25) 45%,
+        transparent 72%),
+      linear-gradient(180deg, #7A0000 0%, #2A0A12 55%, #0B0B12 100%);
   }
 
   {% comment %} ── No scrim needed — gradient IS the background ── {% endcomment %}
@@ -69,7 +89,7 @@
   }
 
   [data-template="collection.category"] .product-card__content {
-    background: rgb(var(--color-foreground-rgb) / 0.04);
+    background: var(--color-surface-cream);
     border-radius: var(--radius-sm, 8px);
     padding: 12px;
   }
@@ -77,7 +97,7 @@
   [data-template="collection.category"] .card-gallery {
     border-radius: calc(var(--radius-sm, 8px) - 12px);
     overflow: hidden;
-    background: rgb(var(--color-foreground-rgb) / 0.04);
+    background: transparent;
   }
 
   [data-template="collection.category"] .product-card__content > a.contents > .text-block p {

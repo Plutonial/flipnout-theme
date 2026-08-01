@@ -20,7 +20,7 @@
 
     {%- assign vendor = collection.products.first.vendor -%}
 
-<brand-accessories-grid class="bacc" data-initial-rows="3" data-step-rows="3">
+<div class="bacc">
   <section id="brand-accessories">
     <div class="brand-section__container">
       <h2 class="brand-section__heading">{{ collection.title }} {{ section.settings.heading_accessories | default: 'Accessories' }}</h2>
@@ -38,92 +38,12 @@
       </ul>
 
       <div class="bacc__controls">
-        <button class="bacc__more" type="button" hidden>Show more</button>
-        <a class="bacc__see-all" href="/collections/accessories?filter.p.vendor={{ vendor | url_encode }}">See all</a>
+        <a class="bacc__see-all" href="/collections/accessories?filter.p.vendor={{ vendor | url_encode }}">All Accessories</a>
       </div>
     </div>
   </section>
-</brand-accessories-grid>
+</div>
 
-{%- comment %} ── Web Component: brand-accessories-grid (reveal mechanic, no network) ── {% endcomment %}
-<script>
-  if (!customElements.get('brand-accessories-grid')) {
-    class BrandAccessoriesGrid extends HTMLElement {
-      connectedCallback() {
-        this.grid = this.querySelector('.bacc__grid');
-        this.items = Array.from(this.querySelectorAll('.bacc__item'));
-        this.btn = this.querySelector('.bacc__more');
-        this.initialRows = parseInt(this.dataset.initialRows, 10) || 3;
-        this.stepRows = parseInt(this.dataset.stepRows, 10) || 3;
-        this.clicks = 0;
-
-        this.update();
-
-        this._ro = new ResizeObserver(() => this.update());
-        this._ro.observe(this.grid);
-
-        window.addEventListener('load', () => this.update());
-
-        if (this.btn) {
-          this.btn.addEventListener('click', () => {
-            var limit = this.revealLimit(this.items.length, this.clicks);
-            if (limit >= this.items.length) {
-              this.clicks = 0;
-            } else {
-              this.clicks++;
-            }
-            this.update();
-          });
-        }
-      }
-
-      disconnectedCallback() {
-        if (this._ro) this._ro.disconnect();
-      }
-
-      get columns() {
-        var t = getComputedStyle(this.grid).gridTemplateColumns;
-        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 0;
-      }
-
-      revealLimit(total, clicks) {
-        var cols = this.columns;
-        var rows = this.initialRows + clicks * this.stepRows;
-        return Math.min(total, rows * cols);
-      }
-
-      update() {
-        if (this.columns === 0) return;
-        this.grid.classList.remove('bacc--precut');
-        var total = this.items.length;
-        var limit = this.revealLimit(total, this.clicks);
-
-        for (var i = 0; i < total; i++) {
-          if (i >= limit) {
-            this.items[i].classList.add('bacc__item--beyond');
-          } else {
-            this.items[i].classList.remove('bacc__item--beyond');
-          }
-        }
-
-        if (this.btn) {
-          var initialLimit = this.revealLimit(total, 0);
-          if (total <= initialLimit) {
-            this.btn.hidden = true;
-          } else if (limit >= total) {
-            this.btn.hidden = false;
-            this.btn.textContent = 'Show less';
-          } else {
-            this.btn.hidden = false;
-            var remaining = total - limit;
-            this.btn.textContent = 'Show more \u00B7 ' + remaining + ' remaining';
-          }
-        }
-      }
-    }
-    customElements.define('brand-accessories-grid', BrandAccessoriesGrid);
-  }
-</script>
 
   {%- endif -%}
 {% endpaginate %}
@@ -181,9 +101,6 @@
     min-width: 0;
   }
 
-  .bacc__item--beyond {
-    display: none;
-  }
 
   {% comment %}
     CSS pre-cut: hide items beyond 3 rows before JS takes over.
@@ -218,39 +135,27 @@
     }
   }
 
-  .bacc__more[hidden] { display: none; }
-
-  .bacc__more {
-    display: block;
-    padding: 12px 28px;
-    border: 2px solid rgba(0, 0, 0, 0.81);
-    border-radius: var(--radius-sm, 8px);
-    font-size: var(--font-size--sm);
-    font-weight: 600;
-    background-color: transparent;
-    color: rgba(0, 0, 0, 0.81);
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-  }
-
-  .bacc__more:hover {
-    background: rgb(var(--color-foreground-rgb));
-    color: rgb(var(--color-background-rgb));
-  }
-
   .bacc__see-all {
-    font-size: var(--font-size--sm);
-    color: rgb(var(--color-foreground-rgb) / 0.6);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-height: 44px;
+    padding: 12px 28px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background-color: transparent;
+    transition: background-color 0.2s, color 0.2s;
   }
 
   .bacc__see-all:hover {
-    color: rgb(var(--color-foreground-rgb));
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
   }
 {% endstyle %}
 
