@@ -64,26 +64,6 @@
         endcapture
         assign edition_label = edition_label | strip
 
-        comment — Edition badge from shopify["pinball-machine-edition"] (bracket notation — key has hyphens)
-        endcomment
-        assign _ed_meta = product.metafields.shopify["pinball-machine-edition"].value
-        assign _ed_badge_text = ''
-        if _ed_meta != blank and _ed_meta.size > 0
-          assign _first_ed = _ed_meta | first
-          if _first_ed != blank
-            assign _ed_badge_text = _first_ed.system.display_name | default: _first_ed.display_name | default: _first_ed.name | default: _first_ed.label
-            if _ed_badge_text == blank or _ed_badge_text contains 'MetaobjectDrop'
-              assign _ed_handle_parts = _first_ed.system.handle | default: _first_ed.handle | split: '.'
-              assign _ed_handle_slug = _ed_handle_parts | last | default: _ed_handle_parts | first
-              if _ed_handle_slug != blank
-                assign _ed_badge_text = _ed_handle_slug | replace: '-', ' ' | capitalize
-              else
-                assign _ed_badge_text = ''
-              endif
-            endif
-          endif
-        endif
-
         assign is_sold_out = false
         if product.tags contains 'sold-out'
           assign is_sold_out = true
@@ -103,9 +83,6 @@
         {%- endif -%}
 
         <div class="editions-grid__info">
-          {%- if _ed_badge_text != blank -%}
-            <span class="fnop-edition-badge">{{ _ed_badge_text }}</span>
-          {%- endif -%}
           {%- if edition_label != blank -%}
             <h3 class="editions-grid__title">{{ edition_label }}</h3>
           {%- endif -%}
@@ -213,20 +190,6 @@
     .editions-grid[data-editions-n="3"] {
       grid-template-columns: 1fr;
     }
-  }
-
-  .editions-grid .fnop-edition-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    font-size: var(--font-size--xs);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    background: var(--color-logo-red, #FF0000);
-    color: #fff;
-    border-radius: 4px;
-    line-height: 1.4;
-    margin-bottom: 4px;
   }
 
   .editions-grid__card {
