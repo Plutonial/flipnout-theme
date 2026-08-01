@@ -82,7 +82,7 @@
 
       get columns() {
         var t = getComputedStyle(this.grid).gridTemplateColumns;
-        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 0;
       }
 
       revealLimit(total, clicks) {
@@ -92,6 +92,7 @@
       }
 
       update() {
+        if (this.columns === 0) return;
         var total = this.items.length;
         var limit = this.revealLimit(total, this.clicks);
 
