@@ -46,6 +46,23 @@
 {%- endif -%}
 
 {% style %}
+  #{{ section_id }} .game-section-heading {
+    font-size: var(--font-size--4xl);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0 0 clamp(24px, 4vw, 48px);
+  }
+
+  #{{ section_id }} .game-section-heading::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    background: var(--color-logo-red, #FF0000);
+    margin: 12px auto 0;
+  }
+
   #{{ section_id }} {
     padding: clamp(40px, 6vw, 80px) 0;
     width: min(var(--game-band-w, var(--page-content-width, 1440px)), 100% - 2 * var(--game-band-gutter, var(--page-margin, 40px)));

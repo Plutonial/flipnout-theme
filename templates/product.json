@@ -9,6 +9,10 @@
  */
 {
   "sections": {
+    "hero_heading": {
+      "type": "fnop-product-hero-heading",
+      "settings": {}
+    },
     "breadcrumb": {
       "type": "fnop-product-breadcrumb",
       "settings": {}
@@ -73,10 +77,10 @@
             "padding-inline-end": 0
           },
           "blocks": {
-            "game_logo_fnop": {
+            "edition_pills_fnop": {
               "type": "custom-liquid",
               "settings": {
-                "custom_liquid": "{% render 'fnop-product-game-logo' %}"
+                "custom_liquid": "{% render 'fnop-product-edition-pills' %}"
               },
               "blocks": {}
             },
@@ -127,32 +131,6 @@
                 "padding-inline-end": 0
               },
               "blocks": {
-                "text_xpVMaM": {
-                  "type": "text",
-                  "name": "t:names.title",
-                  "settings": {
-                    "text": "<h1>{{ closest.product.title }}</h1>",
-                    "width": "fit-content",
-                    "max_width": "normal",
-                    "alignment": "left",
-                    "type_preset": "h3",
-                    "font": "var(--font-body--family)",
-                    "font_size": "1rem",
-                    "line_height": "normal",
-                    "letter_spacing": "normal",
-                    "case": "none",
-                    "wrap": "pretty",
-                    "color": "var(--color-foreground)",
-                    "background": false,
-                    "background_color": "#00000026",
-                    "corner_radius": 0,
-                    "padding-block-start": 0,
-                    "padding-block-end": 0,
-                    "padding-inline-start": 0,
-                    "padding-inline-end": 0
-                  },
-                  "blocks": {}
-                },
                 "price_tVjtKg": {
                   "type": "price",
                   "settings": {
@@ -177,7 +155,6 @@
                 }
               },
               "block_order": [
-                "text_xpVMaM",
                 "price_tVjtKg"
               ]
             },
@@ -273,7 +250,7 @@
             }
           },
           "block_order": [
-            "game_logo_fnop",
+            "edition_pills_fnop",
             "edition_badge_fnop",
             "group_icgrde",
             "divider_VJhene",
@@ -295,10 +272,6 @@
         "padding-block-start": 0,
         "padding-block-end": 0
       }
-    },
-    "edition_pills": {
-      "type": "fnop-product-edition-pills",
-      "settings": {}
     },
     "product_features": {
       "type": "fnop-product-features",
@@ -455,9 +428,9 @@
     }
   },
   "order": [
+    "hero_heading",
     "breadcrumb",
     "main",
-    "edition_pills",
     "product_features",
     "product_recommendations_qggXJq",
     "accessories_recommendations",

@@ -1,0 +1,64 @@
+{%- comment -%}
+  Product hero heading — full-width H1 above the breadcrumb.
+  Oswald 48px uppercase with the shared red accent bar (game-section-heading).
+  The ::after bar CSS is defined here because game-editions-grid.liquid
+  (which normally provides it) does not load on product pages.
+{%- endcomment -%}
+
+{%- assign section_id = 'fnop-hero-heading-' | append: section.id -%}
+
+<div id="{{ section_id }}" class="fnop-hero-heading">
+  <h1 class="fnop-hero-heading__title game-section-heading">{{ product.title }}</h1>
+</div>
+
+{% style %}
+  #{{ section_id }} {
+    width: min(var(--page-content-width, 1440px), 100% - 2 * var(--page-margin, 40px));
+    margin-inline: auto;
+    padding-top: clamp(32px, 4vw, 56px);
+    padding-bottom: 20px;
+  }
+
+  #{{ section_id }} .fnop-hero-heading__title {
+    font-size: var(--font-size--5xl);
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.05;
+    color: rgba(0, 0, 0, 0.81);
+    margin: 0;
+    text-align: left;
+  }
+
+  {% comment %} Provide the game-section-heading ::after on product pages {% endcomment %}
+  #{{ section_id }} .game-section-heading::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 3px;
+    background: var(--color-logo-red, #FF0000);
+    margin: 14px 0 0;
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} {
+      padding-top: 24px;
+      padding-bottom: 16px;
+    }
+
+    #{{ section_id }} .fnop-hero-heading__title {
+      text-align: center;
+    }
+
+    #{{ section_id }} .game-section-heading::after {
+      margin-inline: auto;
+    }
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Product hero heading",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}
