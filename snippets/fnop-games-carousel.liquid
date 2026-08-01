@@ -30,7 +30,7 @@
     -%}
     <{{ _heading_tag }} class="fnop-gc__heading game-section-heading">{{ fnop_carousel_heading }}</{{ _heading_tag }}>
 
-    <div class="fnop-gc__slider" uk-slider="finite: false; autoplay: false; center: true" data-gc-slider-opts="finite: false; autoplay: false; center: true">
+    <div class="fnop-gc__slider" data-gc-slider-opts="finite: false; autoplay: false; center: true">
       <div class="uk-position-relative">
         <div class="uk-slider-container fnop-gc__container">
           <ul class="uk-slider-items fnop-gc__list">
@@ -136,6 +136,17 @@
               sliderEl.removeAttribute('uk-slider');
               /* Clear any leftover transform */
               list.style.transform = 'none';
+              /* Clean up leftover UIkit per-slide attributes */
+              list.querySelectorAll('.fnop-gc__item').forEach(function (li) {
+                li.removeAttribute('inert');
+                li.removeAttribute('aria-hidden');
+                li.removeAttribute('tabindex');
+                li.removeAttribute('role');
+                li.removeAttribute('aria-label');
+                if (li.id && li.id.indexOf('uk-slider') === 0) li.removeAttribute('id');
+                li.style.removeProperty('order');
+                li.classList.remove('uk-slide-active');
+              });
             }
             return true;
           };
