@@ -479,26 +479,42 @@
   .cbg__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    column-gap: 20px;
+    row-gap: 20px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  @media (min-width: 750px)  { .cbg__grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (min-width: 900px)  { .cbg__grid { grid-template-columns: repeat(4, 1fr); gap: 32px; } }
-  @media (min-width: 1200px) { .cbg__grid { grid-template-columns: repeat(5, 1fr); } }
+
+  @media (min-width: 900px) {
+    .cbg__grid {
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 32px;
+      row-gap: 32px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .cbg__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
 
   .cbg__item { min-width: 0; }
   .cbg__item--beyond { display: none; }
 
   {% comment %} Pre-cut: 2 rows. N = 2 × columns + 1. {% endcomment %}
   .cbg--precut .cbg__item:nth-child(n + 5) { display: none; }              /* 2 cols × 2 = 4  */
-  @media (min-width: 750px)  { .cbg--precut .cbg__item:nth-child(n + 5)  { display: list-item; }
-                               .cbg--precut .cbg__item:nth-child(n + 7)  { display: none; } }  /* 3 × 2 = 6  */
-  @media (min-width: 900px)  { .cbg--precut .cbg__item:nth-child(n + 7)  { display: list-item; }
-                               .cbg--precut .cbg__item:nth-child(n + 9)  { display: none; } }  /* 4 × 2 = 8  */
-  @media (min-width: 1200px) { .cbg--precut .cbg__item:nth-child(n + 9)  { display: list-item; }
-                               .cbg--precut .cbg__item:nth-child(n + 11) { display: none; } }  /* 5 × 2 = 10 */
+
+  @media (min-width: 900px) {
+    .cbg--precut .cbg__item:nth-child(n + 5)  { display: list-item; }
+    .cbg--precut .cbg__item:nth-child(n + 7)  { display: none; }           /* 3 cols × 2 = 6  */
+  }
+
+  @media (min-width: 1200px) {
+    .cbg--precut .cbg__item:nth-child(n + 7)  { display: list-item; }
+    .cbg--precut .cbg__item:nth-child(n + 9)  { display: none; }           /* 4 cols × 2 = 8  */
+  }
 
   .cbg__controls {
     display: flex;
@@ -566,18 +582,15 @@
     margin-bottom: 24px;
   }
 
-  {% comment %} ── TASK 4: Left-align controls for short grids ── {% endcomment %}
+  {% comment %} ── Left-align controls for short grids ── {% endcomment %}
   .cbg__block[data-eligible="1"] .cbg__controls,
   .cbg__block[data-eligible="2"] .cbg__controls { justify-content: flex-start; }
 
-  @media (min-width: 750px) {
+  @media (min-width: 900px) {
     .cbg__block[data-eligible="3"] .cbg__controls { justify-content: flex-start; }
   }
-  @media (min-width: 900px) {
-    .cbg__block[data-eligible="4"] .cbg__controls { justify-content: flex-start; }
-  }
   @media (min-width: 1200px) {
-    .cbg__block[data-eligible="5"] .cbg__controls { justify-content: flex-start; }
+    .cbg__block[data-eligible="4"] .cbg__controls { justify-content: flex-start; }
   }
 {% endstyle %}
 
@@ -590,8 +603,7 @@
 
         this.breakpoints = [
           window.matchMedia('(min-width: 1200px)'),
-          window.matchMedia('(min-width: 900px)'),
-          window.matchMedia('(min-width: 750px)')
+          window.matchMedia('(min-width: 900px)')
         ];
         this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
 

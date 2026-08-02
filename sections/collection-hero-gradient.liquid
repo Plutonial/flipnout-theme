@@ -28,14 +28,14 @@
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 24px;
+    gap: 14px;
     width: 100%;
   }
 
+  #{{ section_id }} .collection-hero__h1::before,
   #{{ section_id }} .collection-hero__h1::after {
     content: '';
-    flex: 0 1 132px;
-    min-width: 0;
+    flex: 0 0 36px;
     height: 31px;
     background: repeating-linear-gradient(
       to bottom,
@@ -46,11 +46,16 @@
 
   @media (max-width: 749px) {
     #{{ section_id }} .collection-hero__h1 {
-      gap: 16px;
+      gap: 10px;
+    }
+
+    #{{ section_id }} .collection-hero__h1::before {
+      display: none;
     }
 
     #{{ section_id }} .collection-hero__h1::after {
-      flex-basis: 84px;
+      flex: 0 1 26px;
+      min-width: 0;
       height: 21px;
       background: repeating-linear-gradient(
         to bottom,
