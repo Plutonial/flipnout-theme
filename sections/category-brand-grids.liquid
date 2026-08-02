@@ -397,19 +397,6 @@
 
 {%- if final_brand_arr.size > 0 -%}
 <category-brand-grids class="cbg">
-  <div class="cbg__toolbar-band">
-    <div class="brand-section__container">
-      <div class="bmg__toolbar cbg__toolbar">
-        <label class="bmg__switch cbg__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
-      </div>
-      <p class="bmg__empty cbg__empty" hidden>No machines in stock right now.</p>
-    </div>
-  </div>
-
   {%- for bh in final_brand_arr -%}
     {%- liquid
       assign brand = collections[bh]
@@ -418,8 +405,6 @@
       assign brand_game_handles = final_games_arr[forloop.index0] | split: '|'
       assign brand_games_count = brand_game_handles.size
 
-      assign brand_logo = brand.metafields.custom.logo_on_light | default: brand.metafields.custom.logo
-      assign logo_scale = brand.metafields.custom.logo_scale | default: 1
     -%}
 
     {%- comment %} Safety net HTML comment {% endcomment -%}
@@ -432,24 +417,27 @@
     <section class="cbg__block" id="cbg-block-{{ bh }}" data-brand="{{ brand.handle }}" data-total="{{ total }}" data-eligible="{{ total }}">
       <div class="brand-section__container">
         <div class="cbg__brandbar">
-          {%- if brand_logo != blank -%}
-            <img class="cbg__logo" src="{{ brand_logo | image_url: width: 400 }}"
-                 alt="{{ brand.title }}" width="200" height="60" loading="lazy">
-          {%- endif -%}
           <h2 class="brand-section__heading cbg__heading">{{ brand.title }}</h2>
         </div>
 
-        {%- if brand_games_count > 1 -%}
-          <div class="bmg__toolbar cbg__block-toolbar">
+        <div class="bmg__toolbar cbg__block-toolbar">
+          {%- if brand_games_count > 1 -%}
             <select class="bmg__select cbg__game-select" aria-label="Filter {{ brand.title }} by game">
               <option value="all">All games ({{ brand_games_count }})</option>
               {%- for game_h in brand_game_handles -%}
                 {%- assign game_col_opt = collections[game_h] -%}
-                <option value="{{ game_h }}">{{ game_col_opt.title }}</option>
+                {%- capture gn -%}{%- render 'fnop-game-name', fnop_game_col: game_col_opt -%}{%- endcapture -%}
+                <option value="{{ game_h }}">{{ gn }}</option>
               {%- endfor -%}
             </select>
-          </div>
-        {%- endif -%}
+          {%- endif -%}
+
+          <label class="bmg__switch cbg__switch bmg__switch--on">
+            <input type="checkbox" role="switch" checked class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        </div>
 
         <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}">
           {%- for pair in product_pairs -%}
@@ -556,7 +544,7 @@
     --bmc-title-lines: 2;
   }
 
-  {% comment %} ── TASK 2: Brand bar ── {% endcomment %}
+  {% comment %} ── Brand bar ── {% endcomment %}
   .cbg__brandbar {
     display: flex;
     align-items: center;
@@ -568,30 +556,6 @@
     text-align: left;
     margin: 0;
   }
-
-  .cbg__logo {
-    --_logo-scale: 1;
-    height: auto;
-    width: auto;
-    max-height: calc(56px * var(--_logo-scale));
-    max-width: calc(180px * var(--_logo-scale));
-    object-fit: contain;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 749px) {
-    .cbg__brandbar { gap: 12px; }
-    .cbg__logo { max-height: calc(40px * var(--_logo-scale)); }
-  }
-
-  {% comment %} ── TASK 2: Per-block logo scale ── {% endcomment %}
-  {%- for bh in final_brand_arr -%}
-    {%- assign brand_for_scale = collections[bh] -%}
-    {%- assign ls = brand_for_scale.metafields.custom.logo_scale | default: 1 -%}
-    {%- if ls != 1 -%}
-      #cbg-block-{{ bh }} .cbg__logo { --_logo-scale: {{ ls }}; }
-    {%- endif -%}
-  {%- endfor -%}
 
   {% comment %} ── TASK 3: Alternating bands ── {% endcomment %}
   .cbg__block:nth-of-type(even) { background: var(--color-surface-cream); }
@@ -623,10 +587,6 @@
     class CategoryBrandGrids extends HTMLElement {
       connectedCallback() {
         this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
-        this.showOOS = true;
-        this.switchInput = this.querySelector('.bmg__switch-input');
-        this.switchLabel = this.querySelector('.cbg__switch');
-        this.emptyMsg = this.querySelector('.cbg__empty');
 
         this.breakpoints = [
           window.matchMedia('(min-width: 1200px)'),
@@ -645,19 +605,21 @@
           if (gameSelect) {
             gameSelect.addEventListener('change', () => this.applyGameFilter(block));
           }
-        });
 
-        if (this.switchInput) {
-          this.switchInput.addEventListener('change', () => {
-            this.showOOS = this.switchInput.checked;
-            if (this.switchLabel) this.switchLabel.classList.toggle('bmg__switch--on', this.showOOS);
-            if (this.showOOS) {
-              this.restorePrecut();
-            } else {
-              this.applyFilters();
-            }
-          });
-        }
+          const switchInput = block.querySelector('.bmg__switch-input');
+          const switchLabel = block.querySelector('.cbg__switch');
+          if (switchInput) {
+            switchInput.addEventListener('change', () => {
+              const showOOS = switchInput.checked;
+              if (switchLabel) switchLabel.classList.toggle('bmg__switch--on', showOOS);
+              if (showOOS) {
+                this.restorePrecutBlock(block);
+              } else {
+                this.applyBlockFilters(block);
+              }
+            });
+          }
+        });
 
         this.updateAll();
         if (document.readyState === 'complete') {
@@ -672,12 +634,18 @@
         return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
       }
 
+      getBlockOOS(block) {
+        const sw = block.querySelector('.bmg__switch-input');
+        return sw ? sw.checked : true;
+      }
+
       applyGameFilter(block) {
         const gameSelect = block.querySelector('.cbg__game-select');
         if (!gameSelect) return;
         const selectedGame = gameSelect.value;
         const grid = block.querySelector('.cbg__grid');
         const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const showOOS = this.getBlockOOS(block);
 
         /* Apply game filter */
         items.forEach(item => {
@@ -685,11 +653,9 @@
         });
 
         if (selectedGame !== 'all') {
-          /* Remove precut, reset rows */
           grid.classList.remove('cbg--precut');
           block.dataset.rows = '2';
         } else {
-          /* Restore precut if block was never expanded (rows still at 2) */
           const rows = parseInt(block.dataset.rows || '2', 10);
           if (rows === 2) {
             grid.classList.add('cbg--precut');
@@ -699,110 +665,86 @@
 
         /* Also apply OOS filter */
         items.forEach(item => {
-          item.classList.toggle('cbg__item--oos', !this.showOOS && item.hasAttribute('data-sold-out'));
+          item.classList.toggle('cbg__item--oos', !showOOS && item.hasAttribute('data-sold-out'));
         });
 
         const eligible = items.filter(item =>
           !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
         );
 
-        /* Update data-eligible */
         block.dataset.eligible = eligible.length;
 
-        /* Hide block if zero eligible */
         if (eligible.length === 0) {
           block.classList.add('cbg__block--hidden');
         } else {
           block.classList.remove('cbg__block--hidden');
         }
 
-        this.checkEmpty();
         this.updateBlock(block);
       }
 
-      applyFilters() {
-        let anyVisible = false;
+      applyBlockFilters(block) {
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const grid = block.querySelector('.cbg__grid');
+        const showOOS = this.getBlockOOS(block);
 
-        this.blocks.forEach(block => {
-          const items = Array.from(block.querySelectorAll('.cbg__item'));
-          const grid = block.querySelector('.cbg__grid');
+        items.forEach(item => {
+          item.classList.toggle('cbg__item--oos', !showOOS && item.hasAttribute('data-sold-out'));
+        });
 
-          /* Apply OOS hiding */
-          items.forEach(item => {
-            item.classList.toggle('cbg__item--oos', !this.showOOS && item.hasAttribute('data-sold-out'));
+        if (!showOOS) {
+          if (grid.classList.contains('cbg--precut')) {
+            grid.classList.remove('cbg--precut');
+            block.dataset.rows = '2';
+          }
+        }
+
+        const eligible = items.filter(item =>
+          !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+        );
+
+        block.dataset.eligible = eligible.length;
+
+        if (eligible.length === 0) {
+          block.classList.add('cbg__block--hidden');
+        } else {
+          block.classList.remove('cbg__block--hidden');
+        }
+
+        this.updateBlock(block);
+      }
+
+      restorePrecutBlock(block) {
+        const grid = block.querySelector('.cbg__grid');
+        const rows = parseInt(block.dataset.rows || '2', 10);
+        const gameSelect = block.querySelector('.cbg__game-select');
+        const selectedGame = gameSelect ? gameSelect.value : 'all';
+
+        if (rows === 2 && selectedGame === 'all') {
+          grid.classList.add('cbg--precut');
+          block.querySelectorAll('.cbg__item').forEach(item => {
+            item.classList.remove('cbg__item--beyond');
+            item.classList.remove('cbg__item--oos');
           });
-
-          /* If toggle changed to off, remove precut so JS owns visibility */
-          if (!this.showOOS) {
-            if (grid.classList.contains('cbg--precut')) {
-              grid.classList.remove('cbg--precut');
-              block.dataset.rows = '2';
-            }
-          }
-
-          const eligible = items.filter(item =>
-            !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
-          );
-
-          block.dataset.eligible = eligible.length;
-
-          if (eligible.length === 0) {
-            block.classList.add('cbg__block--hidden');
-          } else {
-            block.classList.remove('cbg__block--hidden');
-            anyVisible = true;
-          }
-        });
-
-        if (this.emptyMsg) {
-          this.emptyMsg.hidden = anyVisible;
+        } else {
+          block.querySelectorAll('.cbg__item').forEach(item => {
+            item.classList.remove('cbg__item--oos');
+          });
         }
 
-        this.updateAll();
-      }
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+        );
+        block.dataset.eligible = eligible.length;
 
-      checkEmpty() {
-        const anyVisible = this.blocks.some(block => !block.classList.contains('cbg__block--hidden'));
-        if (this.emptyMsg) {
-          this.emptyMsg.hidden = anyVisible;
+        if (eligible.length === 0) {
+          block.classList.add('cbg__block--hidden');
+        } else {
+          block.classList.remove('cbg__block--hidden');
         }
-      }
 
-      restorePrecut() {
-        this.blocks.forEach(block => {
-          const grid = block.querySelector('.cbg__grid');
-          const rows = parseInt(block.dataset.rows || '2', 10);
-          const gameSelect = block.querySelector('.cbg__game-select');
-          const selectedGame = gameSelect ? gameSelect.value : 'all';
-
-          if (rows === 2 && selectedGame === 'all') {
-            grid.classList.add('cbg--precut');
-            block.querySelectorAll('.cbg__item').forEach(item => {
-              item.classList.remove('cbg__item--beyond');
-              item.classList.remove('cbg__item--oos');
-            });
-          } else {
-            block.querySelectorAll('.cbg__item').forEach(item => {
-              item.classList.remove('cbg__item--oos');
-            });
-          }
-
-          /* Recompute eligible (offgame may still be active) */
-          const items = Array.from(block.querySelectorAll('.cbg__item'));
-          const eligible = items.filter(item =>
-            !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
-          );
-          block.dataset.eligible = eligible.length;
-
-          if (eligible.length === 0) {
-            block.classList.add('cbg__block--hidden');
-          } else {
-            block.classList.remove('cbg__block--hidden');
-          }
-        });
-
-        this.checkEmpty();
-        this.updateAll();
+        this.updateBlock(block);
       }
 
       updateAll() {
