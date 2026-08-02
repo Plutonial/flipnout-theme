@@ -284,7 +284,6 @@
               {%- if from_price -%}
                 <span class="bmc__price">From {{ from_price | money }}</span>
               {%- endif -%}
-              <span class="sab__more">More</span>
             </a>
           </li>
         {%- endfor -%}
@@ -354,7 +353,26 @@
       <ul class="sab__grid sab--precut" role="list">
         {%- for p in arcade_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- render 'brand-machine-card', product: p -%}
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 800 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
+                    widths: '200,400,600,800',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
           </li>
         {%- endfor -%}
       </ul>
@@ -513,7 +531,26 @@
       <ul class="sab__grid sab--precut" role="list">
         {%- for p in preowned_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- render 'brand-machine-card', product: p -%}
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 800 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
+                    widths: '200,400,600,800',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
           </li>
         {%- endfor -%}
       </ul>
@@ -652,28 +689,6 @@
     .sab__block[data-eligible="4"] .sab__controls { justify-content: flex-start; }
   }
 
-  {% comment %} ── MORE button inside game tiles ── {% endcomment %}
-  .sab__more {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 36px;
-    padding: 8px 20px;
-    margin-top: 8px;
-    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
-    border-radius: var(--radius-sm, 8px);
-    font-size: var(--font-size--sm);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: rgb(var(--color-foreground-rgb) / 0.81);
-    transition: background-color 0.2s, color 0.2s;
-  }
-
-  .bmc:hover .sab__more {
-    background: rgb(var(--color-foreground-rgb));
-    color: rgb(var(--color-background-rgb));
-  }
 {% endstyle %}
 
 <script>
