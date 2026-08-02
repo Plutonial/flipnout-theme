@@ -27,7 +27,7 @@
     color: var(--color-surface-cream);
     text-shadow: none;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     flex-wrap: nowrap;
     gap: 14px;
     width: 100%;
@@ -38,6 +38,10 @@
     content: '';
     flex: 0 0 36px;
     height: 31px;
+    /* margin-block-end: (cap-height 38.9 − ornament-height 31) / 2 ≈ 4px
+       — aligns ornament centre to the optical middle of the uppercase text.
+       Re-check if H1 font-size or ornament height change. */
+    margin-block-end: 4px;
     background: repeating-linear-gradient(
       to bottom,
       currentColor 0 4px,
@@ -102,6 +106,11 @@
   {% comment %} ── No scrim needed — gradient IS the background ── {% endcomment %}
   #{{ section_id }}.collection-hero--gradient::before {
     display: none;
+  }
+
+  {% comment %} ── Breathing room between hero and toolbar on category grids ── {% endcomment %}
+  [data-template="collection.category"] .collection-wrapper {
+    margin-top: 48px;
   }
 
   {% comment %} ── Category grid card overrides ── {% endcomment %}

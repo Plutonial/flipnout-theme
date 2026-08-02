@@ -223,6 +223,7 @@
   comment
     ── Blocks 2-4 data ──
   endcomment
+  assign pinball_col = collections['pinball-machines']
   assign arcade_col = collections['arcade-machines']
   assign apparel_col = collections['apparel']
   assign preowned_col = collections['preowned']
@@ -233,7 +234,7 @@
   <section class="sab__block" data-block="pinball" data-total="{{ game_count }}" data-eligible="{{ game_count }}">
     <div class="brand-section__container">
       <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading">Pinball Machines</h2>
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ pinball_col.url }}">Pinball Machines</a></h2>
       </div>
 
       <div class="bmg__toolbar sab__block-toolbar">
@@ -330,7 +331,7 @@
   <section class="sab__block" data-block="arcade" data-total="{{ arcade_total }}" data-eligible="{{ arcade_total }}">
     <div class="brand-section__container">
       <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading">Arcade Machines</h2>
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ arcade_col.url }}">Arcade Machines</a></h2>
       </div>
 
       <div class="bmg__toolbar sab__block-toolbar">
@@ -419,7 +420,7 @@
   <section class="sab__block" data-block="apparel" data-total="{{ apparel_total }}" data-eligible="{{ apparel_total }}">
     <div class="brand-section__container">
       <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading">Apparel</h2>
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ apparel_col.url }}">Apparel</a></h2>
       </div>
 
       <div class="bmg__toolbar sab__block-toolbar">
@@ -508,7 +509,7 @@
   <section class="sab__block" data-block="preowned" data-total="{{ preowned_total }}" data-eligible="{{ preowned_total }}">
     <div class="brand-section__container">
       <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading">Preowned</h2>
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ preowned_col.url }}">Preowned</a></h2>
       </div>
 
       <div class="bmg__toolbar sab__block-toolbar">
@@ -667,6 +668,37 @@
   .sab .sab__heading {
     text-align: left;
     margin: 0;
+  }
+
+  {% comment %} ── Heading links with animated red rule ── {% endcomment %}
+  .sab__heading-link {
+    display: inline-block;
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+    padding-bottom: 12px;
+  }
+
+  .sab__heading-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 56px;
+    height: 4px;
+    background: rgb(255 0 0 / 0.9);
+    transition: width 240ms ease-out;
+  }
+
+  .sab__heading-link:hover::after,
+  .sab__heading-link:focus-visible::after {
+    width: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sab__heading-link::after {
+      transition: none;
+    }
   }
 
   {% comment %} ── Alternating bands ── {% endcomment %}

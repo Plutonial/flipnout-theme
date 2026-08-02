@@ -109,7 +109,7 @@
       {%- if games_count > 0 -%}
         <div class="brand-about__releases">
           <h2 class="brand-about__heading game-section-heading">Latest Releases</h2>
-          <table class="brand-about__table">
+          <table class="brand-about__table" id="{{ section_id }}-table">
             <thead>
               <tr>
                 <th>Game</th>
@@ -143,7 +143,7 @@
                   endif
                 -%}
 
-                <tr>
+                <tr{% if forloop.index > 12 %} hidden{% endif %}>
                   <td><a href="{{ game_col.url }}">{{ game_name }}</a></td>
                   <td>{{ rd_display | default: '—' }}</td>
                   <td>
@@ -164,6 +164,11 @@
               {%- endfor -%}
             </tbody>
           </table>
+          {%- if games_count > 12 -%}
+            <div class="brand-about__controls">
+              <button class="brand-about__toggle" type="button" aria-expanded="false" aria-controls="{{ section_id }}-table">Show All</button>
+            </div>
+          {%- endif -%}
         </div>
       {%- endif -%}
     </div>
@@ -257,8 +262,63 @@
       }
     }
 
+    {% comment %} ── Table toggle button (matches .cbg__more pattern) ── {% endcomment %}
+    #{{ section_id }} .brand-about__controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    #{{ section_id }} .brand-about__toggle {
+      font-size: var(--font-size--sm);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.56px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: 1.11px solid rgb(0 0 0 / 0.81);
+      background: transparent;
+      color: rgb(0 0 0 / 0.81);
+      min-height: 44px;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    #{{ section_id }} .brand-about__toggle:hover {
+      background: rgb(var(--color-foreground-rgb));
+      color: rgb(var(--color-background-rgb));
+    }
+
     {%- render 'fnop-section-heading-mobile' -%}
   {% endstyle %}
+
+  <script>
+    (function() {
+      const CAP = 12;
+      const section = document.getElementById('{{ section_id }}');
+      if (!section) return;
+      const btn = section.querySelector('.brand-about__toggle');
+      if (!btn) return;
+      const tbody = section.querySelector('.brand-about__table tbody');
+      if (!tbody) return;
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      if (rows.length <= CAP) { btn.parentElement.remove(); return; }
+
+      btn.addEventListener('click', function() {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+          rows.forEach(function(tr, i) { if (i >= CAP) tr.hidden = true; });
+          btn.setAttribute('aria-expanded', 'false');
+          btn.textContent = 'Show All';
+        } else {
+          rows.forEach(function(tr) { tr.hidden = false; });
+          btn.setAttribute('aria-expanded', 'true');
+          btn.textContent = 'Show Less';
+        }
+      });
+    })();
+  </script>
 {%- endif -%}
 
 {% schema %}
