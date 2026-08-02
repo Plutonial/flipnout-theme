@@ -65,6 +65,7 @@
   assign brand_handles_str = ''
   assign brand_totals_str = ''
   assign brand_products_str = ''
+  assign brand_games_str = ''
 
   for bh in menu_handle_arr
     assign brand = collections[bh]
@@ -194,14 +195,28 @@
       continue
     endif
 
+    comment
+      Build the sorted game handles string for this brand (pipe-delimited)
+    endcomment
+    assign brand_sorted_games = ''
+    for sg in sorted_handles
+      if brand_sorted_games == ''
+        assign brand_sorted_games = sg
+      else
+        assign brand_sorted_games = brand_sorted_games | append: '|' | append: sg
+      endif
+    endfor
+
     if brand_handles_str == ''
       assign brand_handles_str = bh
       assign brand_totals_str = total_machines | append: ''
       assign brand_products_str = brand_product_handles
+      assign brand_games_str = brand_sorted_games
     else
       assign brand_handles_str = brand_handles_str | append: '||' | append: bh
       assign brand_totals_str = brand_totals_str | append: '||' | append: total_machines
       assign brand_products_str = brand_products_str | append: '||' | append: brand_product_handles
+      assign brand_games_str = brand_games_str | append: '||' | append: brand_sorted_games
     endif
   endfor
 
@@ -351,57 +366,91 @@
       assign safety_handles = safety_handles | append: '|' | append: c.handle
     endif
 
+    assign brand_sorted_games = ''
+    for sg in sorted_handles
+      if brand_sorted_games == ''
+        assign brand_sorted_games = sg
+      else
+        assign brand_sorted_games = brand_sorted_games | append: '|' | append: sg
+      endif
+    endfor
+
     if brand_handles_str == ''
       assign brand_handles_str = c.handle
       assign brand_totals_str = total_machines | append: ''
       assign brand_products_str = brand_product_handles
+      assign brand_games_str = brand_sorted_games
     else
       assign brand_handles_str = brand_handles_str | append: '||' | append: c.handle
       assign brand_totals_str = brand_totals_str | append: '||' | append: total_machines
       assign brand_products_str = brand_products_str | append: '||' | append: brand_product_handles
+      assign brand_games_str = brand_games_str | append: '||' | append: brand_sorted_games
     endif
   endfor
 
   assign final_brand_arr = brand_handles_str | split: '||'
   assign final_total_arr = brand_totals_str | split: '||'
   assign final_products_arr = brand_products_str | split: '||'
+  assign final_games_arr = brand_games_str | split: '||'
   assign safety_arr = safety_handles | split: '|'
 -%}
 
 {%- if final_brand_arr.size > 0 -%}
 <category-brand-grids class="cbg">
-  <div class="brand-section__container">
-    <div class="bmg__toolbar cbg__toolbar">
-      <select class="bmg__select cbg__select" aria-label="Filter by brand">
-        <option value="all">All brands ({{ final_brand_arr.size }})</option>
-        {%- for bh in final_brand_arr -%}
-          {%- assign brand_opt = collections[bh] -%}
-          {%- assign brand_total = final_total_arr[forloop.index0] | plus: 0 -%}
-          <option value="{{ brand_opt.handle }}">{{ brand_opt.title }} ({{ brand_total }})</option>
-        {%- endfor -%}
-      </select>
-
-      <label class="bmg__switch cbg__switch bmg__switch--on">
-        <input type="checkbox" role="switch" checked class="bmg__switch-input">
-        <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-        <span class="bmg__switch-label">Show Out of Stock</span>
-      </label>
+  <div class="cbg__toolbar-band">
+    <div class="brand-section__container">
+      <div class="bmg__toolbar cbg__toolbar">
+        <label class="bmg__switch cbg__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+      </div>
+      <p class="bmg__empty cbg__empty" hidden>No machines in stock right now.</p>
     </div>
-    <p class="bmg__empty cbg__empty" hidden>No machines in stock right now.</p>
-    {%- for bh in final_brand_arr -%}
-      {%- assign brand = collections[bh] -%}
-      {%- assign product_pairs = final_products_arr[forloop.index0] | split: ',' -%}
-      {%- assign total = final_total_arr[forloop.index0] | plus: 0 -%}
+  </div>
 
-      {%- comment %} Safety net HTML comment {% endcomment -%}
-      {%- for sh in safety_arr -%}
-        {%- if sh == bh -%}
-          <!-- brand not in main-menu: {{ bh }} -->
+  {%- for bh in final_brand_arr -%}
+    {%- liquid
+      assign brand = collections[bh]
+      assign product_pairs = final_products_arr[forloop.index0] | split: ','
+      assign total = final_total_arr[forloop.index0] | plus: 0
+      assign brand_game_handles = final_games_arr[forloop.index0] | split: '|'
+      assign brand_games_count = brand_game_handles.size
+
+      assign brand_logo = brand.metafields.custom.logo_on_light | default: brand.metafields.custom.logo
+      assign logo_scale = brand.metafields.custom.logo_scale | default: 1
+    -%}
+
+    {%- comment %} Safety net HTML comment {% endcomment -%}
+    {%- for sh in safety_arr -%}
+      {%- if sh == bh -%}
+        <!-- brand not in main-menu: {{ bh }} -->
+      {%- endif -%}
+    {%- endfor -%}
+
+    <section class="cbg__block" id="cbg-block-{{ bh }}" data-brand="{{ brand.handle }}" data-total="{{ total }}" data-eligible="{{ total }}">
+      <div class="brand-section__container">
+        <div class="cbg__brandbar">
+          {%- if brand_logo != blank -%}
+            <img class="cbg__logo" src="{{ brand_logo | image_url: width: 400 }}"
+                 alt="{{ brand.title }}" width="200" height="60" loading="lazy">
+          {%- endif -%}
+          <h2 class="brand-section__heading cbg__heading">{{ brand.title }}</h2>
+        </div>
+
+        {%- if brand_games_count > 1 -%}
+          <div class="bmg__toolbar cbg__block-toolbar">
+            <select class="bmg__select cbg__game-select" aria-label="Filter {{ brand.title }} by game">
+              <option value="all">All games ({{ brand_games_count }})</option>
+              {%- for game_h in brand_game_handles -%}
+                {%- assign game_col_opt = collections[game_h] -%}
+                <option value="{{ game_h }}">{{ game_col_opt.title }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
         {%- endif -%}
-      {%- endfor -%}
 
-      <section class="cbg__block" data-brand="{{ brand.handle }}">
-        <h2 class="brand-section__heading">{{ brand.title }}</h2>
         <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}">
           {%- for pair in product_pairs -%}
             {%- assign pair_parts = pair | split: ':' -%}
@@ -416,7 +465,7 @@
               {%- endif -%}
             {%- endfor -%}
             {%- if card_product != blank -%}
-              <li class="cbg__item"{% if card_product.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+              <li class="cbg__item" data-game="{{ gh }}"{% if card_product.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
                 {%- render 'brand-machine-card', product: card_product -%}
               </li>
             {%- endif -%}
@@ -426,9 +475,9 @@
           <button class="cbg__more" type="button" hidden>Show more</button>
           <a class="cbg__all" href="{{ brand.url }}">View all</a>
         </div>
-      </section>
-    {%- endfor -%}
-  </div>
+      </div>
+    </section>
+  {%- endfor -%}
 </category-brand-grids>
 
 {% style %}
@@ -437,6 +486,7 @@
 
   .cbg__block--hidden { display: none; }
   .cbg__item--oos { display: none; }
+  .cbg__item--offgame { display: none; }
 
   .cbg__grid {
     display: grid;
@@ -505,6 +555,66 @@
   .cbg {
     --bmc-title-lines: 2;
   }
+
+  {% comment %} ── TASK 2: Brand bar ── {% endcomment %}
+  .cbg__brandbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: clamp(32px, 4vw, 56px);
+  }
+
+  .cbg .cbg__heading {
+    text-align: left;
+    margin: 0;
+  }
+
+  .cbg__logo {
+    --_logo-scale: 1;
+    height: auto;
+    width: auto;
+    max-height: calc(56px * var(--_logo-scale));
+    max-width: calc(180px * var(--_logo-scale));
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 749px) {
+    .cbg__brandbar { gap: 12px; }
+    .cbg__logo { max-height: calc(40px * var(--_logo-scale)); }
+  }
+
+  {% comment %} ── TASK 2: Per-block logo scale ── {% endcomment %}
+  {%- for bh in final_brand_arr -%}
+    {%- assign brand_for_scale = collections[bh] -%}
+    {%- assign ls = brand_for_scale.metafields.custom.logo_scale | default: 1 -%}
+    {%- if ls != 1 -%}
+      #cbg-block-{{ bh }} .cbg__logo { --_logo-scale: {{ ls }}; }
+    {%- endif -%}
+  {%- endfor -%}
+
+  {% comment %} ── TASK 3: Alternating bands ── {% endcomment %}
+  .cbg__block:nth-of-type(even) { background: var(--color-surface-cream); }
+  .cbg__block:nth-of-type(even) .bmc { background: rgb(var(--color-background-rgb)); }
+
+  {% comment %} ── TASK 3: Per-block toolbar spacing ── {% endcomment %}
+  .cbg__block-toolbar {
+    margin-bottom: 24px;
+  }
+
+  {% comment %} ── TASK 4: Left-align controls for short grids ── {% endcomment %}
+  .cbg__block[data-eligible="1"] .cbg__controls,
+  .cbg__block[data-eligible="2"] .cbg__controls { justify-content: flex-start; }
+
+  @media (min-width: 750px) {
+    .cbg__block[data-eligible="3"] .cbg__controls { justify-content: flex-start; }
+  }
+  @media (min-width: 900px) {
+    .cbg__block[data-eligible="4"] .cbg__controls { justify-content: flex-start; }
+  }
+  @media (min-width: 1200px) {
+    .cbg__block[data-eligible="5"] .cbg__controls { justify-content: flex-start; }
+  }
 {% endstyle %}
 
 {% comment %} ── Web Component: category-brand-grids ── {% endcomment %}
@@ -514,16 +624,9 @@
       connectedCallback() {
         this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
         this.showOOS = true;
-        this.selectEl = this.querySelector('.cbg__select');
         this.switchInput = this.querySelector('.bmg__switch-input');
         this.switchLabel = this.querySelector('.cbg__switch');
         this.emptyMsg = this.querySelector('.cbg__empty');
-
-        /* Store original totals for dropdown labels */
-        this.originalTotals = {};
-        this.blocks.forEach(block => {
-          this.originalTotals[block.dataset.brand] = block.querySelectorAll('.cbg__item').length;
-        });
 
         this.breakpoints = [
           window.matchMedia('(min-width: 1200px)'),
@@ -531,32 +634,25 @@
           window.matchMedia('(min-width: 750px)')
         ];
         this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
+
         this.blocks.forEach(block => {
           const btn = block.querySelector('.cbg__more');
           if (btn) {
             btn.addEventListener('click', () => this.handleClick(block));
           }
+
+          const gameSelect = block.querySelector('.cbg__game-select');
+          if (gameSelect) {
+            gameSelect.addEventListener('change', () => this.applyGameFilter(block));
+          }
         });
 
-        if (this.selectEl) {
-          this.selectEl.addEventListener('change', () => this.applyFilters());
-        }
         if (this.switchInput) {
           this.switchInput.addEventListener('change', () => {
             this.showOOS = this.switchInput.checked;
             if (this.switchLabel) this.switchLabel.classList.toggle('bmg__switch--on', this.showOOS);
             if (this.showOOS) {
               this.restorePrecut();
-              /* Re-apply dropdown filter after restore */
-              const selectedBrand = this.selectEl ? this.selectEl.value : 'all';
-              if (selectedBrand !== 'all') {
-                this.blocks.forEach(block => {
-                  if (block.dataset.brand !== selectedBrand) {
-                    block.classList.add('cbg__block--hidden');
-                  }
-                });
-              }
-              this.updateAll();
             } else {
               this.applyFilters();
             }
@@ -576,34 +672,81 @@
         return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
       }
 
+      applyGameFilter(block) {
+        const gameSelect = block.querySelector('.cbg__game-select');
+        if (!gameSelect) return;
+        const selectedGame = gameSelect.value;
+        const grid = block.querySelector('.cbg__grid');
+        const items = Array.from(block.querySelectorAll('.cbg__item'));
+
+        /* Apply game filter */
+        items.forEach(item => {
+          item.classList.toggle('cbg__item--offgame', selectedGame !== 'all' && item.dataset.game !== selectedGame);
+        });
+
+        if (selectedGame !== 'all') {
+          /* Remove precut, reset rows */
+          grid.classList.remove('cbg--precut');
+          block.dataset.rows = '2';
+        } else {
+          /* Restore precut if block was never expanded (rows still at 2) */
+          const rows = parseInt(block.dataset.rows || '2', 10);
+          if (rows === 2) {
+            grid.classList.add('cbg--precut');
+            items.forEach(item => item.classList.remove('cbg__item--beyond'));
+          }
+        }
+
+        /* Also apply OOS filter */
+        items.forEach(item => {
+          item.classList.toggle('cbg__item--oos', !this.showOOS && item.hasAttribute('data-sold-out'));
+        });
+
+        const eligible = items.filter(item =>
+          !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+        );
+
+        /* Update data-eligible */
+        block.dataset.eligible = eligible.length;
+
+        /* Hide block if zero eligible */
+        if (eligible.length === 0) {
+          block.classList.add('cbg__block--hidden');
+        } else {
+          block.classList.remove('cbg__block--hidden');
+        }
+
+        this.checkEmpty();
+        this.updateBlock(block);
+      }
+
       applyFilters() {
-        const selectedBrand = this.selectEl ? this.selectEl.value : 'all';
         let anyVisible = false;
 
         this.blocks.forEach(block => {
-          const brand = block.dataset.brand;
-          const hiddenByDropdown = selectedBrand !== 'all' && brand !== selectedBrand;
+          const items = Array.from(block.querySelectorAll('.cbg__item'));
+          const grid = block.querySelector('.cbg__grid');
 
           /* Apply OOS hiding */
-          const items = Array.from(block.querySelectorAll('.cbg__item'));
           items.forEach(item => {
             item.classList.toggle('cbg__item--oos', !this.showOOS && item.hasAttribute('data-sold-out'));
           });
 
-          const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
-          const grid = block.querySelector('.cbg__grid');
-
-          /* If toggle changed, remove precut so JS owns visibility */
+          /* If toggle changed to off, remove precut so JS owns visibility */
           if (!this.showOOS) {
             if (grid.classList.contains('cbg--precut')) {
               grid.classList.remove('cbg--precut');
-              /* Reset rows so reveal starts from 2 */
               block.dataset.rows = '2';
             }
           }
 
-          /* Hide block if dropdown-filtered or zero eligible */
-          if (hiddenByDropdown || eligible.length === 0) {
+          const eligible = items.filter(item =>
+            !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+          );
+
+          block.dataset.eligible = eligible.length;
+
+          if (eligible.length === 0) {
             block.classList.add('cbg__block--hidden');
           } else {
             block.classList.remove('cbg__block--hidden');
@@ -611,10 +754,6 @@
           }
         });
 
-        /* Update dropdown labels */
-        this.updateDropdownLabels();
-
-        /* Show empty message if nothing visible */
         if (this.emptyMsg) {
           this.emptyMsg.hidden = anyVisible;
         }
@@ -622,59 +761,48 @@
         this.updateAll();
       }
 
-      updateDropdownLabels() {
-        if (!this.selectEl) return;
-        const options = Array.from(this.selectEl.options);
-        options.forEach(opt => {
-          if (opt.value === 'all') return;
-          const block = this.blocks.find(b => b.dataset.brand === opt.value);
-          if (!block) return;
-          const items = Array.from(block.querySelectorAll('.cbg__item'));
-          const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
-          const brand = block.querySelector('.brand-section__heading');
-          const name = brand ? brand.textContent.trim() : opt.value;
-          opt.textContent = name + ' (' + eligible.length + ')';
-          opt.hidden = eligible.length === 0;
-        });
+      checkEmpty() {
+        const anyVisible = this.blocks.some(block => !block.classList.contains('cbg__block--hidden'));
+        if (this.emptyMsg) {
+          this.emptyMsg.hidden = anyVisible;
+        }
       }
 
       restorePrecut() {
-        /* When toggle goes back ON, restore precut for blocks that were never expanded */
         this.blocks.forEach(block => {
           const grid = block.querySelector('.cbg__grid');
           const rows = parseInt(block.dataset.rows || '2', 10);
-          /* Only restore precut if rows is still at the initial 2 */
-          if (rows === 2) {
+          const gameSelect = block.querySelector('.cbg__game-select');
+          const selectedGame = gameSelect ? gameSelect.value : 'all';
+
+          if (rows === 2 && selectedGame === 'all') {
             grid.classList.add('cbg--precut');
-            /* Clear JS visibility classes */
             block.querySelectorAll('.cbg__item').forEach(item => {
               item.classList.remove('cbg__item--beyond');
               item.classList.remove('cbg__item--oos');
             });
           } else {
-            /* Block was expanded — just clear OOS */
             block.querySelectorAll('.cbg__item').forEach(item => {
               item.classList.remove('cbg__item--oos');
             });
           }
-          block.classList.remove('cbg__block--hidden');
+
+          /* Recompute eligible (offgame may still be active) */
+          const items = Array.from(block.querySelectorAll('.cbg__item'));
+          const eligible = items.filter(item =>
+            !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+          );
+          block.dataset.eligible = eligible.length;
+
+          if (eligible.length === 0) {
+            block.classList.add('cbg__block--hidden');
+          } else {
+            block.classList.remove('cbg__block--hidden');
+          }
         });
 
-        /* Restore dropdown labels to original totals */
-        if (this.selectEl) {
-          Array.from(this.selectEl.options).forEach(opt => {
-            if (opt.value === 'all') return;
-            const block = this.blocks.find(b => b.dataset.brand === opt.value);
-            if (!block) return;
-            const total = this.originalTotals[opt.value] || 0;
-            const brand = block.querySelector('.brand-section__heading');
-            const name = brand ? brand.textContent.trim() : opt.value;
-            opt.textContent = name + ' (' + total + ')';
-            opt.hidden = false;
-          });
-        }
-
-        if (this.emptyMsg) this.emptyMsg.hidden = true;
+        this.checkEmpty();
+        this.updateAll();
       }
 
       updateAll() {
@@ -689,10 +817,15 @@
         const grid = block.querySelector('.cbg__grid');
         const btn = block.querySelector('.cbg__more');
         const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+        );
         const total = eligible.length;
         const cols = this.getColumns(grid);
         const rows = parseInt(block.dataset.rows || '2', 10);
+
+        /* Update data-eligible */
+        block.dataset.eligible = total;
 
         if (btn) {
           const visible = Math.min(rows * cols, total);
@@ -702,7 +835,7 @@
             if (!grid.classList.contains('cbg--precut')) {
               let idx = 0;
               items.forEach(item => {
-                if (item.classList.contains('cbg__item--oos')) return;
+                if (item.classList.contains('cbg__item--oos') || item.classList.contains('cbg__item--offgame')) return;
                 item.classList.toggle('cbg__item--beyond', idx >= visible);
                 idx++;
               });
@@ -720,7 +853,9 @@
         const grid = block.querySelector('.cbg__grid');
         const btn = block.querySelector('.cbg__more');
         const items = Array.from(block.querySelectorAll('.cbg__item'));
-        const eligible = items.filter(item => !item.classList.contains('cbg__item--oos'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('cbg__item--oos') && !item.classList.contains('cbg__item--offgame')
+        );
         const total = eligible.length;
         const cols = this.getColumns(grid);
         let rows = parseInt(block.dataset.rows || '2', 10);
@@ -738,7 +873,7 @@
           const visible = rows * cols;
           let idx = 0;
           items.forEach(item => {
-            if (item.classList.contains('cbg__item--oos')) return;
+            if (item.classList.contains('cbg__item--oos') || item.classList.contains('cbg__item--offgame')) return;
             item.classList.toggle('cbg__item--beyond', idx >= visible);
             idx++;
           });
@@ -754,7 +889,7 @@
           const visible = Math.min(rows * cols, total);
           let idx = 0;
           items.forEach(item => {
-            if (item.classList.contains('cbg__item--oos')) return;
+            if (item.classList.contains('cbg__item--oos') || item.classList.contains('cbg__item--offgame')) return;
             item.classList.toggle('cbg__item--beyond', idx >= visible);
             idx++;
           });
