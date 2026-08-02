@@ -14,14 +14,6 @@
   assign _count = _handles.size
 -%}
 
-{%- comment -%}
-  L — Pre-rotate the handles so floor(n/2) is at DOM position 0.
-  UIkit center:true centres index 0 on init — no show() needed,
-  so the first paint is already the final position.
-{%- endcomment -%}
-{%- liquid
-  assign _gc_start = _count | divided_by: 2
--%}
 
 {%- if _count > 0 -%}
   <section id="{{ fnop_carousel_id }}" class="fnop-gc fnop-gc--carousel" data-gc-count="{{ _count }}">
@@ -34,8 +26,7 @@
       <div class="uk-position-relative">
         <div class="uk-slider-container fnop-gc__container">
           <ul class="uk-slider-items fnop-gc__list">
-            {% comment %} Rotated: render [start..end] then [0..start-1] {% endcomment %}
-            {%- for handle in _handles offset: _gc_start -%}
+            {%- for handle in _handles -%}
               {%- assign game_col = collections[handle] -%}
               {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
@@ -48,21 +39,6 @@
                 -%}
               </li>
             {%- endfor -%}
-            {%- if _gc_start > 0 -%}
-              {%- for handle in _handles limit: _gc_start -%}
-                {%- assign game_col = collections[handle] -%}
-                {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
-
-                <li class="fnop-gc__item">
-                  {%- render 'fnop-game-card',
-                    fnop_game_col: game_col,
-                    fnop_card_class: 'fnop-gc__card',
-                    fnop_img_class: 'fnop-gc__img',
-                    fnop_hide_label: true
-                  -%}
-                </li>
-              {%- endfor -%}
-            {%- endif -%}
           </ul>
         </div>
 
@@ -117,17 +93,15 @@
           }
 
           /* In fits mode: remove uk-slider so no transform is applied.
-             In overflow mode: restore it so the carousel works with center + loop. */
+             In overflow mode: restore it so the carousel works. */
           var initSlider = function () {
             if (!window.UIkit) return false;
 
             if (overflows) {
               if (!sliderEl.hasAttribute('uk-slider')) {
                 sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
-                UIkit.slider(sliderEl, { finite: false, autoplay: false, center: true });
+                UIkit.slider(sliderEl);
               }
-              /* L: no show() — items are pre-rotated in Liquid so index 0
-                 is already the centre card. Zero post-paint movement. */
             } else {
               var slider = UIkit.slider(sliderEl);
               if (slider) {
@@ -209,10 +183,7 @@
       min-width: 0;
     }
 
-    /* Fix 1 (L-fix-2): centre offset via transform on the track.
-       fnop-gc is full-bleed so track width = 100vw. */
     #{{ fnop_carousel_id }} .fnop-gc__list {
-      transform: translateX(calc((100vw - var(--_gc-card-w)) / 2));
       list-style: none;
       margin: 0;
       padding: 0;
