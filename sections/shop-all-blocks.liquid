@@ -1,0 +1,947 @@
+{%- liquid
+  comment
+    Shop All Blocks — four blocks: Pinball (game tiles), Arcade, Apparel, Preowned.
+  endcomment
+
+  comment
+    ── Block 1: Pinball Machines — game collection tiles sorted by release_date desc ──
+    Collect all game collections, sort by release_date descending (bubble sort).
+    Build manufacturer dropdown options from menu order.
+  endcomment
+
+  assign game_cols = ''
+  assign game_dates = ''
+  assign game_count = 0
+
+  for c in collections
+    assign is_game = c.metafields.collection.is_game
+    if is_game
+      assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+      if game_cols == ''
+        assign game_cols = c.handle
+        assign game_dates = rd
+      else
+        assign game_cols = game_cols | append: '|' | append: c.handle
+        assign game_dates = game_dates | append: '|' | append: rd
+      endif
+      assign game_count = game_count | plus: 1
+    endif
+  endfor
+
+  assign gc_arr = game_cols | split: '|'
+  assign gd_arr = game_dates | split: '|'
+
+  comment — Bubble sort by release_date descending
+  endcomment
+  assign sorted_gc = gc_arr
+  assign sorted_gd = gd_arr
+
+  if game_count > 1
+    assign n = game_count | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_gd[j]
+        assign date_b = sorted_gd[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_gc[j]
+          assign tmp_d = sorted_gd[j]
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_gc[j1]
+              assign d_val = sorted_gd[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_gc[k]
+              assign d_val = sorted_gd[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_gc = new_handles | split: '|'
+          assign sorted_gd = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+  endif
+
+  comment
+    ── Manufacturer dropdown options in menu order ──
+  endcomment
+  assign mfr_handles = ''
+  assign mfr_titles = ''
+  assign mfr_count = 0
+
+  for l1 in linklists['main-menu'].links
+    if l1.type == 'collection_link' and l1.object.template_suffix == 'brand'
+      assign mh = l1.object.handle
+      unless mfr_handles contains mh
+        if mfr_handles == ''
+          assign mfr_handles = mh
+          assign mfr_titles = l1.object.title
+        else
+          assign mfr_handles = mfr_handles | append: '|' | append: mh
+          assign mfr_titles = mfr_titles | append: '|' | append: l1.object.title
+        endif
+        assign mfr_count = mfr_count | plus: 1
+      endunless
+    endif
+    for l2 in l1.links
+      if l2.type == 'collection_link' and l2.object.template_suffix == 'brand'
+        assign mh = l2.object.handle
+        unless mfr_handles contains mh
+          if mfr_handles == ''
+            assign mfr_handles = mh
+            assign mfr_titles = l2.object.title
+          else
+            assign mfr_handles = mfr_handles | append: '|' | append: mh
+            assign mfr_titles = mfr_titles | append: '|' | append: l2.object.title
+          endif
+          assign mfr_count = mfr_count | plus: 1
+        endunless
+      endif
+      for l3 in l2.links
+        if l3.type == 'collection_link' and l3.object.template_suffix == 'brand'
+          assign mh = l3.object.handle
+          unless mfr_handles contains mh
+            if mfr_handles == ''
+              assign mfr_handles = mh
+              assign mfr_titles = l3.object.title
+            else
+              assign mfr_handles = mfr_handles | append: '|' | append: mh
+              assign mfr_titles = mfr_titles | append: '|' | append: l3.object.title
+            endif
+            assign mfr_count = mfr_count | plus: 1
+          endunless
+        endif
+      endfor
+    endfor
+  endfor
+
+  assign mfr_h_arr = mfr_handles | split: '|'
+  assign mfr_t_arr = mfr_titles | split: '|'
+
+  comment
+    ── Deduplicate manufacturers that actually appear in game tiles ──
+  endcomment
+  assign tile_mfr_handles = ''
+  assign tile_mfr_titles = ''
+  assign tile_mfr_count = 0
+
+  for gh in sorted_gc
+    assign gc = collections[gh]
+    assign mfr_ref = gc.metafields.custom.manufacturer.value
+    if mfr_ref and mfr_ref.handle != blank
+      assign already_in = false
+      if tile_mfr_handles != ''
+        assign _check_arr = tile_mfr_handles | split: '|'
+        for _ch in _check_arr
+          if _ch == mfr_ref.handle
+            assign already_in = true
+            break
+          endif
+        endfor
+      endif
+      unless already_in
+        if tile_mfr_handles == ''
+          assign tile_mfr_handles = mfr_ref.handle
+          assign tile_mfr_titles = mfr_ref.title
+        else
+          assign tile_mfr_handles = tile_mfr_handles | append: '|' | append: mfr_ref.handle
+          assign tile_mfr_titles = tile_mfr_titles | append: '|' | append: mfr_ref.title
+        endif
+        assign tile_mfr_count = tile_mfr_count | plus: 1
+      endunless
+    endif
+  endfor
+
+  assign tile_mfr_h_arr = tile_mfr_handles | split: '|'
+  assign tile_mfr_t_arr = tile_mfr_titles | split: '|'
+
+  comment — Order tile manufacturers by menu order
+  endcomment
+  assign ordered_tile_mfr_h = ''
+  assign ordered_tile_mfr_t = ''
+  assign ordered_tile_mfr_count = 0
+
+  for mh in mfr_h_arr
+    for tmh in tile_mfr_h_arr
+      if tmh == mh
+        assign idx = forloop.index0
+        assign tmt = tile_mfr_t_arr[idx]
+        if ordered_tile_mfr_h == ''
+          assign ordered_tile_mfr_h = mh
+          assign ordered_tile_mfr_t = tmt
+        else
+          assign ordered_tile_mfr_h = ordered_tile_mfr_h | append: '|' | append: mh
+          assign ordered_tile_mfr_t = ordered_tile_mfr_t | append: '|' | append: tmt
+        endif
+        assign ordered_tile_mfr_count = ordered_tile_mfr_count | plus: 1
+        break
+      endif
+    endfor
+  endfor
+
+  comment — Append any tile manufacturers not in menu
+  endcomment
+  for tmh in tile_mfr_h_arr
+    assign in_menu = false
+    assign _otm_arr = ordered_tile_mfr_h | split: '|'
+    for _om in _otm_arr
+      if _om == tmh
+        assign in_menu = true
+        break
+      endif
+    endfor
+    unless in_menu
+      assign idx = forloop.index0
+      assign tmt = tile_mfr_t_arr[idx]
+      if ordered_tile_mfr_h == ''
+        assign ordered_tile_mfr_h = tmh
+        assign ordered_tile_mfr_t = tmt
+      else
+        assign ordered_tile_mfr_h = ordered_tile_mfr_h | append: '|' | append: tmh
+        assign ordered_tile_mfr_t = ordered_tile_mfr_t | append: '|' | append: tmt
+      endif
+      assign ordered_tile_mfr_count = ordered_tile_mfr_count | plus: 1
+    endunless
+  endfor
+
+  assign final_mfr_h_arr = ordered_tile_mfr_h | split: '|'
+  assign final_mfr_t_arr = ordered_tile_mfr_t | split: '|'
+
+  comment
+    ── Blocks 2-4 data ──
+  endcomment
+  assign arcade_col = collections['arcade-machines']
+  assign apparel_col = collections['apparel']
+  assign preowned_col = collections['preowned']
+-%}
+
+<shop-all-blocks class="sab">
+  {% comment %} ── BLOCK 1: Pinball Machines (game tiles) ── {% endcomment %}
+  <section class="sab__block" data-block="pinball" data-total="{{ game_count }}" data-eligible="{{ game_count }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading">Pinball Machines</h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if ordered_tile_mfr_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter Pinball Machines by manufacturer">
+            <option value="all">All manufacturers ({{ ordered_tile_mfr_count }})</option>
+            {%- for mh in final_mfr_h_arr -%}
+              <option value="{{ mh }}">{{ final_mfr_t_arr[forloop.index0] }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list">
+        {%- for gh in sorted_gc -%}
+          {%- assign game_col = collections[gh] -%}
+          {%- assign mfr_ref = game_col.metafields.custom.manufacturer.value -%}
+          {%- assign mfr_handle = '' -%}
+          {%- if mfr_ref and mfr_ref.handle != blank -%}
+            {%- assign mfr_handle = mfr_ref.handle -%}
+          {%- endif -%}
+          {%- capture game_name -%}{%- render 'fnop-game-name', fnop_game_col: game_col -%}{%- endcapture -%}
+          {%- comment %} Find minimum price among Pinball Machine products {% endcomment -%}
+          {%- assign from_price = blank -%}
+          {%- for p in game_col.products -%}
+            {%- if p.type == 'Pinball Machine' -%}
+              {%- if from_price == blank or p.price < from_price -%}
+                {%- assign from_price = p.price -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <li class="sab__item" data-vendor="{{ mfr_handle }}">
+            <a class="bmc bmc--square" href="{{ game_col.url }}">
+              <div class="bmc__poster">
+                {%- if game_col.image -%}
+                  {{ game_col.image | image_url: width: 800 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
+                    widths: '200,400,600,800',
+                    alt: game_name
+                  }}
+                {%- else -%}
+                  {{ 'collection-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ game_name }}</h3>
+              {%- if from_price -%}
+                <span class="bmc__price">From {{ from_price | money }}</span>
+              {%- endif -%}
+              <span class="sab__more">More</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="/collections/pinball-machines">View all</a>
+      </div>
+    </div>
+  </section>
+
+  {% comment %} ── BLOCK 2: Arcade Machines ── {% endcomment %}
+  {%- liquid
+    assign arcade_total = 0
+    assign arcade_vendors = ''
+    assign arcade_vendor_count = 0
+    if arcade_col
+      for p in arcade_col.products
+        assign arcade_total = arcade_total | plus: 1
+        assign pv = p.vendor
+        assign already = false
+        if arcade_vendors != ''
+          assign _av_arr = arcade_vendors | split: '|'
+          for _av in _av_arr
+            if _av == pv
+              assign already = true
+              break
+            endif
+          endfor
+        endif
+        unless already
+          if arcade_vendors == ''
+            assign arcade_vendors = pv
+          else
+            assign arcade_vendors = arcade_vendors | append: '|' | append: pv
+          endif
+          assign arcade_vendor_count = arcade_vendor_count | plus: 1
+        endunless
+      endfor
+    endif
+    assign arcade_v_arr = arcade_vendors | split: '|'
+  -%}
+  {%- if arcade_total > 0 -%}
+  <section class="sab__block" data-block="arcade" data-total="{{ arcade_total }}" data-eligible="{{ arcade_total }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading">Arcade Machines</h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if arcade_vendor_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter Arcade Machines by manufacturer">
+            <option value="all">All manufacturers ({{ arcade_vendor_count }})</option>
+            {%- for av in arcade_v_arr -%}
+              <option value="{{ av | handleize }}">{{ av }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+
+        <label class="bmg__switch sab__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list">
+        {%- for p in arcade_col.products -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            {%- render 'brand-machine-card', product: p -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="{{ arcade_col.url }}">View all</a>
+      </div>
+    </div>
+  </section>
+  {%- endif -%}
+
+  {% comment %} ── BLOCK 3: Apparel ── {% endcomment %}
+  {%- liquid
+    assign apparel_total = 0
+    assign apparel_types = ''
+    assign apparel_type_count = 0
+    if apparel_col
+      for p in apparel_col.products
+        assign apparel_total = apparel_total | plus: 1
+        assign pt = p.type
+        assign already = false
+        if apparel_types != ''
+          assign _at_arr = apparel_types | split: '|'
+          for _at in _at_arr
+            if _at == pt
+              assign already = true
+              break
+            endif
+          endfor
+        endif
+        unless already
+          if apparel_types == ''
+            assign apparel_types = pt
+          else
+            assign apparel_types = apparel_types | append: '|' | append: pt
+          endif
+          assign apparel_type_count = apparel_type_count | plus: 1
+        endunless
+      endfor
+    endif
+    assign apparel_t_arr = apparel_types | split: '|'
+  -%}
+  {%- if apparel_total > 0 -%}
+  <section class="sab__block" data-block="apparel" data-total="{{ apparel_total }}" data-eligible="{{ apparel_total }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading">Apparel</h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if apparel_type_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter Apparel by type">
+            <option value="all">All types ({{ apparel_type_count }})</option>
+            {%- for at in apparel_t_arr -%}
+              <option value="{{ at | handleize }}">{{ at }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+
+        <label class="bmg__switch sab__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list">
+        {%- for p in apparel_col.products -%}
+          <li class="sab__item" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            <a class="bmc bmc--square" href="{{ p.url }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 800 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
+                    widths: '200,400,600,800',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="{{ apparel_col.url }}">View all</a>
+      </div>
+    </div>
+  </section>
+  {%- endif -%}
+
+  {% comment %} ── BLOCK 4: Preowned ── {% endcomment %}
+  {%- liquid
+    assign preowned_total = 0
+    assign preowned_vendors = ''
+    assign preowned_vendor_count = 0
+    if preowned_col
+      for p in preowned_col.products
+        assign preowned_total = preowned_total | plus: 1
+        assign pv = p.vendor
+        assign already = false
+        if preowned_vendors != ''
+          assign _pv_arr = preowned_vendors | split: '|'
+          for _pv in _pv_arr
+            if _pv == pv
+              assign already = true
+              break
+            endif
+          endfor
+        endif
+        unless already
+          if preowned_vendors == ''
+            assign preowned_vendors = pv
+          else
+            assign preowned_vendors = preowned_vendors | append: '|' | append: pv
+          endif
+          assign preowned_vendor_count = preowned_vendor_count | plus: 1
+        endunless
+      endfor
+    endif
+    assign preowned_v_arr = preowned_vendors | split: '|'
+  -%}
+  {%- if preowned_total > 0 -%}
+  <section class="sab__block" data-block="preowned" data-total="{{ preowned_total }}" data-eligible="{{ preowned_total }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading">Preowned</h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if preowned_vendor_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter Preowned by brand">
+            <option value="all">All brands ({{ preowned_vendor_count }})</option>
+            {%- for pv in preowned_v_arr -%}
+              <option value="{{ pv | handleize }}">{{ pv }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+
+        <label class="bmg__switch sab__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list">
+        {%- for p in preowned_col.products -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            {%- render 'brand-machine-card', product: p -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="{{ preowned_col.url }}">View all</a>
+      </div>
+    </div>
+  </section>
+  {%- endif -%}
+</shop-all-blocks>
+
+{% style %}
+  {%- render 'brand-grid-styles' -%}
+  {%- render 'brand-toolbar-styles' -%}
+
+  .sab__block--hidden { display: none; }
+  .sab__item--oos { display: none; }
+  .sab__item--offfilter { display: none; }
+
+  .sab__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 20px;
+    row-gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 900px) {
+    .sab__grid {
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 32px;
+      row-gap: 32px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .sab__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .sab__item { min-width: 0; }
+  .sab__item--beyond { display: none; }
+
+  {% comment %} Pre-cut: 2 rows {% endcomment %}
+  .sab--precut .sab__item:nth-child(n + 5) { display: none; }
+
+  @media (min-width: 900px) {
+    .sab--precut .sab__item:nth-child(n + 5) { display: list-item; }
+    .sab--precut .sab__item:nth-child(n + 7) { display: none; }
+  }
+
+  @media (min-width: 1200px) {
+    .sab--precut .sab__item:nth-child(n + 7) { display: list-item; }
+    .sab--precut .sab__item:nth-child(n + 9) { display: none; }
+  }
+
+  .sab__controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  @media (max-width: 749px) {
+    .sab__controls { flex-direction: column; align-items: stretch; }
+  }
+
+  .sab__block { padding-block: clamp(48px, 8vw, 120px); }
+
+  .sab__show-more,
+  .sab__all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 12px 28px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .sab__show-more:hover,
+  .sab__all:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+
+  .sab__show-more[hidden] { display: none; }
+
+  .sab {
+    --bmc-title-lines: 2;
+  }
+
+  {% comment %} ── Brand bar ── {% endcomment %}
+  .sab__brandbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: clamp(32px, 4vw, 56px);
+  }
+
+  .sab .sab__heading {
+    text-align: left;
+    margin: 0;
+  }
+
+  {% comment %} ── Alternating bands ── {% endcomment %}
+  .sab__block:nth-of-type(even) { background: var(--color-surface-cream); }
+  .sab__block:nth-of-type(even) .bmc { background: rgb(var(--color-background-rgb)); }
+
+  {% comment %} ── Toolbar spacing ── {% endcomment %}
+  .sab__block-toolbar {
+    margin-bottom: 24px;
+  }
+
+  {% comment %} ── Left-align controls for short grids ── {% endcomment %}
+  .sab__block[data-eligible="1"] .sab__controls,
+  .sab__block[data-eligible="2"] .sab__controls { justify-content: flex-start; }
+
+  @media (min-width: 900px) {
+    .sab__block[data-eligible="3"] .sab__controls { justify-content: flex-start; }
+  }
+  @media (min-width: 1200px) {
+    .sab__block[data-eligible="4"] .sab__controls { justify-content: flex-start; }
+  }
+
+  {% comment %} ── MORE button inside game tiles ── {% endcomment %}
+  .sab__more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 20px;
+    margin-top: 8px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .bmc:hover .sab__more {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+{% endstyle %}
+
+<script>
+  if (!customElements.get('shop-all-blocks')) {
+    class ShopAllBlocks extends HTMLElement {
+      connectedCallback() {
+        this.blocks = Array.from(this.querySelectorAll('.sab__block'));
+
+        this.breakpoints = [
+          window.matchMedia('(min-width: 1200px)'),
+          window.matchMedia('(min-width: 900px)')
+        ];
+        this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
+
+        this.blocks.forEach(block => {
+          const btn = block.querySelector('.sab__show-more');
+          if (btn) {
+            btn.addEventListener('click', () => this.handleClick(block));
+          }
+
+          const filterSelect = block.querySelector('.sab__filter-select');
+          if (filterSelect) {
+            filterSelect.addEventListener('change', () => this.applyFilterSelect(block));
+          }
+
+          const switchInput = block.querySelector('.bmg__switch-input');
+          const switchLabel = block.querySelector('.sab__switch');
+          if (switchInput) {
+            switchInput.addEventListener('change', () => {
+              const showOOS = switchInput.checked;
+              if (switchLabel) switchLabel.classList.toggle('bmg__switch--on', showOOS);
+              if (showOOS) {
+                this.restorePrecutBlock(block);
+              } else {
+                this.applyBlockFilters(block);
+              }
+            });
+          }
+        });
+
+        this.updateAll();
+        if (document.readyState === 'complete') {
+          requestAnimationFrame(() => this.updateAll());
+        } else {
+          window.addEventListener('load', () => this.updateAll(), { once: true });
+        }
+      }
+
+      getColumns(grid) {
+        const t = getComputedStyle(grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
+      }
+
+      getBlockOOS(block) {
+        const sw = block.querySelector('.bmg__switch-input');
+        return sw ? sw.checked : true;
+      }
+
+      applyFilterSelect(block) {
+        const sel = block.querySelector('.sab__filter-select');
+        if (!sel) return;
+        const val = sel.value;
+        const grid = block.querySelector('.sab__grid');
+        const items = Array.from(block.querySelectorAll('.sab__item'));
+        const showOOS = this.getBlockOOS(block);
+        const filterAttr = block.dataset.block === 'pinball' ? 'vendor' : 'filter';
+
+        items.forEach(item => {
+          item.classList.toggle('sab__item--offfilter', val !== 'all' && item.dataset[filterAttr] !== val);
+        });
+
+        if (val !== 'all') {
+          grid.classList.remove('sab--precut');
+          block.dataset.rows = '2';
+        } else {
+          const rows = parseInt(block.dataset.rows || '2', 10);
+          if (rows === 2) {
+            grid.classList.add('sab--precut');
+            items.forEach(item => item.classList.remove('sab__item--beyond'));
+          }
+        }
+
+        items.forEach(item => {
+          item.classList.toggle('sab__item--oos', !showOOS && item.hasAttribute('data-sold-out'));
+        });
+
+        const eligible = items.filter(item =>
+          !item.classList.contains('sab__item--oos') && !item.classList.contains('sab__item--offfilter')
+        );
+
+        block.dataset.eligible = eligible.length;
+
+        if (eligible.length === 0) {
+          block.classList.add('sab__block--hidden');
+        } else {
+          block.classList.remove('sab__block--hidden');
+        }
+
+        this.updateBlock(block);
+      }
+
+      applyBlockFilters(block) {
+        const items = Array.from(block.querySelectorAll('.sab__item'));
+        const grid = block.querySelector('.sab__grid');
+        const showOOS = this.getBlockOOS(block);
+
+        items.forEach(item => {
+          item.classList.toggle('sab__item--oos', !showOOS && item.hasAttribute('data-sold-out'));
+        });
+
+        if (!showOOS) {
+          if (grid.classList.contains('sab--precut')) {
+            grid.classList.remove('sab--precut');
+            block.dataset.rows = '2';
+          }
+        }
+
+        const eligible = items.filter(item =>
+          !item.classList.contains('sab__item--oos') && !item.classList.contains('sab__item--offfilter')
+        );
+
+        block.dataset.eligible = eligible.length;
+
+        if (eligible.length === 0) {
+          block.classList.add('sab__block--hidden');
+        } else {
+          block.classList.remove('sab__block--hidden');
+        }
+
+        this.updateBlock(block);
+      }
+
+      restorePrecutBlock(block) {
+        const grid = block.querySelector('.sab__grid');
+        const rows = parseInt(block.dataset.rows || '2', 10);
+        const sel = block.querySelector('.sab__filter-select');
+        const selectedVal = sel ? sel.value : 'all';
+
+        if (rows === 2 && selectedVal === 'all') {
+          grid.classList.add('sab--precut');
+          block.querySelectorAll('.sab__item').forEach(item => {
+            item.classList.remove('sab__item--beyond');
+            item.classList.remove('sab__item--oos');
+          });
+        } else {
+          block.querySelectorAll('.sab__item').forEach(item => {
+            item.classList.remove('sab__item--oos');
+          });
+        }
+
+        const items = Array.from(block.querySelectorAll('.sab__item'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('sab__item--oos') && !item.classList.contains('sab__item--offfilter')
+        );
+        block.dataset.eligible = eligible.length;
+
+        if (eligible.length === 0) {
+          block.classList.add('sab__block--hidden');
+        } else {
+          block.classList.remove('sab__block--hidden');
+        }
+
+        this.updateBlock(block);
+      }
+
+      updateAll() {
+        this.blocks.forEach(block => {
+          if (!block.classList.contains('sab__block--hidden')) {
+            this.updateBlock(block);
+          }
+        });
+      }
+
+      updateBlock(block) {
+        const grid = block.querySelector('.sab__grid');
+        const btn = block.querySelector('.sab__show-more');
+        const items = Array.from(block.querySelectorAll('.sab__item'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('sab__item--oos') && !item.classList.contains('sab__item--offfilter')
+        );
+        const total = eligible.length;
+        const cols = this.getColumns(grid);
+        const rows = parseInt(block.dataset.rows || '2', 10);
+
+        block.dataset.eligible = total;
+
+        if (btn) {
+          const visible = Math.min(rows * cols, total);
+          if (total > visible) {
+            btn.hidden = false;
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
+            if (!grid.classList.contains('sab--precut')) {
+              let idx = 0;
+              items.forEach(item => {
+                if (item.classList.contains('sab__item--oos') || item.classList.contains('sab__item--offfilter')) return;
+                item.classList.toggle('sab__item--beyond', idx >= visible);
+                idx++;
+              });
+            }
+          } else {
+            btn.hidden = true;
+            if (!grid.classList.contains('sab--precut')) {
+              items.forEach(item => item.classList.remove('sab__item--beyond'));
+            }
+          }
+        }
+      }
+
+      handleClick(block) {
+        const grid = block.querySelector('.sab__grid');
+        const btn = block.querySelector('.sab__show-more');
+        const items = Array.from(block.querySelectorAll('.sab__item'));
+        const eligible = items.filter(item =>
+          !item.classList.contains('sab__item--oos') && !item.classList.contains('sab__item--offfilter')
+        );
+        const total = eligible.length;
+        const cols = this.getColumns(grid);
+        let rows = parseInt(block.dataset.rows || '2', 10);
+
+        if (grid.classList.contains('sab--precut')) {
+          grid.classList.remove('sab--precut');
+          rows = 2;
+        }
+
+        const currentVisible = rows * cols;
+
+        if (currentVisible >= total) {
+          rows = 2;
+          block.dataset.rows = rows;
+          const visible = rows * cols;
+          let idx = 0;
+          items.forEach(item => {
+            if (item.classList.contains('sab__item--oos') || item.classList.contains('sab__item--offfilter')) return;
+            item.classList.toggle('sab__item--beyond', idx >= visible);
+            idx++;
+          });
+          if (total > visible) {
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
+          } else {
+            btn.hidden = true;
+          }
+          block.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          rows += 2;
+          block.dataset.rows = rows;
+          const visible = Math.min(rows * cols, total);
+          let idx = 0;
+          items.forEach(item => {
+            if (item.classList.contains('sab__item--oos') || item.classList.contains('sab__item--offfilter')) return;
+            item.classList.toggle('sab__item--beyond', idx >= visible);
+            idx++;
+          });
+          if (visible >= total) {
+            btn.textContent = 'Show less';
+          } else {
+            btn.textContent = 'Show more \u00B7 ' + (total - visible) + ' remaining';
+          }
+        }
+      }
+    }
+    customElements.define('shop-all-blocks', ShopAllBlocks);
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Shop All blocks",
+  "settings": [],
+  "disabled_on": { "groups": ["header", "footer"] }
+}
+{% endschema %}

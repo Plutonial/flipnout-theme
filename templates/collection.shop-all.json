@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "hero": {
+      "type": "collection-hero-gradient",
+      "settings": {
+        "heading_override": "Shop All",
+        "subtitle_override": "Machines, cabinets, parts and apparel — everything Flip N Out carries, in one place."
+      }
+    },
+    "blocks": {
+      "type": "shop-all-blocks",
+      "settings": {}
+    }
+  },
+  "order": ["hero", "blocks"]
+}

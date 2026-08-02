@@ -1,16 +1,17 @@
 {%- liquid
   assign section_id = 'collection-hero-gradient-' | append: section.id
-  assign subtitle = collection.metafields.custom.subtitle
+  assign hero_heading = section.settings.heading_override | default: collection.title
+  assign hero_subtitle = section.settings.subtitle_override | default: collection.metafields.custom.subtitle
 -%}
 
 
 <section id="{{ section_id }}" class="collection-hero collection-hero--gradient">
   <div class="collection-hero__content">
     <div class="collection-hero__stack">
-      <h1 class="collection-hero__h1">{{ collection.title }}</h1>
+      <h1 class="collection-hero__h1">{{ hero_heading }}</h1>
 
-      {%- if subtitle != blank -%}
-        <p class="collection-hero__subtitle">{{ subtitle }}</p>
+      {%- if hero_subtitle != blank -%}
+        <p class="collection-hero__subtitle">{{ hero_subtitle }}</p>
       {%- endif -%}
     </div>
   </div>
@@ -175,7 +176,20 @@
 {% schema %}
 {
   "name": "Category hero (gradient)",
-  "settings": [],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_override",
+      "label": "Heading override",
+      "info": "Leave blank to use the collection title"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle_override",
+      "label": "Subtitle override",
+      "info": "Leave blank to use custom.subtitle"
+    }
+  ],
   "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}
