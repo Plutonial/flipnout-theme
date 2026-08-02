@@ -70,9 +70,7 @@
           if (!items.length) return;
 
           var item = items[0];
-          var itemStyle = getComputedStyle(item);
-          var marginEnd = parseFloat(itemStyle.marginInlineEnd) || parseFloat(itemStyle.marginRight) || 0;
-          var itemW = item.offsetWidth + marginEnd;
+          var itemW = item.offsetWidth;
           if (!isFinite(itemW) || itemW <= 0) return;
 
           var setW = itemW * items.length;
@@ -190,9 +188,11 @@
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__item {
-      width: var(--_gc-card-w);
+      width: calc(var(--_gc-card-w) + var(--_gc-card-gap));
+      padding-inline-end: var(--_gc-card-gap);
+      margin-inline-end: 0;
+      box-sizing: border-box;
       flex-shrink: 0;
-      margin-inline-end: var(--_gc-card-gap);
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__card {
