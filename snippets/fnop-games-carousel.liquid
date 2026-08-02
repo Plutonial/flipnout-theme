@@ -70,9 +70,9 @@
           if (!items.length) return;
 
           var item = items[0];
-          var listStyle = getComputedStyle(list);
-          var gapVal = parseFloat(listStyle.columnGap) || parseFloat(listStyle.gap) || 0;
-          var itemW = item.offsetWidth + gapVal;
+          var itemStyle = getComputedStyle(item);
+          var marginEnd = parseFloat(itemStyle.marginInlineEnd) || parseFloat(itemStyle.marginRight) || 0;
+          var itemW = item.offsetWidth + marginEnd;
           if (!isFinite(itemW) || itemW <= 0) return;
 
           var setW = itemW * items.length;
@@ -187,12 +187,12 @@
       list-style: none;
       margin: 0;
       padding: 0;
-      gap: var(--_gc-card-gap);
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__item {
       width: var(--_gc-card-w);
       flex-shrink: 0;
+      margin-inline-end: var(--_gc-card-gap);
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__card {
