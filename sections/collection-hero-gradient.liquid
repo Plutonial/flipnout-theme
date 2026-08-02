@@ -25,6 +25,39 @@
     font-family: var(--font-h2--family, var(--font-h1--family)), sans-serif;
     color: var(--color-surface-cream);
     text-shadow: none;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 24px;
+    width: 100%;
+  }
+
+  #{{ section_id }} .collection-hero__h1::after {
+    content: '';
+    flex: 0 1 132px;
+    min-width: 0;
+    height: 31px;
+    background: repeating-linear-gradient(
+      to bottom,
+      currentColor 0 4px,
+      transparent 4px 9px
+    );
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} .collection-hero__h1 {
+      gap: 16px;
+    }
+
+    #{{ section_id }} .collection-hero__h1::after {
+      flex-basis: 84px;
+      height: 21px;
+      background: repeating-linear-gradient(
+        to bottom,
+        currentColor 0 3px,
+        transparent 3px 7px
+      );
+    }
   }
 
   #{{ section_id }} .collection-hero__stack {
