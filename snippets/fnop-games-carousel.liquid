@@ -22,7 +22,7 @@
     -%}
     <{{ _heading_tag }} class="fnop-gc__heading game-section-heading">{{ fnop_carousel_heading }}</{{ _heading_tag }}>
 
-    <div class="fnop-gc__slider" data-gc-slider-opts="finite: true; autoplay: false; center: false">
+    <div class="fnop-gc__slider" data-gc-slider-opts="finite: false; autoplay: false; center: true">
       <div class="uk-position-relative">
         <div class="uk-slider-container fnop-gc__container">
           <ul class="uk-slider-items fnop-gc__list">
@@ -191,7 +191,7 @@
 
     #{{ fnop_carousel_id }} .fnop-gc__item {
       width: calc(var(--_gc-card-w) + var(--_gc-card-gap));
-      padding-inline-end: var(--_gc-card-gap);
+      padding-inline: calc(var(--_gc-card-gap) / 2);
       margin-inline-end: 0;
       box-sizing: border-box;
       flex-shrink: 0;
@@ -201,6 +201,18 @@
       display: block;
       text-decoration: none;
       color: inherit;
+      transition: transform .35s cubic-bezier(.2,.7,.3,1);
+      transform-origin: center center;
+    }
+
+    #{{ fnop_carousel_id }} .uk-slide-active .fnop-gc__card {
+      transform: scale(1.12);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #{{ fnop_carousel_id }} .fnop-gc__card {
+        transition: none;
+      }
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__img {
@@ -280,19 +292,10 @@
       display: none;
     }
 
-    /* Mobile: larger cards, split gutter for centring, hide arrows and dotnav */
+    /* Mobile: larger cards, hide arrows and dotnav */
     @media (max-width: 749px) {
       #{{ fnop_carousel_id }} {
         --_gc-card-w: 60vw;
-      }
-
-      #{{ fnop_carousel_id }} .fnop-gc__item {
-        padding-inline-start: calc(var(--_gc-card-gap) / 2);
-        padding-inline-end: calc(var(--_gc-card-gap) / 2);
-      }
-
-      #{{ fnop_carousel_id }} .fnop-gc__list {
-        padding-inline: calc((100% - var(--_gc-card-w) - var(--_gc-card-gap)) / 2);
       }
 
       #{{ fnop_carousel_id }} .fnop-gc__nav {
