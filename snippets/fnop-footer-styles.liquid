@@ -38,11 +38,10 @@
       padding-block: 0;
     }
 
-    /* Defects 2 + 3: push the logo to the bottom of column 4 (the grid has already
-       stretched the column to the tallest column's height) and centre it horizontally.
-       The `> *:last-child >` step restricts this to column 4 — see the note below. */
-    .footer-content > *:last-child > .group-block-content > .group-block:last-child {
-      margin-block-start: auto;
+    /* Centre the logo group horizontally in column 4.
+       The logo group has width: fit, so it is narrower than the column and needs
+       margin-inline: auto. The width-fit class comes from the group block's setting. */
+    .footer-content > *:last-child > .group-block-content > .group-block--width-fit {
       margin-inline: auto;
     }
 
@@ -92,9 +91,6 @@
       justify-content: center;
     }
 
-    .footer-content > *:last-child > .group-block-content > .group-block:last-child {
-      margin-block-start: var(--margin-xl);
-    }
 
     /* The form spans the full stacked column (629px at innerWidth 673), which is 1.7x
        the longest text line beside it. Cap it between the text line and the logo.
@@ -105,12 +101,12 @@
     }
   }
 
-  /* Social buttons: red outline and red glyph on the footer's own fill; on hover and
-     keyboard focus the outline and glyph go white and the fill does not change. */
+  /* Social icons: muted red glyphs on the footer fill; white on hover/focus. */
   .footer-content .social-icons__wrapper {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--gap-sm);
+    gap: var(--gap-xs);
+    margin-block-start: var(--margin-xl);
   }
 
   .footer-content .social-icons__wrapper .social-icons__icon-wrapper {
@@ -124,16 +120,12 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    border: 2px solid rgb(255 0 0);
-    border-radius: 50%;
-    background-color: var(--color-background);
-    color: rgb(255 0 0);
-    transition: color 0.18s ease, border-color 0.18s ease;
+    color: rgb(255 0 0 / 0.8);
+    transition: color 0.18s ease;
   }
 
   .footer-content .social-icons__wrapper .social-icons__icon-wrapper a:hover,
   .footer-content .social-icons__wrapper .social-icons__icon-wrapper a:focus-visible {
-    border-color: var(--color-foreground);
     color: var(--color-foreground);
   }
 
