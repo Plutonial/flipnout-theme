@@ -43,7 +43,14 @@
        the box height, so the stripe count stays constant as the height scales —
        at 31px this is identical to the previous 4px stripe / 9px period. */
     height: 0.65em;
-    margin-block-end: 4px;
+    /* Baseline-aligned like a glyph: this offset puts the bar's centre on the optical
+       centre of the capitals. Caps for this face measure 0.820em ascent / 0.011em
+       descent, so their centre is 0.4045em above the baseline; the bar is 0.65em tall,
+       so its bottom sits 0.4045 - 0.325 = 0.0795em up. In em, so it never needs
+       re-tuning per breakpoint. Measured error: -0.01px at 32, 40 and 48px.
+       Do NOT replace this with align-self: center — that centres on the line box, not
+       the capitals, and is 3-6px off, worse as the font grows. */
+    margin-block-end: 0.08em;
     background: repeating-linear-gradient(
       currentcolor 0 12.9%,
       transparent 12.9% 29.03%
