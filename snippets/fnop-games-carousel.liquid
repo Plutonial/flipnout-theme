@@ -54,6 +54,7 @@
   <script>
     (function() {
       var sectionId = '{{ fnop_carousel_id }}';
+      var lastItemW = null;
 
       function cleanupSliderAttrs(sliderEl, list) {
         sliderEl.removeAttribute('uk-slider');
@@ -114,7 +115,10 @@
               if (!sliderEl.hasAttribute('uk-slider')) {
                 sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
                 UIkit.slider(sliderEl);
+              } else if (lastItemW !== null && lastItemW !== itemW) {
+                UIkit.update(sliderEl);
               }
+              lastItemW = itemW;
             } else {
               var slider = UIkit.slider(sliderEl);
               if (slider) {
