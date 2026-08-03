@@ -38,6 +38,12 @@
 
   assign products_count = collection.products.size
 
+  if products_count <= 4
+    assign editions_cols = products_count
+  else
+    assign editions_cols = 3
+  endif
+
   capture game_name
     render 'fnop-game-name', fnop_game_col: collection
   endcapture
@@ -53,7 +59,7 @@
 <section id="{{ section_id }}" class="editions-grid-section" data-editions-count="{{ products_count }}">
   <h2 class="editions-grid__heading game-section-heading">{{ resolved_heading }}</h2>
 
-  <div class="editions-grid" data-editions-n="{{ products_count }}">
+  <div class="editions-grid" data-editions-n="{{ products_count }}" data-editions-cols="{{ editions_cols }}">
     {%- for handle in sorted_handle_list -%}
       {%- assign product = collection.products | where: 'handle', handle | first -%}
       {%- if product == blank -%}{%- continue -%}{%- endif -%}
@@ -156,19 +162,19 @@
     gap: var(--_grid-gap);
   }
 
-  .editions-grid[data-editions-n="1"] {
+  .editions-grid[data-editions-cols="1"] {
     grid-template-columns: minmax(0, var(--_card-max-w));
   }
 
-  .editions-grid[data-editions-n="2"] {
+  .editions-grid[data-editions-cols="2"] {
     grid-template-columns: repeat(2, minmax(0, var(--_card-max-w)));
   }
 
-  .editions-grid[data-editions-n="3"] {
+  .editions-grid[data-editions-cols="3"] {
     grid-template-columns: repeat(3, minmax(0, var(--_card-max-w)));
   }
 
-  .editions-grid[data-editions-n="4"] {
+  .editions-grid[data-editions-cols="4"] {
     grid-template-columns: repeat(4, minmax(0, var(--_card-max-w)));
   }
 
@@ -180,14 +186,14 @@
     Use a single breakpoint per count via attribute selectors.
   {% endcomment %}
   @media (max-width: 979px) {
-    .editions-grid[data-editions-n="4"] {
+    .editions-grid[data-editions-cols="4"] {
       grid-template-columns: 1fr;
     }
   }
 
   @media (max-width: 749px) {
-    .editions-grid[data-editions-n="2"],
-    .editions-grid[data-editions-n="3"] {
+    .editions-grid[data-editions-cols="2"],
+    .editions-grid[data-editions-cols="3"] {
       grid-template-columns: 1fr;
     }
   }
