@@ -1,0 +1,28 @@
+{% comment %}
+  Footer layout corrections (P28 fix-3).
+  Rendered from layout/theme.liquid.
+
+  1. base.css applies `summary { padding-block: var(--padding-sm) }` globally, which
+     pushes the `menu` block headings ("Shop", "Explore") 11.2px lower than the
+     `text` block headings ("Brands", "Join our email list"). On desktop the footer
+     accordion is disabled (`data-disable-on-desktop`), so the summary needs no tap
+     padding there and we remove it to put all four headings on one baseline.
+     Mobile is untouched — the accordion tap target stays.
+
+  2. The footer grid uses equal `1fr` tracks, so short columns leave large ragged
+     gaps. `auto` tracks + `space-between` size each track to its content and spread
+     the leftover space evenly between the columns.
+{% endcomment %}
+
+<style>
+  @media screen and (min-width: 990px) {
+    .section > .footer-content {
+      grid-template-columns: repeat(4, auto);
+      justify-content: space-between;
+    }
+
+    .footer-content .menu__heading {
+      padding-block: 0;
+    }
+  }
+</style>

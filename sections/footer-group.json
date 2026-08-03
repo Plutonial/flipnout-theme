@@ -279,7 +279,7 @@
                   "type": "logo",
                   "settings": {
                     "unit": "pixel",
-                    "pixel_height": 72,
+                    "pixel_height": 144,
                     "custom_mobile_size": false,
                     "unit_mobile": "pixel",
                     "pixel_height_mobile": 120,
@@ -375,10 +375,10 @@
             }
           },
           "block_order": [
-            "group_logo_link",
             "text_pF6rVi",
             "text_HafH7P",
-            "email-signup_HafH7P"
+            "email-signup_HafH7P",
+            "group_logo_link"
           ]
         }
       },
