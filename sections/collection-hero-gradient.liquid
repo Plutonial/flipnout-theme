@@ -37,25 +37,22 @@
   #{{ section_id }} .collection-hero__h1::after {
     content: '';
     flex: 0 0 72px;
-    height: 31px;
-    /* margin-block-end: (cap-height 38.9 − ornament-height 31) / 2 ≈ 4px
-       — aligns ornament centre to the optical middle of the uppercase text.
-       Re-check if H1 font-size or ornament height change. */
+    /* Height follows the font so the ornament is never taller than the letters.
+       Cap height for this face measures 0.831em, so 0.65em is always ~78% of it,
+       at any font size and any viewport. Percentage gradient stops resolve against
+       the box height, so the stripe count stays constant as the height scales —
+       at 31px this is identical to the previous 4px stripe / 9px period. */
+    height: 0.65em;
     margin-block-end: 4px;
     background: repeating-linear-gradient(
-      to bottom,
-      currentColor 0 4px,
-      transparent 4px 9px
+      currentcolor 0 12.9%,
+      transparent 12.9% 29.03%
     );
   }
 
   @media (max-width: 749px) {
-    /* Mobile ornament matches desktop: same 72px width, 31px height and 4px/5px
-       gradient as the base rule, rather than growing to fill the line.
-       justify-content is required — the H1 is a flex row at flex-start, so fixed-width
-       bars would collapse the whole [bar · title · bar] group to the left edge.
-       flex-shrink stays at 1 so the bars give way on small phones instead of
-       forcing a harder wrap. */
+    /* justify-content centres the [bar · title · bar] group — the H1 is flex-start
+       by default, so without this the group collapses to the left edge. */
     #{{ section_id }} .collection-hero__h1 {
       gap: 10px;
       justify-content: center;
@@ -67,14 +64,14 @@
 
     #{{ section_id }} .collection-hero__h1::before,
     #{{ section_id }} .collection-hero__h1::after {
-      flex: 0 1 72px;
+      /* flex-basis 0 means the bars add nothing to the line's base size, so there is
+         never a deficit and the title is never asked to shrink — the bars simply take
+         what is left, up to the desktop width. A larger flex-shrink does NOT work:
+         flexbox still takes a sliver (measured 0.12px) off the title, which is enough
+         to wrap it. */
+      flex: 1 1 0;
+      max-width: 72px;
       min-width: 0;
-      height: 31px;
-      background: repeating-linear-gradient(
-        to bottom,
-        currentColor 0 4px,
-        transparent 4px 9px
-      );
     }
   }
 
