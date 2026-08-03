@@ -1,0 +1,16 @@
+{% comment %}
+  Header overrides. Rendered from layout/theme.liquid.
+
+  assets/styles.css pins the top-level menu link to var(--font-size--lg) at >= 990px,
+  which caps it at 18px and makes the header block's type_font_primary_size setting
+  inert at desktop. styles.css is upstream, so the bump lives here.
+  --font-size--2xl was tested and wraps the menu to two rows at 1111px.
+{% endcomment %}
+
+<style>
+  @media screen and (min-width: 990px) {
+    .menu-list__link {
+      font-size: var(--font-size--xl);
+    }
+  }
+</style>
