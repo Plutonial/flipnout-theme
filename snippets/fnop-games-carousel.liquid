@@ -54,6 +54,22 @@
   <script>
     (function() {
       var sectionId = '{{ fnop_carousel_id }}';
+      var lastCenterMode = null;
+
+      function cleanupSliderAttrs(sliderEl, list) {
+        sliderEl.removeAttribute('uk-slider');
+        list.style.transform = 'none';
+        list.querySelectorAll('.fnop-gc__item').forEach(function (li) {
+          li.removeAttribute('inert');
+          li.removeAttribute('aria-hidden');
+          li.removeAttribute('tabindex');
+          li.removeAttribute('role');
+          li.removeAttribute('aria-label');
+          if (li.id && li.id.indexOf('uk-slider') === 0) li.removeAttribute('id');
+          li.style.removeProperty('order');
+          li.classList.remove('uk-slide-active');
+        });
+      }
 
       function updateMode() {
         try {
@@ -77,6 +93,10 @@
           var containerW = section.querySelector('.fnop-gc__container').offsetWidth;
           var overflows = setW > containerW;
 
+          /* Determine center mode based on breakpoint */
+          var isMobile = window.innerWidth < 750;
+          var wantCenter = isMobile;
+
           /* Toggle mode class — JS only toggles state, never rebuilds markup */
           section.classList.toggle('fnop-gc--centred', !overflows);
           section.classList.toggle('fnop-gc--carousel', overflows);
@@ -91,34 +111,34 @@
           }
 
           /* In fits mode: remove uk-slider so no transform is applied.
-             In overflow mode: restore it so the carousel works. */
+             In overflow mode: restore it so the carousel works.
+             On breakpoint crossing: destroy and reinit with new center option. */
           var initSlider = function () {
             if (!window.UIkit) return false;
 
             if (overflows) {
+              var centerChanged = lastCenterMode !== null && lastCenterMode !== wantCenter;
+              var baseOpts = sliderEl.getAttribute('data-gc-slider-opts');
+              var opts = baseOpts.replace(/center:\s*(true|false)/, 'center: ' + wantCenter);
+
+              if (centerChanged && sliderEl.hasAttribute('uk-slider')) {
+                var oldSlider = UIkit.slider(sliderEl);
+                if (oldSlider) oldSlider.$destroy();
+                cleanupSliderAttrs(sliderEl, list);
+              }
+
               if (!sliderEl.hasAttribute('uk-slider')) {
-                sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
+                sliderEl.setAttribute('uk-slider', opts);
                 UIkit.slider(sliderEl);
               }
+              lastCenterMode = wantCenter;
             } else {
               var slider = UIkit.slider(sliderEl);
               if (slider) {
                 slider.$destroy();
               }
-              sliderEl.removeAttribute('uk-slider');
-              /* Clear any leftover transform */
-              list.style.transform = 'none';
-              /* Clean up leftover UIkit per-slide attributes */
-              list.querySelectorAll('.fnop-gc__item').forEach(function (li) {
-                li.removeAttribute('inert');
-                li.removeAttribute('aria-hidden');
-                li.removeAttribute('tabindex');
-                li.removeAttribute('role');
-                li.removeAttribute('aria-label');
-                if (li.id && li.id.indexOf('uk-slider') === 0) li.removeAttribute('id');
-                li.style.removeProperty('order');
-                li.classList.remove('uk-slide-active');
-              });
+              cleanupSliderAttrs(sliderEl, list);
+              lastCenterMode = null;
             }
             return true;
           };
