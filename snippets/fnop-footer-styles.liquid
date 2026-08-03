@@ -45,6 +45,15 @@
       margin-block-start: auto;
       margin-inline: auto;
     }
+
+    /* Column 4 reads as one centred unit: the logo is already centred by the
+       margin-inline: auto rule above, so centre the heading and paragraph to match.
+       `> *:last-child` is column 4 only — columns 1-3 stay left-aligned.
+       The email form already spans the full column width and needs nothing. */
+    .footer-content > *:last-child .text-block,
+    .footer-content > *:last-child .text-block > * {
+      text-align: center;
+    }
   }
 
   /* Defect 4: the integrated button inherits the primary-button radius (14px) inside a
@@ -85,6 +94,14 @@
 
     .footer-content > *:last-child > .group-block-content > .group-block:last-child {
       margin-block-start: var(--margin-xl);
+    }
+
+    /* The form spans the full stacked column (629px at innerWidth 673), which is 1.7x
+       the longest text line beside it. Cap it between the text line and the logo.
+       On narrower phones the column is under 364px and the cap simply does not bind. */
+    .footer-content .email-signup-block {
+      max-width: var(--max-width--body-narrow);
+      margin-inline: auto;
     }
   }
 </style>
