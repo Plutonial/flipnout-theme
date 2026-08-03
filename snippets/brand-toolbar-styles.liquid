@@ -91,6 +91,18 @@
   color: rgba(0, 0, 0, 0.81);
 }
 
+/* The toolbar is a row with align-items: flex-end so the controls sit on the bottom
+   rule. The select is 58.21 tall and the switch 43.99, so bottom-aligning drops the
+   switch's centre 7.11px. Centre just the switch against the flex line — the select
+   is the tallest item, so it defines the line and its centre is the line's centre.
+   Scoped to the row layout: below 750px the toolbar is a column and the cross axis
+   is horizontal, where align-self: center would indent the switch by 155px. */
+@media (min-width: 750px) {
+  .bmg__switch {
+    align-self: center;
+  }
+}
+
 @media (max-width: 749px) {
   .bmg__toolbar {
     align-items: flex-start;

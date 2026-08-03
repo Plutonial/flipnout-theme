@@ -59,8 +59,12 @@
     }
 
     #{{ section_id }} .collection-hero__h1::after {
-      flex: 0 1 26px;
-      min-width: 0;
+      /* At 26px wide with 3px bars this reads as a hamburger icon. Let it grow to fill
+         the rest of the title line instead, so it lands as a rule running to the edge.
+         min-width keeps the old size as the floor if a future category title is long
+         enough to squeeze it. */
+      flex: 1 1 auto;
+      min-width: 26px;
       height: 21px;
       background: repeating-linear-gradient(
         to bottom,
