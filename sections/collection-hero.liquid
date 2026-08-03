@@ -70,6 +70,13 @@
     display: none;
   }
 
+  {% comment %} ── Mobile: centre the stack horizontally ── {% endcomment %}
+  @media (max-width: 749px) {
+    #{{ section_id }} .collection-hero__content {
+      justify-content: center;
+    }
+  }
+
   {% comment %} ── Manufacturer line: H2 style (Oswald 700), own line ── {% endcomment %}
   #{{ section_id }} .collection-hero__mfr {
     display: block;
