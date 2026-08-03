@@ -619,12 +619,12 @@
   @media (min-width: 900px) {
     .cbg__block[data-eligible="3"] .cbg__controls { justify-content: flex-start; }
   }
-  {% comment %} ── Mobile size toggle (visible < 750px only) ── {% endcomment %}
+  {% comment %} ── Mobile size toggle (visible below the 3-col breakpoint) ── {% endcomment %}
   .cbg__size-toggle {
     display: none;
   }
 
-  @media (max-width: 749px) {
+  @media (max-width: 899px) {
     .cbg__block-toolbar {
       flex-direction: row;
       align-items: center;
