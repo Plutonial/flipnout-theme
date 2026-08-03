@@ -91,6 +91,13 @@
         "padding-block-end": 72
       }
     },
+    "latest_releases": {
+      "type": "fnop-latest-releases-carousel",
+      "settings": {
+        "heading": "Latest Releases",
+        "games_count": 5
+      }
+    },
     "product_list_fa6P9H": {
       "type": "product-list",
       "blocks": {
@@ -288,6 +295,7 @@
   },
   "order": [
     "hero_jVaWmY",
+    "latest_releases",
     "product_list_fa6P9H"
   ]
 }

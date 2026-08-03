@@ -1,0 +1,243 @@
+{%- comment -%}
+  New Arrivals — renders the N most recently released game collections' products
+  as machine cards, sorted by release_date descending, editions by edition_order ASC.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = 'fnop-new-arrivals-' | append: section.id
+  assign games_count = section.settings.games_count
+
+  comment
+    ── Collect game collections and their release dates ──
+  endcomment
+
+  assign game_cols = ''
+  assign game_dates = ''
+  assign game_total = 0
+
+  for c in collections
+    assign is_game = c.metafields.collection.is_game
+    if is_game
+      assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
+      if game_cols == ''
+        assign game_cols = c.handle
+        assign game_dates = rd
+      else
+        assign game_cols = game_cols | append: '|' | append: c.handle
+        assign game_dates = game_dates | append: '|' | append: rd
+      endif
+      assign game_total = game_total | plus: 1
+    endif
+  endfor
+
+  assign gc_arr = game_cols | split: '|'
+  assign gd_arr = game_dates | split: '|'
+
+  comment — Bubble sort by release_date descending
+  endcomment
+  assign sorted_gc = gc_arr
+  assign sorted_gd = gd_arr
+
+  if game_total > 1
+    assign n = game_total | minus: 1
+    for i in (1..n)
+      assign inner = n | minus: i
+      for j in (0..inner)
+        assign j1 = j | plus: 1
+        assign date_a = sorted_gd[j]
+        assign date_b = sorted_gd[j1]
+        if date_a < date_b
+          assign tmp_h = sorted_gc[j]
+          assign tmp_d = sorted_gd[j]
+          assign new_handles = ''
+          assign new_dates = ''
+          for k in (0..n)
+            if k == j
+              assign h_val = sorted_gc[j1]
+              assign d_val = sorted_gd[j1]
+            elsif k == j1
+              assign h_val = tmp_h
+              assign d_val = tmp_d
+            else
+              assign h_val = sorted_gc[k]
+              assign d_val = sorted_gd[k]
+            endif
+            if new_handles == ''
+              assign new_handles = h_val
+              assign new_dates = d_val
+            else
+              assign new_handles = new_handles | append: '|' | append: h_val
+              assign new_dates = new_dates | append: '|' | append: d_val
+            endif
+          endfor
+          assign sorted_gc = new_handles | split: '|'
+          assign sorted_gd = new_dates | split: '|'
+        endif
+      endfor
+    endfor
+  endif
+
+  comment
+    ── Take the first N game collections, collect their products ──
+  endcomment
+  assign limit = games_count
+  if game_total < limit
+    assign limit = game_total
+  endif
+-%}
+
+<section id="{{ section_id }}" class="fnop-na">
+  <div class="brand-section__container">
+    {%- if limit == 0 -%}
+      <p class="fnop-na__empty">No new arrivals at this time.</p>
+    {%- else -%}
+      <ul class="fnop-na__grid" role="list">
+        {%- for idx in (0..limit) -%}
+          {%- if idx >= limit -%}{%- break -%}{%- endif -%}
+          {%- assign handle = sorted_gc[idx] -%}
+          {%- assign game_col = collections[handle] -%}
+          {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+          {%- comment -%} Sort products by edition_order ASC (bubble sort) {%- endcomment -%}
+          {%- liquid
+            assign prod_handles = ''
+            assign prod_orders = ''
+            assign prod_count = 0
+
+            for p in game_col.products
+              assign eo = p.metafields.custom.edition_order.value | default: 999
+              if prod_handles == ''
+                assign prod_handles = p.handle
+                assign prod_orders = eo
+              else
+                assign prod_handles = prod_handles | append: '|' | append: p.handle
+                assign prod_orders = prod_orders | append: '|' | append: eo
+              endif
+              assign prod_count = prod_count | plus: 1
+            endfor
+
+            assign ph_arr = prod_handles | split: '|'
+            assign po_arr = prod_orders | split: '|'
+            assign s_ph = ph_arr
+            assign s_po = po_arr
+
+            if prod_count > 1
+              assign pn = prod_count | minus: 1
+              for pi in (1..pn)
+                assign p_inner = pn | minus: pi
+                for pj in (0..p_inner)
+                  assign pj1 = pj | plus: 1
+                  assign ord_a = s_po[pj] | plus: 0
+                  assign ord_b = s_po[pj1] | plus: 0
+                  if ord_a > ord_b
+                    assign tmp_ph = s_ph[pj]
+                    assign tmp_po = s_po[pj]
+                    assign new_ph = ''
+                    assign new_po = ''
+                    for pk in (0..pn)
+                      if pk == pj
+                        assign ph_val = s_ph[pj1]
+                        assign po_val = s_po[pj1]
+                      elsif pk == pj1
+                        assign ph_val = tmp_ph
+                        assign po_val = tmp_po
+                      else
+                        assign ph_val = s_ph[pk]
+                        assign po_val = s_po[pk]
+                      endif
+                      if new_ph == ''
+                        assign new_ph = ph_val
+                        assign new_po = po_val
+                      else
+                        assign new_ph = new_ph | append: '|' | append: ph_val
+                        assign new_po = new_po | append: '|' | append: po_val
+                      endif
+                    endfor
+                    assign s_ph = new_ph | split: '|'
+                    assign s_po = new_po | split: '|'
+                  endif
+                endfor
+              endfor
+            endif
+          -%}
+
+          {%- for pidx in (0..prod_count) -%}
+            {%- if pidx >= prod_count -%}{%- break -%}{%- endif -%}
+            {%- assign p_handle = s_ph[pidx] -%}
+            {%- assign product = all_products[p_handle] -%}
+            {%- if product == blank -%}{%- continue -%}{%- endif -%}
+            <li class="fnop-na__item">
+              {%- render 'brand-machine-card', product: product -%}
+            </li>
+          {%- endfor -%}
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</section>
+
+{% style %}
+  {%- render 'brand-grid-styles' -%}
+
+  #{{ section_id }} {
+    padding-block: clamp(48px, 8vw, 120px);
+  }
+
+  #{{ section_id }} .fnop-na__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 20px;
+    row-gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 900px) {
+    #{{ section_id }} .fnop-na__grid {
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 32px;
+      row-gap: 32px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    #{{ section_id }} .fnop-na__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  #{{ section_id }} .fnop-na__item {
+    min-width: 0;
+  }
+
+  #{{ section_id }} .fnop-na__empty {
+    text-align: center;
+    font-size: var(--font-size--lg);
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+    padding: 48px 0;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "New Arrivals Grid",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "games_count",
+      "label": "Number of recent games",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 5
+    }
+  ],
+  "presets": [
+    {
+      "name": "New Arrivals Grid"
+    }
+  ]
+}
+{% endschema %}

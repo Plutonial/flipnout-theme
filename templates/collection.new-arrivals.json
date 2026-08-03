@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "hero": {
+      "type": "collection-hero-gradient",
+      "settings": {}
+    },
+    "main": {
+      "type": "fnop-new-arrivals",
+      "settings": {
+        "games_count": 5
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "main"
+  ]
+}

@@ -8,7 +8,7 @@
   Slider/Lightbox. V2 may scope further if needed.
 {% endcomment %}
 
-{% if template.name == 'product' or template.suffix == 'game' or template.suffix == 'brand' %}
+{% if template.name == 'product' or template.name == 'index' or template.suffix == 'game' or template.suffix == 'brand' %}
   {{ 'fnop-uikit-components.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'fnop-uikit.min.js' | asset_url }}" defer></script>
   <script src="{{ 'fnop-uikit-icons.min.js' | asset_url }}" defer></script>
