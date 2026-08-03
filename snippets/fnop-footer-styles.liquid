@@ -104,4 +104,46 @@
       margin-inline: auto;
     }
   }
+
+  /* Social buttons: red outline and red glyph on the footer's own fill; on hover and
+     keyboard focus the outline and glyph go white and the fill does not change. */
+  .footer-content .social-icons__wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
+  }
+
+  .footer-content .social-icons__icon-wrapper {
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+  }
+
+  .footer-content .social-icons__wrapper a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgb(255 0 0);
+    border-radius: 50%;
+    background-color: var(--color-background);
+    color: rgb(255 0 0);
+    transition: color 0.18s ease, border-color 0.18s ease;
+  }
+
+  .footer-content .social-icons__wrapper a:hover,
+  .footer-content .social-icons__wrapper a:focus-visible {
+    border-color: var(--color-foreground);
+    color: var(--color-foreground);
+  }
+
+  .footer-content .social-icons__icon {
+    width: var(--icon-size-lg);
+    height: var(--icon-size-lg);
+  }
+
+  /* SVG paths have no fill="currentColor" — force inheritance from the anchor's color. */
+  .footer-content .social-icons__icon path {
+    fill: currentColor;
+  }
 </style>

@@ -372,12 +372,23 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
+            },
+            "social_col4": {
+              "type": "social-links",
+              "settings": {
+                "facebook_url": "https://www.facebook.com/flipnoutpinball/",
+                "instagram_url": "https://www.instagram.com/flipnoutpinball/",
+                "twitter_url": "https://x.com/flipnoutpinball",
+                "youtube_url": "https://www.youtube.com/@FlipNOutPinball",
+                "tiktok_url": "https://www.tiktok.com/@flipnoutpinball"
+              }
             }
           },
           "block_order": [
             "text_pF6rVi",
             "text_HafH7P",
             "email-signup_HafH7P",
+            "social_col4",
             "group_logo_link"
           ]
         }
