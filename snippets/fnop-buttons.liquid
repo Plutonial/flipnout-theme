@@ -1,0 +1,42 @@
+{% comment %}
+  Shared button rule for the four 44px outline buttons used across brand and
+  category grids.  Rendered once from layout/theme.liquid.
+
+  Each call site keeps its own `display` and margins — the shared rule covers
+  appearance only.
+{% endcomment %}
+
+<style>
+  .fnop-btn,
+  .cbg__more,
+  .cbg__all,
+  .bmg__more,
+  .brand-about__toggle {
+    align-items: center;
+    justify-content: center;
+    min-height: var(--minimum-touch-target);
+    line-height: normal;
+    padding: 12px 28px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-family: var(--font-body--family);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .fnop-btn:hover,
+  .cbg__more:hover,
+  .cbg__all:hover,
+  .bmg__more:hover,
+  .brand-about__toggle:hover {
+    background-color: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+</style>

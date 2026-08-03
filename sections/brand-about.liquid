@@ -265,25 +265,8 @@
       margin-top: 24px;
     }
 
-    #{{ section_id }} .brand-about__toggle {
-      font-size: var(--font-size--sm);
-      font-weight: 600;
-      line-height: normal;
-      text-transform: uppercase;
-      letter-spacing: 0.56px;
-      padding: 12px 28px;
-      border-radius: 8px;
-      border: 1.11px solid rgb(0 0 0 / 0.81);
-      background: transparent;
-      color: rgb(0 0 0 / 0.81);
-      min-height: 44px;
-      cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-    }
-
-    #{{ section_id }} .brand-about__toggle:hover {
-      background: rgb(var(--color-foreground-rgb));
-      color: rgb(var(--color-background-rgb));
+    .brand-about__toggle {
+      display: block;
     }
 
     {%- render 'fnop-section-heading-mobile' -%}
