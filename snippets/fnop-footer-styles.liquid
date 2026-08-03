@@ -21,8 +21,59 @@
       justify-content: space-between;
     }
 
+    /* fix-3: base.css puts padding-block on every <summary>, which drops the two
+       menu-block headings 11.2px below the text-block headings. */
     .footer-content .menu__heading {
       padding-block: 0;
+    }
+
+    /* Defect 1: blocks/menu.liquid forces .menu { width: 100% }, splitting the two
+       manufacturer sub-columns 50/50 and wrapping "Chicago Gaming Company".
+       Sizing them to content costs no extra width (192.1 + 16 + 167.7 = 375.8). */
+    .footer-content .layout-panel-flex--row > .menu {
+      width: auto;
+    }
+
+    /* Defects 2 + 3: push the logo to the bottom of column 4 (the grid has already
+       stretched the column to the tallest column's height) and centre it horizontally.
+       The `> *:last-child >` step restricts this to column 4 — see the note below. */
+    .footer-content > *:last-child > .group-block-content > .group-block:last-child {
+      margin-block-start: auto;
+      margin-inline: auto;
+    }
+  }
+
+  /* Defect 4: the integrated button inherits the primary-button radius (14px) inside a
+     100px pill field. --border-radius on the button already carries the field's radius. */
+  .footer-content .email-signup__button--integrated {
+    border-radius: var(--border-radius);
+  }
+
+  /* Defects 5 + 6: centre the stacked footer and separate the form from the logo.
+     Every declaration sets the real property, not the inline custom property. */
+  @media screen and (max-width: 749px) {
+    .footer-content {
+      text-align: center;
+    }
+
+    .footer-content .text-block {
+      text-align: center;
+    }
+
+    .footer-content .layout-panel-flex--column {
+      align-items: center;
+    }
+
+    .footer-content .layout-panel-flex--row {
+      justify-content: center;
+    }
+
+    .footer-content .menu__heading {
+      justify-content: center;
+    }
+
+    .footer-content > *:last-child > .group-block-content > .group-block:last-child {
+      margin-block-start: var(--margin-xl);
     }
   }
 </style>
