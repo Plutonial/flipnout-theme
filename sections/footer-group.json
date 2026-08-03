@@ -14,82 +14,21 @@
     "footer": {
       "type": "footer",
       "blocks": {
-        "group_col1": {
-          "type": "group",
-          "name": "Logo & Departments",
+        "menu_departments": {
+          "type": "menu",
           "settings": {
-            "content_direction": "column",
-            "vertical_on_mobile": true,
-            "horizontal_alignment": "flex-start",
-            "vertical_alignment": "flex-start",
-            "align_baseline": false,
-            "horizontal_alignment_flex_direction_column": "flex-start",
-            "vertical_alignment_flex_direction_column": "flex-start",
-            "gap": 16,
-            "width": "fill",
-            "custom_width": 100,
-            "width_mobile": "fill",
-            "custom_width_mobile": 100,
-            "height": "fit",
-            "custom_height": 100,
-            "inherit_color_scheme": true,
-            "color_scheme": "",
-            "background_media": "none",
-            "video_position": "cover",
-            "background_image_position": "cover",
-            "border": "none",
-            "border_width": 1,
-            "border_opacity": 100,
-            "border_radius": 0,
-            "toggle_overlay": false,
-            "overlay_color": "#00000026",
-            "overlay_style": "solid",
-            "gradient_direction": "to top",
-            "link": "",
-            "open_in_new_tab": false,
-            "placeholder": "",
+            "menu": "footer-departments",
+            "heading": "Shop",
+            "menu_spacing": 12,
+            "show_as_accordion": false,
+            "accordion_icon": "caret",
+            "accordion_dividers": false,
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
             "padding-inline-end": 0
           },
-          "blocks": {
-            "logo_col1": {
-              "type": "logo",
-              "settings": {
-                "unit": "pixel",
-                "pixel_height": 48,
-                "custom_mobile_size": false,
-                "unit_mobile": "pixel",
-                "pixel_height_mobile": 120,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
-            },
-            "menu_departments": {
-              "type": "menu",
-              "settings": {
-                "menu": "footer-departments",
-                "heading": "Shop by Department",
-                "menu_spacing": 12,
-                "show_as_accordion": false,
-                "accordion_icon": "caret",
-                "accordion_dividers": false,
-                "padding-block-start": 0,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
-            }
-          },
-          "block_order": [
-            "logo_col1",
-            "menu_departments"
-          ]
+          "blocks": {}
         },
         "group_col2": {
           "type": "group",
@@ -134,11 +73,11 @@
             "text_mfr_heading": {
               "type": "text",
               "settings": {
-                "text": "<p>Shop by Manufacturer</p>",
+                "text": "<p>Brands</p>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",
-                "type_preset": "heading",
+                "type_preset": "h3",
                 "font": "var(--font-body--family)",
                 "font_size": "",
                 "line_height": "normal",
@@ -296,6 +235,66 @@
             "padding-inline-end": 0
           },
           "blocks": {
+            "group_logo_link": {
+              "type": "group",
+              "name": "Logo link",
+              "settings": {
+                "content_direction": "column",
+                "vertical_on_mobile": true,
+                "horizontal_alignment": "flex-start",
+                "vertical_alignment": "flex-start",
+                "align_baseline": false,
+                "horizontal_alignment_flex_direction_column": "flex-start",
+                "vertical_alignment_flex_direction_column": "flex-start",
+                "gap": 0,
+                "width": "fit",
+                "custom_width": 100,
+                "width_mobile": "fit",
+                "custom_width_mobile": 100,
+                "height": "fit",
+                "custom_height": 100,
+                "inherit_color_scheme": true,
+                "color_scheme": "",
+                "background_media": "none",
+                "video_position": "cover",
+                "background_image_position": "cover",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_radius": 0,
+                "toggle_overlay": false,
+                "overlay_color": "#00000026",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "link": "/",
+                "open_in_new_tab": false,
+                "placeholder": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {
+                "logo_col1": {
+                  "type": "logo",
+                  "settings": {
+                    "unit": "pixel",
+                    "pixel_height": 48,
+                    "custom_mobile_size": false,
+                    "unit_mobile": "pixel",
+                    "pixel_height_mobile": 120,
+                    "padding-block-start": 0,
+                    "padding-block-end": 0,
+                    "padding-inline-start": 0,
+                    "padding-inline-end": 0
+                  },
+                  "blocks": {}
+                }
+              },
+              "block_order": [
+                "logo_col1"
+              ]
+            },
             "text_pF6rVi": {
               "type": "text",
               "name": "Heading",
@@ -392,6 +391,7 @@
             }
           },
           "block_order": [
+            "group_logo_link",
             "text_pF6rVi",
             "text_HafH7P",
             "email-signup_HafH7P",
@@ -400,7 +400,7 @@
         }
       },
       "block_order": [
-        "group_col1",
+        "menu_departments",
         "group_col2",
         "menu_explore",
         "group_col4"
