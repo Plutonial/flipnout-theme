@@ -37,20 +37,16 @@
   #{{ section_id }} .collection-hero__h1::after {
     content: '';
     flex: 0 0 72px;
-    /* Height follows the font so the ornament is never taller than the letters.
-       Cap height for this face measures 0.831em, so 0.65em is always ~78% of it,
-       at any font size and any viewport. Percentage gradient stops resolve against
-       the box height, so the stripe count stays constant as the height scales —
-       at 31px this is identical to the previous 4px stripe / 9px period. */
-    height: 0.65em;
-    /* Baseline-aligned like a glyph: this offset puts the bar's centre on the optical
-       centre of the capitals. Caps for this face measure 0.820em ascent / 0.011em
-       descent, so their centre is 0.4045em above the baseline; the bar is 0.65em tall,
-       so its bottom sits 0.4045 - 0.325 = 0.0795em up. In em, so it never needs
-       re-tuning per breakpoint. Measured error: -0.01px at 32, 40 and 48px.
-       Do NOT replace this with align-self: center — that centres on the line box, not
-       the capitals, and is 3-6px off, worse as the font grows. */
-    margin-block-end: 0.08em;
+    /* Span the visible height of the type. actualBoundingBoxAscent for this face is
+       0.820em, so with align-items: baseline and no bottom margin the bar runs from
+       the baseline to the cap top — the same band the capitals occupy. Measured top
+       edge within 0.02px of the cap top from 32px to 64px, and 98.6-98.7% of the
+       cap height, so it still never exceeds the letters. */
+    height: 0.82em;
+    /* Zero: the bar sits on the baseline with the capitals. The 0.08em offset from
+       P35 existed to optically centre a bar that was shorter than the caps; a bar
+       that spans them needs no offset. Do not reinstate it. */
+    margin-block-end: 0;
     background: repeating-linear-gradient(
       currentcolor 0 12.9%,
       transparent 12.9% 29.03%
