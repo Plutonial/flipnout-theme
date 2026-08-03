@@ -129,57 +129,6 @@
     margin-top: 48px;
   }
 
-  [data-template="collection.category"] {
-    --cat-title-lines: 3;
-  }
-
-  [data-template="collection.category"] .product-card,
-  [data-template="collection.category"] .product-card__content {
-    height: 100%;
-  }
-
-  [data-template="collection.category"] .product-card__content {
-    background: var(--color-surface-cream);
-    border-radius: var(--radius-sm, 8px);
-    padding: 12px;
-  }
-
-  [data-template="collection.category"] .card-gallery {
-    border-radius: calc(var(--radius-sm, 8px) - 12px);
-    overflow: hidden;
-    background: transparent;
-  }
-
-  [data-template="collection.category"] .product-card__content > a.contents > .text-block p {
-    display: -webkit-box;
-    -webkit-line-clamp: var(--cat-title-lines);
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  [data-template="collection.category"] product-price {
-    margin-top: auto;
-  }
-
-  [data-template="collection.category"] .product-card h3.h4 {
-    font-family: var(--font-accent--family, var(--font-h1--family));
-    font-size: var(--font-size--xl);
-  }
-
-  [data-template="collection.category"] .product-card .price {
-    font-family: var(--font-body--family);
-    font-size: var(--font-size--xl);
-    font-weight: 500;
-  }
-
-  {% comment %} ── Sold-out badge: match .bmc__badge appearance ── {% endcomment %}
-  [data-template="collection.category"] .product-badges__badge {
-    font-size: var(--font-size--2xs);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    line-height: 1;
-    padding: 4px 10px;
-  }
 {% endstyle %}
 
 {% schema %}
