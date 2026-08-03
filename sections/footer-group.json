@@ -279,7 +279,7 @@
                   "type": "logo",
                   "settings": {
                     "unit": "pixel",
-                    "pixel_height": 48,
+                    "pixel_height": 72,
                     "custom_mobile_size": false,
                     "unit_mobile": "pixel",
                     "pixel_height_mobile": 120,
@@ -372,30 +372,13 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
-            },
-            "menu_about": {
-              "type": "menu",
-              "settings": {
-                "menu": "footer-about",
-                "heading": "Company",
-                "menu_spacing": 12,
-                "show_as_accordion": false,
-                "accordion_icon": "caret",
-                "accordion_dividers": false,
-                "padding-block-start": 16,
-                "padding-block-end": 0,
-                "padding-inline-start": 0,
-                "padding-inline-end": 0
-              },
-              "blocks": {}
             }
           },
           "block_order": [
             "group_logo_link",
             "text_pF6rVi",
             "text_HafH7P",
-            "email-signup_HafH7P",
-            "menu_about"
+            "email-signup_HafH7P"
           ]
         }
       },
@@ -421,7 +404,7 @@
           "type": "footer-copyright",
           "settings": {
             "show_powered_by": true,
-            "font_size": "0.75rem",
+            "font_size": "0.875rem",
             "case": "none"
           },
           "blocks": {}
@@ -429,7 +412,7 @@
         "policy_list": {
           "type": "footer-policy-list",
           "settings": {
-            "font_size": "0.75rem",
+            "font_size": "0.875rem",
             "case": "none"
           },
           "blocks": {}
@@ -462,7 +445,7 @@
       "settings": {
         "section_width": "page-width",
         "gap": 24,
-        "divider_thickness": 1,
+        "divider_thickness": 0,
         "color_scheme": "scheme-3",
         "padding-block-start": 12,
         "padding-block-end": 16
