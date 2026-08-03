@@ -437,6 +437,15 @@
             <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
+
+          <div class="cbg__size-toggle">
+            <button type="button" class="cbg__size-btn" aria-pressed="true" aria-label="One column" data-cols="1">
+              <svg viewBox="0 0 18 18"><rect x="3" y="2" width="12" height="14" rx="1.5"/></svg>
+            </button>
+            <button type="button" class="cbg__size-btn" aria-pressed="false" aria-label="Two columns" data-cols="2">
+              <svg viewBox="0 0 18 18"><rect x="1.5" y="2" width="6" height="14" rx="1.5"/><rect x="10.5" y="2" width="6" height="14" rx="1.5"/></svg>
+            </button>
+          </div>
         </div>
 
         <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}">
@@ -478,7 +487,7 @@
 
   .cbg__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--cbg-mobile-cols, 1), 1fr);
     column-gap: 20px;
     row-gap: 20px;
     list-style: none;
@@ -494,26 +503,15 @@
     }
   }
 
-  @media (min-width: 1200px) {
-    .cbg__grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-
   .cbg__item { min-width: 0; }
   .cbg__item--beyond { display: none; }
 
   {% comment %} Pre-cut: 2 rows. N = 2 × columns + 1. {% endcomment %}
-  .cbg--precut .cbg__item:nth-child(n + 5) { display: none; }              /* 2 cols × 2 = 4  */
+  .cbg--precut .cbg__item:nth-child(n + 3) { display: none; }              /* 1 col × 2 = 2   */
 
   @media (min-width: 900px) {
-    .cbg--precut .cbg__item:nth-child(n + 5)  { display: list-item; }
+    .cbg--precut .cbg__item:nth-child(n + 3)  { display: list-item; }
     .cbg--precut .cbg__item:nth-child(n + 7)  { display: none; }           /* 3 cols × 2 = 6  */
-  }
-
-  @media (min-width: 1200px) {
-    .cbg--precut .cbg__item:nth-child(n + 7)  { display: list-item; }
-    .cbg--precut .cbg__item:nth-child(n + 9)  { display: none; }           /* 4 cols × 2 = 8  */
   }
 
   .cbg__controls {
@@ -621,8 +619,56 @@
   @media (min-width: 900px) {
     .cbg__block[data-eligible="3"] .cbg__controls { justify-content: flex-start; }
   }
-  @media (min-width: 1200px) {
-    .cbg__block[data-eligible="4"] .cbg__controls { justify-content: flex-start; }
+  {% comment %} ── Mobile size toggle (visible < 750px only) ── {% endcomment %}
+  .cbg__size-toggle {
+    display: none;
+  }
+
+  @media (max-width: 749px) {
+    .cbg__block-toolbar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cbg__size-toggle {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .cbg__size-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid rgb(var(--color-foreground-rgb) / 0.3);
+      border-radius: var(--radius-sm, 6px);
+      background: transparent;
+      color: rgb(var(--color-foreground-rgb) / 0.6);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .cbg__size-btn[aria-pressed="true"] {
+      background: rgb(var(--color-foreground-rgb));
+      color: rgb(var(--color-background-rgb));
+      border-color: rgb(var(--color-foreground-rgb));
+    }
+
+    .cbg__size-btn:focus-visible {
+      outline: 2px solid rgb(var(--color-foreground-rgb));
+      outline-offset: 2px;
+    }
+
+    .cbg__size-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
   }
 {% endstyle %}
 
@@ -634,7 +680,6 @@
         this.blocks = Array.from(this.querySelectorAll('.cbg__block'));
 
         this.breakpoints = [
-          window.matchMedia('(min-width: 1200px)'),
           window.matchMedia('(min-width: 900px)')
         ];
         this.breakpoints.forEach(mq => mq.addEventListener('change', () => this.updateAll()));
@@ -663,6 +708,20 @@
               }
             });
           }
+
+          const sizeToggle = block.querySelector('.cbg__size-toggle');
+          if (sizeToggle) {
+            sizeToggle.addEventListener('click', (e) => {
+              const btn = e.target.closest('.cbg__size-btn');
+              if (!btn) return;
+              const cols = btn.dataset.cols;
+              const grid = block.querySelector('.cbg__grid');
+              if (grid) grid.style.setProperty('--cbg-mobile-cols', cols);
+              sizeToggle.querySelectorAll('.cbg__size-btn').forEach(b => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+              });
+            });
+          }
         });
 
         this.updateAll();
@@ -675,7 +734,7 @@
 
       getColumns(grid) {
         const t = getComputedStyle(grid).gridTemplateColumns;
-        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
       }
 
       getBlockOOS(block) {
