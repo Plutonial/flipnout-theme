@@ -1,0 +1,93 @@
+{% comment %}
+  Back-to-top floating button.
+  Rendered from layout/theme.liquid before </body>.
+  Appears after scrolling past one viewport height; hidden (and untabbable) at the top.
+{% endcomment %}
+
+<style>
+  .fnop-btt {
+    position: fixed;
+    inset-block-end: var(--page-margin);
+    inset-inline-end: var(--page-margin);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 0, 0, 0.9);
+    color: var(--color-surface-cream, #F7F2EA);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .fnop-btt[data-visible="true"] {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .fnop-btt:focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 2px;
+  }
+
+  .fnop-btt svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fnop-btt {
+      transition: none;
+    }
+  }
+</style>
+
+<button
+  type="button"
+  class="fnop-btt"
+  aria-label="{{ 'accessibility.back_to_top' | t }}"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+</button>
+
+<script>
+  (function () {
+    var btn = document.querySelector('.fnop-btt');
+    if (!btn) return;
+
+    var ticking = false;
+
+    function update() {
+      var show = window.scrollY > window.innerHeight;
+      btn.setAttribute('data-visible', show ? 'true' : 'false');
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    btn.addEventListener('click', function () {
+      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' });
+    });
+
+    update();
+  })();
+</script>

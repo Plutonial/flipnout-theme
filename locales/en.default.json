@@ -47,6 +47,7 @@
     "search_results_no_results": "No results found for \"{{ query }}\"",
     "skip_to_product_info": "Skip to product information",
     "skip_to_results_list": "Skip to results list",
+    "back_to_top": "Back to top",
     "skip_to_text": "Skip to content",
     "slide_status": "Slide {{ index }} of {{ length }}",
     "slideshow": "Slideshow",
