@@ -50,26 +50,30 @@
   }
 
   @media (max-width: 749px) {
+    /* Mobile ornament matches desktop: same 72px width, 31px height and 4px/5px
+       gradient as the base rule, rather than growing to fill the line.
+       justify-content is required — the H1 is a flex row at flex-start, so fixed-width
+       bars would collapse the whole [bar · title · bar] group to the left edge.
+       flex-shrink stays at 1 so the bars give way on small phones instead of
+       forcing a harder wrap. */
     #{{ section_id }} .collection-hero__h1 {
       gap: 10px;
+      justify-content: center;
     }
 
-    /* Mobile ornament: a rule on BOTH sides of a centred title, each running out to
-       the page margin. Both pseudo-elements are flex items in the H1 with the title
-       between them, so equal flex shares centre the title without touching text-align. */
     #{{ section_id }} .collection-hero__h1::before {
       display: block;
     }
 
     #{{ section_id }} .collection-hero__h1::before,
     #{{ section_id }} .collection-hero__h1::after {
-      flex: 1 1 0;
+      flex: 0 1 72px;
       min-width: 0;
-      height: 21px;
+      height: 31px;
       background: repeating-linear-gradient(
         to bottom,
-        currentColor 0 3px,
-        transparent 3px 7px
+        currentColor 0 4px,
+        transparent 4px 9px
       );
     }
   }
