@@ -1,0 +1,20 @@
+{% comment %}
+  Mobile side gutter for the default collection / search product grid.
+  Rendered from layout/theme.liquid.
+
+  Horizon's main-collection grid carries no inline padding at any level, so on mobile
+  the cards run flush to the screen edge. At desktop the grid is held in by
+  --page-width, which is why this only shows below 750px. The full_width_on_mobile
+  setting is not the lever — its class has no effect here (see the P30 brief).
+
+  main-collection.liquid is upstream and must not be edited, so the gutter is applied
+  from here.
+{% endcomment %}
+
+<style>
+  @media screen and (max-width: 749px) {
+    .main-collection-grid {
+      padding-inline: var(--page-margin);
+    }
+  }
+</style>

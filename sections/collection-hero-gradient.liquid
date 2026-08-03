@@ -54,17 +54,17 @@
       gap: 10px;
     }
 
+    /* Mobile ornament: a rule on BOTH sides of a centred title, each running out to
+       the page margin. Both pseudo-elements are flex items in the H1 with the title
+       between them, so equal flex shares centre the title without touching text-align. */
     #{{ section_id }} .collection-hero__h1::before {
-      display: none;
+      display: block;
     }
 
+    #{{ section_id }} .collection-hero__h1::before,
     #{{ section_id }} .collection-hero__h1::after {
-      /* At 26px wide with 3px bars this reads as a hamburger icon. Let it grow to fill
-         the rest of the title line instead, so it lands as a rule running to the edge.
-         min-width keeps the old size as the floor if a future category title is long
-         enough to squeeze it. */
-      flex: 1 1 auto;
-      min-width: 26px;
+      flex: 1 1 0;
+      min-width: 0;
       height: 21px;
       background: repeating-linear-gradient(
         to bottom,
