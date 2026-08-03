@@ -15,6 +15,17 @@
 {% endcomment %}
 
 <style>
+  /* Defect 1 (fix-4) + tablet: blocks/menu.liquid forces .menu { width: 100% }, which
+     splits the two manufacturer sub-columns 50/50 and wraps "Chicago Gaming Company"
+     (192.1px intrinsic). They need 192.1 + 16 + 167.7 = 375.8px and the column is
+     375.8px at desktop / 393.9px at tablet, so both fit. Below 750px the row group
+     flips to a column and must keep the upstream full-width behaviour. */
+  @media screen and (min-width: 750px) {
+    .footer-content .layout-panel-flex--row > .menu {
+      width: auto;
+    }
+  }
+
   @media screen and (min-width: 990px) {
     .section > .footer-content {
       grid-template-columns: repeat(4, auto);
@@ -25,13 +36,6 @@
        menu-block headings 11.2px below the text-block headings. */
     .footer-content .menu__heading {
       padding-block: 0;
-    }
-
-    /* Defect 1: blocks/menu.liquid forces .menu { width: 100% }, splitting the two
-       manufacturer sub-columns 50/50 and wrapping "Chicago Gaming Company".
-       Sizing them to content costs no extra width (192.1 + 16 + 167.7 = 375.8). */
-    .footer-content .layout-panel-flex--row > .menu {
-      width: auto;
     }
 
     /* Defects 2 + 3: push the logo to the bottom of column 4 (the grid has already
@@ -57,6 +61,13 @@
     }
 
     .footer-content .text-block {
+      text-align: center;
+    }
+
+    /* The theme re-applies the block's own alignment to the wrapper's children via
+       `.text-block > * { text-align: var(--text-align) }`, so centring only the wrapper
+       is not enough — inheritance loses to a rule that targets the child directly. */
+    .footer-content .text-block > * {
       text-align: center;
     }
 
