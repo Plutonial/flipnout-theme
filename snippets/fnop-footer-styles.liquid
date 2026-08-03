@@ -113,12 +113,12 @@
     gap: var(--gap-sm);
   }
 
-  .footer-content .social-icons__icon-wrapper {
+  .footer-content .social-icons__wrapper .social-icons__icon-wrapper {
     width: var(--minimum-touch-target);
     height: var(--minimum-touch-target);
   }
 
-  .footer-content .social-icons__wrapper a {
+  .footer-content .social-icons__wrapper .social-icons__icon-wrapper a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -131,8 +131,8 @@
     transition: color 0.18s ease, border-color 0.18s ease;
   }
 
-  .footer-content .social-icons__wrapper a:hover,
-  .footer-content .social-icons__wrapper a:focus-visible {
+  .footer-content .social-icons__wrapper .social-icons__icon-wrapper a:hover,
+  .footer-content .social-icons__wrapper .social-icons__icon-wrapper a:focus-visible {
     border-color: var(--color-foreground);
     color: var(--color-foreground);
   }
@@ -145,5 +145,10 @@
   /* SVG paths have no fill="currentColor" — force inheritance from the anchor's color. */
   .footer-content .social-icons__icon path {
     fill: currentColor;
+  }
+
+  /* Centre the social row in column 4, matching the logo's margin-inline: auto. */
+  .footer-content > *:last-child .social-icons__wrapper {
+    margin-inline: auto;
   }
 </style>
