@@ -139,6 +139,12 @@
     fill: currentColor;
   }
 
+  /* Breathing room between the email form and the logo group.
+     var(--margin-3xl) = 28px + the column's own 6px row-gap = 34px optical gap. */
+  .footer-content > *:last-child > .group-block-content > .group-block {
+    margin-block-start: var(--margin-3xl);
+  }
+
   /* Centre the social row in column 4, matching the logo's margin-inline: auto. */
   .footer-content > *:last-child .social-icons__wrapper {
     margin-inline: auto;
