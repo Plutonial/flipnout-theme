@@ -3,6 +3,7 @@
 
   Params:
     product    — the product object
+    sizes      — (optional) sizes attribute override
 {%- endcomment -%}
 
 {%- liquid
@@ -11,16 +12,19 @@
     assign is_sold_out = true
   endif
   assign display_title = product.title | remove_first: ' Pinball Machine'
+  unless sizes
+    assign sizes = '(min-width: 1532px) 312px, (min-width: 1200px) calc(25vw - 71px), (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)'
+  endunless
 -%}
 
 <a class="bmc" href="{{ product.url }}" aria-label="{{ product.title }}">
   <div class="bmc__poster">
     {%- if product.featured_media -%}
-      {{ product.featured_media | image_url: width: 800 | image_tag:
+      {{ product.featured_media | image_url: width: 1600 | image_tag:
         loading: 'lazy',
         class: 'bmc__img',
-        sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, 50vw',
-        widths: '200,400,600,800',
+        sizes: sizes,
+        widths: '220,300,440,600,880,1200,1600',
         alt: product.title
       }}
     {%- else -%}

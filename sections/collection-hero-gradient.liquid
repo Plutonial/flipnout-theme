@@ -160,6 +160,11 @@
     display: revert;
   }
 
+  {% comment %} ── Hide Horizon's compact zoom-out block (duplicates the normal title) ── {% endcomment %}
+  [data-template="collection.category"] ul[product-grid-view='zoom-out'] .product-grid-view-zoom-out--details {
+    display: none;
+  }
+
   [data-template="collection.category"] [product-grid-view='zoom-out'] .card-gallery > .product-badges {
     display: revert;
   }

@@ -26,7 +26,7 @@
         {%- if accessory == blank -%}{%- continue -%}{%- endif -%}
         <li class="bacc__item">
           <div class="bmc--square">
-            {%- render 'brand-machine-card', product: accessory -%}
+            {%- render 'brand-machine-card', product: accessory, sizes: '(min-width: 1532px) 238px, (min-width: 1200px) calc(20vw - 68px), (min-width: 900px) calc(25vw - 48px), (min-width: 750px) calc(33.33vw - 56px), calc(50vw - 56px)' -%}
           </div>
         </li>
       {%- endfor -%}

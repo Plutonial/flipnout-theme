@@ -143,7 +143,7 @@
                   endif
                 -%}
 
-                <tr{% if forloop.index > 12 %} hidden{% endif %}>
+                <tr>
                   <td><a href="{{ game_col.url }}">{{ game_name }}</a></td>
                   <td>{{ rd_display | default: '—' }}</td>
                   <td>
@@ -164,11 +164,6 @@
               {%- endfor -%}
             </tbody>
           </table>
-          {%- if games_count > 12 -%}
-            <div class="brand-about__controls">
-              <button class="brand-about__toggle" type="button" aria-expanded="false" aria-controls="{{ section_id }}-table">Show All</button>
-            </div>
-          {%- endif -%}
         </div>
       {%- endif -%}
     </div>
@@ -298,12 +293,27 @@
       const CAP = 12;
       const section = document.getElementById('{{ section_id }}');
       if (!section) return;
-      const btn = section.querySelector('.brand-about__toggle');
-      if (!btn) return;
-      const tbody = section.querySelector('.brand-about__table tbody');
+      const table = section.querySelector('.brand-about__table');
+      if (!table) return;
+      const tbody = table.querySelector('tbody');
       if (!tbody) return;
       const rows = Array.from(tbody.querySelectorAll('tr'));
-      if (rows.length <= CAP) { btn.parentElement.remove(); return; }
+      if (rows.length <= CAP) return;
+
+      /* Hide overflow rows */
+      rows.forEach(function(tr, i) { if (i >= CAP) tr.hidden = true; });
+
+      /* Inject toggle button */
+      const wrap = document.createElement('div');
+      wrap.className = 'brand-about__controls';
+      const btn = document.createElement('button');
+      btn.className = 'brand-about__toggle';
+      btn.type = 'button';
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', table.id);
+      btn.textContent = 'Show All';
+      wrap.appendChild(btn);
+      table.parentNode.insertBefore(wrap, table.nextSibling);
 
       btn.addEventListener('click', function() {
         const expanded = btn.getAttribute('aria-expanded') === 'true';
