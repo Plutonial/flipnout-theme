@@ -417,7 +417,7 @@
     <section class="cbg__block" id="cbg-block-{{ bh }}" data-brand="{{ brand.handle }}" data-total="{{ total }}" data-eligible="{{ total }}">
       <div class="brand-section__container">
         <div class="cbg__brandbar">
-          <h2 class="brand-section__heading cbg__heading">{{ brand.title }}</h2>
+          <h2 class="brand-section__heading cbg__heading"><a class="cbg__heading-link" href="{{ brand.url }}">{{ brand.title }}</a></h2>
         </div>
 
         <div class="bmg__toolbar cbg__block-toolbar">
@@ -534,6 +534,7 @@
     align-items: center;
     justify-content: center;
     min-height: 44px;
+    line-height: normal;
     padding: 12px 28px;
     border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
     border-radius: var(--radius-sm, 8px);
@@ -573,13 +574,48 @@
     margin: 0;
   }
 
+  {% comment %} ── Heading links with animated red rule ── {% endcomment %}
+  .cbg__heading-link {
+    display: inline-block;
+    position: relative;
+    color: inherit;
+    text-decoration: none;
+    padding-bottom: 12px;
+  }
+
+  .cbg__heading-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 56px;
+    height: 4px;
+    background: rgb(255 0 0 / 0.9);
+    transition: width 240ms ease-out;
+  }
+
+  .cbg__heading-link:hover::after,
+  .cbg__heading-link:focus-visible::after {
+    width: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cbg__heading-link::after {
+      transition: none;
+    }
+  }
+
   {% comment %} ── TASK 3: Alternating bands ── {% endcomment %}
   .cbg__block:nth-of-type(even) { background: var(--color-surface-cream); }
   .cbg__block:nth-of-type(even) .bmc { background: rgb(var(--color-background-rgb)); }
 
-  {% comment %} ── TASK 3: Per-block toolbar spacing ── {% endcomment %}
+  {% comment %} ── Per-block toolbar spacing ── {% endcomment %}
   .cbg__block-toolbar {
     margin-bottom: 24px;
+  }
+
+  .cbg__switch {
+    align-self: center;
   }
 
   {% comment %} ── Left-align controls for short grids ── {% endcomment %}
