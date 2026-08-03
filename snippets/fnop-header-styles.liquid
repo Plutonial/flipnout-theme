@@ -13,4 +13,15 @@
       font-size: var(--font-size--xl);
     }
   }
+
+  /* The mega-menu panel is a 3-track grid whose tiles are a fixed 280px each and never
+     yield, so below the width at which the page reaches its full 1440px content box
+     (1440 + 2 x 40px page margin = 1520px) the two link columns lose width and their
+     text spills underneath the tiles — 11 brand links are unclickable at 990px.
+     Drop the tiles below that width and give the space back to the links. */
+  @media screen and (max-width: 1519px) {
+    .mega-menu-tiles {
+      display: none;
+    }
+  }
 </style>
