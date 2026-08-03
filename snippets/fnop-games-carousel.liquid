@@ -54,7 +54,6 @@
   <script>
     (function() {
       var sectionId = '{{ fnop_carousel_id }}';
-      var lastCenterMode = null;
 
       function cleanupSliderAttrs(sliderEl, list) {
         sliderEl.removeAttribute('uk-slider');
@@ -93,10 +92,6 @@
           var containerW = section.querySelector('.fnop-gc__container').offsetWidth;
           var overflows = setW > containerW;
 
-          /* Determine center mode based on breakpoint */
-          var isMobile = window.innerWidth < 750;
-          var wantCenter = isMobile;
-
           /* Toggle mode class — JS only toggles state, never rebuilds markup */
           section.classList.toggle('fnop-gc--centred', !overflows);
           section.classList.toggle('fnop-gc--carousel', overflows);
@@ -111,34 +106,21 @@
           }
 
           /* In fits mode: remove uk-slider so no transform is applied.
-             In overflow mode: restore it so the carousel works.
-             On breakpoint crossing: destroy and reinit with new center option. */
+             In overflow mode: restore it so the carousel works. */
           var initSlider = function () {
             if (!window.UIkit) return false;
 
             if (overflows) {
-              var centerChanged = lastCenterMode !== null && lastCenterMode !== wantCenter;
-              var baseOpts = sliderEl.getAttribute('data-gc-slider-opts');
-              var opts = baseOpts.replace(/center:\s*(true|false)/, 'center: ' + wantCenter);
-
-              if (centerChanged && sliderEl.hasAttribute('uk-slider')) {
-                var oldSlider = UIkit.slider(sliderEl);
-                if (oldSlider) oldSlider.$destroy();
-                cleanupSliderAttrs(sliderEl, list);
-              }
-
               if (!sliderEl.hasAttribute('uk-slider')) {
-                sliderEl.setAttribute('uk-slider', opts);
+                sliderEl.setAttribute('uk-slider', sliderEl.getAttribute('data-gc-slider-opts'));
                 UIkit.slider(sliderEl);
               }
-              lastCenterMode = wantCenter;
             } else {
               var slider = UIkit.slider(sliderEl);
               if (slider) {
                 slider.$destroy();
               }
               cleanupSliderAttrs(sliderEl, list);
-              lastCenterMode = null;
             }
             return true;
           };
@@ -298,10 +280,19 @@
       display: none;
     }
 
-    /* Mobile: larger cards, hide arrows and dotnav (J-B) */
+    /* Mobile: larger cards, split gutter for centring, hide arrows and dotnav */
     @media (max-width: 749px) {
       #{{ fnop_carousel_id }} {
         --_gc-card-w: 60vw;
+      }
+
+      #{{ fnop_carousel_id }} .fnop-gc__item {
+        padding-inline-start: calc(var(--_gc-card-gap) / 2);
+        padding-inline-end: calc(var(--_gc-card-gap) / 2);
+      }
+
+      #{{ fnop_carousel_id }} .fnop-gc__list {
+        padding-inline: calc((100% - var(--_gc-card-w) - var(--_gc-card-gap)) / 2);
       }
 
       #{{ fnop_carousel_id }} .fnop-gc__nav {
