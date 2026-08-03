@@ -105,7 +105,7 @@
             assign prod_count = 0
 
             for p in game_col.products
-              assign eo = p.metafields.custom.edition_order.value | default: 999
+              assign eo = p.metafields.product.edition_order.value | default: 999 | append: ''
               if prod_handles == ''
                 assign prod_handles = p.handle
                 assign prod_orders = eo
