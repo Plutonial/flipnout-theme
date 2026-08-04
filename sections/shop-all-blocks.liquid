@@ -550,35 +550,14 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 5: New Arrivals (harvested from game collections by release_date) ── {% endcomment %}
+  {% comment %} ── BLOCK 5: New Arrivals (reads the curated na_col collection) ── {% endcomment %}
   {%- liquid
-    assign na_games_count = section.settings.games_count | default: 5
-    assign na_limit = na_games_count
-    if game_count < na_limit
-      assign na_limit = game_count
-    endif
-
     assign na_total = 0
     assign na_vendors = ''
     assign na_vendor_count = 0
 
-    comment
-      ── First pass: count products and collect vendors ──
-    endcomment
-    for idx in (0..na_limit)
-      if idx >= na_limit
-        break
-      endif
-      assign handle = sorted_gc[idx]
-      assign game_col = collections[handle]
-      if game_col == blank
-        continue
-      endif
-      for p in game_col.products
-        assign p_rd = p.metafields.custom.release_date.value
-        if p_rd == blank
-          continue
-        endif
+    if na_col
+      for p in na_col.products
         assign na_total = na_total | plus: 1
         assign pv = p.vendor
         assign already = false
@@ -600,7 +579,7 @@
           assign na_vendor_count = na_vendor_count | plus: 1
         endunless
       endfor
-    endfor
+    endif
     assign na_v_arr = na_vendors | split: '|'
   -%}
   {%- if na_total > 0 -%}
@@ -628,111 +607,29 @@
       </div>
 
       <ul class="sab__grid sab--precut" role="list">
-        {%- for idx in (0..na_limit) -%}
-          {%- if idx >= na_limit -%}{%- break -%}{%- endif -%}
-          {%- assign handle = sorted_gc[idx] -%}
-          {%- assign game_col = collections[handle] -%}
-          {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
-
-          {%- comment %} Sort products by edition_order ASC (bubble sort) {% endcomment -%}
-          {%- liquid
-            assign prod_handles = ''
-            assign prod_orders = ''
-            assign prod_count = 0
-
-            for p in game_col.products
-              assign p_rd = p.metafields.custom.release_date.value
-              if p_rd == blank
-                continue
-              endif
-              assign eo = p.metafields.product.edition_order.value | default: 999 | append: ''
-              if prod_handles == ''
-                assign prod_handles = p.handle
-                assign prod_orders = eo
-              else
-                assign prod_handles = prod_handles | append: '|' | append: p.handle
-                assign prod_orders = prod_orders | append: '|' | append: eo
-              endif
-              assign prod_count = prod_count | plus: 1
-            endfor
-
-            assign ph_arr = prod_handles | split: '|'
-            assign po_arr = prod_orders | split: '|'
-            assign s_ph = ph_arr
-            assign s_po = po_arr
-
-            if prod_count > 1
-              assign pn = prod_count | minus: 1
-              for pi in (1..pn)
-                assign p_inner = pn | minus: pi
-                for pj in (0..p_inner)
-                  assign pj1 = pj | plus: 1
-                  assign ord_a = s_po[pj] | plus: 0
-                  assign ord_b = s_po[pj1] | plus: 0
-                  if ord_a > ord_b
-                    assign tmp_ph = s_ph[pj]
-                    assign tmp_po = s_po[pj]
-                    assign new_ph = ''
-                    assign new_po = ''
-                    for pk in (0..pn)
-                      if pk == pj
-                        assign ph_val = s_ph[pj1]
-                        assign po_val = s_po[pj1]
-                      elsif pk == pj1
-                        assign ph_val = tmp_ph
-                        assign po_val = tmp_po
-                      else
-                        assign ph_val = s_ph[pk]
-                        assign po_val = s_po[pk]
-                      endif
-                      if new_ph == ''
-                        assign new_ph = ph_val
-                        assign new_po = po_val
-                      else
-                        assign new_ph = new_ph | append: '|' | append: ph_val
-                        assign new_po = new_po | append: '|' | append: po_val
-                      endif
-                    endfor
-                    assign s_ph = new_ph | split: '|'
-                    assign s_po = new_po | split: '|'
-                  endif
-                endfor
-              endfor
-            endif
-          -%}
-
-          {%- for pidx in (0..prod_count) -%}
-            {%- if pidx >= prod_count -%}{%- break -%}{%- endif -%}
-            {%- assign p_handle = s_ph[pidx] -%}
-            {%- comment %} Find the product object from game_col.products {% endcomment -%}
-            {%- for p in game_col.products -%}
-              {%- if p.handle == p_handle -%}
-                <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-                  <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
-                    <div class="bmc__poster">
-                      {%- if p.featured_media -%}
-                        {{ p.featured_media | image_url: width: 1600 | image_tag:
-                          loading: 'lazy',
-                          class: 'bmc__img',
-                          sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                          widths: '220,300,440,600,880,1200,1600',
-                          alt: p.title
-                        }}
-                      {%- else -%}
-                        {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                      {%- endif -%}
-                      {%- if p.tags contains 'sold-out' -%}
-                        <span class="bmc__badge">Sold Out</span>
-                      {%- endif -%}
-                    </div>
-                    <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-                    <span class="bmc__price">{{ p.price | money }}</span>
-                  </a>
-                </li>
-                {%- break -%}
-              {%- endif -%}
-            {%- endfor -%}
-          {%- endfor -%}
+        {%- for p in na_col.products -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 1600 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
+                    widths: '220,300,440,600,880,1200,1600',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
+          </li>
         {%- endfor -%}
       </ul>
       <div class="sab__controls">
@@ -1478,9 +1375,7 @@
 {% schema %}
 {
   "name": "Shop All blocks",
-  "settings": [
-    { "type": "range", "id": "games_count", "label": "New Arrivals: games shown", "min": 3, "max": 12, "step": 1, "default": 5 }
-  ],
+  "settings": [],
   "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}
