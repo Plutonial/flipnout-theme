@@ -111,7 +111,7 @@
     #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 7) { display: none; }
   }
 
-  #{{ section_id }} .fnop-na__item--beyond { display: none; }
+  #{{ section_id }} .fnop-na__item--offfilter { display: none; }
 
   #{{ section_id }} .fnop-na__toolbar {
     margin-bottom: 24px;
@@ -209,10 +209,8 @@
 
         if (val !== 'all') {
           this.grid.classList.remove('fnop-na--precut');
-          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
         } else {
           this.grid.classList.add('fnop-na--precut');
-          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
         }
 
         this.update();
@@ -226,9 +224,6 @@
         const precut = this.grid.classList.contains('fnop-na--precut');
         const visibleCount = precut ? 2 * cols : total;
 
-        if (!precut) {
-          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
-        }
 
         if (total > visibleCount) {
           this.btn.hidden = false;
@@ -240,7 +235,6 @@
 
       handleShowMore() {
         this.grid.classList.remove('fnop-na--precut');
-        this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
         this.btn.hidden = true;
       }
     }

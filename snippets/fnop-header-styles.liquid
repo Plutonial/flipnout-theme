@@ -24,4 +24,14 @@
       display: none;
     }
   }
+
+  /* TASK 2 (P61) — Mobile gap between header and body.
+     Applied to <main> padding-top so it does not conflict with the transparent-header
+     offset, which lives on main > .shopify-section:first-child .spacing-style
+     (a descendant, not <main> itself). */
+  @media screen and (max-width: 749px) {
+    .content-for-layout {
+      padding-top: var(--padding-sm);
+    }
+  }
 </style>

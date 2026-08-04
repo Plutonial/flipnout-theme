@@ -44,8 +44,8 @@
       aria-label="{{ 'accessibility.menu' | t }}"
       on:click="/toggle"
     >
-      <span class="svg-wrapper header-drawer-icon header-drawer-icon--open">
-        {{- 'icon-menu.svg' | inline_asset_content -}}
+      <span class="svg-wrapper header-drawer-icon header-drawer-icon--open fnop-burger-icon">
+        <img src="{{ 'fnop-icon-menu.svg' | asset_url }}" alt="{{ 'accessibility.menu' | t }}" width="24" height="24">
       </span>
       <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
         {{- 'icon-close.svg' | inline_asset_content -}}
@@ -262,6 +262,28 @@
 </header-drawer>
 
 {% stylesheet %}
+  /* P61 TASK 3 — Custom hamburger icon sized to match the logo */
+  .fnop-burger-icon {
+    --fnop-burger-size: var(--header-logo-image-height-mobile, 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fnop-burger-icon img {
+    width: var(--fnop-burger-size);
+    height: var(--fnop-burger-size);
+    display: block;
+  }
+  /* Ensure tap target is at least 44px and grows with the icon */
+  .header__icon--menu:has(.fnop-burger-icon) {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   /* TASK 3 — Full screen */
   .fnop-drawer .menu-drawer {
     --drawer-width: 100%;
