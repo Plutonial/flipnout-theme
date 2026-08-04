@@ -418,7 +418,6 @@
 
   {% comment %} ── BLOCK 3: Accessories (navigating block — teaser + links to /collections/accessories) ── {% endcomment %}
   {%- liquid
-    assign accessories_vendor_count = accessories_col.all_vendors.size
     assign accessories_shown = 6
   -%}
   <section class="sab__block" data-block="accessories" data-total="{{ accessories_shown }}">
@@ -427,15 +426,6 @@
         <h2 class="brand-section__heading sab__heading">
           <a class="sab__heading-link" href="{{ accessories_col.url }}">Accessories</a>
         </h2>
-      </div>
-
-      <div class="bmg__toolbar sab__block-toolbar">
-        <select class="bmg__select sab__nav-select" aria-label="Browse Accessories by manufacturer">
-          <option value="{{ accessories_col.url }}">All manufacturers ({{ accessories_vendor_count }})</option>
-          {%- for v in accessories_col.all_vendors -%}
-            <option value="{{ accessories_col.url }}?filter.p.vendor={{ v | url_encode }}">{{ v }}</option>
-          {%- endfor -%}
-        </select>
       </div>
 
       <ul class="sab__grid" role="list">
@@ -1050,13 +1040,6 @@
           const filterSelect = block.querySelector('.sab__filter-select');
           if (filterSelect) {
             filterSelect.addEventListener('change', () => this.applyFilterSelect(block));
-          }
-
-          const navSelect = block.querySelector('.sab__nav-select');
-          if (navSelect) {
-            navSelect.addEventListener('change', () => {
-              if (navSelect.value) window.location.assign(navSelect.value);
-            });
           }
 
           const switchInput = block.querySelector('.bmg__switch-input');
