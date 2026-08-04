@@ -7,7 +7,7 @@
 
   assign brand_id = collection.id
   assign heading = section.settings.heading | default: 'Machines'
-  assign cols_desktop = section.settings.columns_desktop | default: 4
+  assign cols_desktop = section.settings.columns_desktop | default: 3
   assign gap_h = section.settings.gap_horizontal | default: 32
   assign gap_v = section.settings.gap_vertical | default: 32
   assign reveal_initial = section.settings.reveal_initial | default: 12
@@ -564,7 +564,7 @@
   "name": "Brand machines grid",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Machines" },
-    { "type": "range", "id": "columns_desktop", "label": "Desktop columns", "min": 3, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "columns_desktop", "label": "Desktop columns", "min": 3, "max": 5, "step": 1, "default": 3 },
     { "type": "range", "id": "gap_horizontal", "label": "Horizontal gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
     { "type": "range", "id": "gap_vertical", "label": "Vertical gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
     { "type": "range", "id": "reveal_initial", "label": "Initial cards shown", "min": 4, "max": 40, "step": 4, "default": 12 },
