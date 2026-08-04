@@ -89,8 +89,14 @@
         {%- endif -%}
 
         <div class="editions-grid__info">
-          {%- if edition_label != blank -%}
-            <h3 class="editions-grid__title">{{ edition_label }}</h3>
+          {%- liquid
+            assign _display_title = edition_label
+            if _display_title == blank
+              assign _display_title = game_name
+            endif
+          -%}
+          {%- if _display_title != blank -%}
+            <h3 class="editions-grid__title">{{ _display_title }}</h3>
           {%- endif -%}
           <span class="editions-grid__price">{{ product.price | money }}</span>
           {%- if is_sold_out -%}
