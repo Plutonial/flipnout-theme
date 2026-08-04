@@ -1,6 +1,6 @@
 {%- liquid
   comment
-    Shop All Blocks — seven blocks: Pinball (game tiles), Arcade, Accessories (navigating), Preowned, Apparel, Merch, Moving Equipment.
+    Shop All Blocks — eight blocks: Pinball (game tiles), Arcade, Accessories (navigating), Preowned, New Arrivals, Apparel, Merch, Moving Equipment.
   endcomment
 
   comment
@@ -230,6 +230,7 @@
   assign apparel_col = collections['apparel']
   assign merch_col = collections['merchandise']
   assign moving_col = collections['moving-equipment']
+  assign na_col = collections['new-arrivals']
 -%}
 
 <shop-all-blocks class="sab">
@@ -549,7 +550,200 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 5: Apparel ── {% endcomment %}
+  {% comment %} ── BLOCK 5: New Arrivals (harvested from game collections by release_date) ── {% endcomment %}
+  {%- liquid
+    assign na_games_count = section.settings.games_count | default: 5
+    assign na_limit = na_games_count
+    if game_count < na_limit
+      assign na_limit = game_count
+    endif
+
+    assign na_total = 0
+    assign na_vendors = ''
+    assign na_vendor_count = 0
+
+    comment
+      ── First pass: count products and collect vendors ──
+    endcomment
+    for idx in (0..na_limit)
+      if idx >= na_limit
+        break
+      endif
+      assign handle = sorted_gc[idx]
+      assign game_col = collections[handle]
+      if game_col == blank
+        continue
+      endif
+      for p in game_col.products
+        assign p_rd = p.metafields.custom.release_date.value
+        if p_rd == blank
+          continue
+        endif
+        assign na_total = na_total | plus: 1
+        assign pv = p.vendor
+        assign already = false
+        if na_vendors != ''
+          assign _nav_arr = na_vendors | split: '|'
+          for _nav in _nav_arr
+            if _nav == pv
+              assign already = true
+              break
+            endif
+          endfor
+        endif
+        unless already
+          if na_vendors == ''
+            assign na_vendors = pv
+          else
+            assign na_vendors = na_vendors | append: '|' | append: pv
+          endif
+          assign na_vendor_count = na_vendor_count | plus: 1
+        endunless
+      endfor
+    endfor
+    assign na_v_arr = na_vendors | split: '|'
+  -%}
+  {%- if na_total > 0 -%}
+  <section class="sab__block" data-block="new-arrivals" data-total="{{ na_total }}" data-eligible="{{ na_total }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ na_col.url }}">New Arrivals</a></h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if na_vendor_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter New Arrivals by manufacturer">
+            <option value="all">All manufacturers ({{ na_vendor_count }})</option>
+            {%- for nv in na_v_arr -%}
+              <option value="{{ nv | handleize }}">{{ nv }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+
+        <label class="bmg__switch sab__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list">
+        {%- for idx in (0..na_limit) -%}
+          {%- if idx >= na_limit -%}{%- break -%}{%- endif -%}
+          {%- assign handle = sorted_gc[idx] -%}
+          {%- assign game_col = collections[handle] -%}
+          {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
+
+          {%- comment %} Sort products by edition_order ASC (bubble sort) {% endcomment -%}
+          {%- liquid
+            assign prod_handles = ''
+            assign prod_orders = ''
+            assign prod_count = 0
+
+            for p in game_col.products
+              assign p_rd = p.metafields.custom.release_date.value
+              if p_rd == blank
+                continue
+              endif
+              assign eo = p.metafields.product.edition_order.value | default: 999 | append: ''
+              if prod_handles == ''
+                assign prod_handles = p.handle
+                assign prod_orders = eo
+              else
+                assign prod_handles = prod_handles | append: '|' | append: p.handle
+                assign prod_orders = prod_orders | append: '|' | append: eo
+              endif
+              assign prod_count = prod_count | plus: 1
+            endfor
+
+            assign ph_arr = prod_handles | split: '|'
+            assign po_arr = prod_orders | split: '|'
+            assign s_ph = ph_arr
+            assign s_po = po_arr
+
+            if prod_count > 1
+              assign pn = prod_count | minus: 1
+              for pi in (1..pn)
+                assign p_inner = pn | minus: pi
+                for pj in (0..p_inner)
+                  assign pj1 = pj | plus: 1
+                  assign ord_a = s_po[pj] | plus: 0
+                  assign ord_b = s_po[pj1] | plus: 0
+                  if ord_a > ord_b
+                    assign tmp_ph = s_ph[pj]
+                    assign tmp_po = s_po[pj]
+                    assign new_ph = ''
+                    assign new_po = ''
+                    for pk in (0..pn)
+                      if pk == pj
+                        assign ph_val = s_ph[pj1]
+                        assign po_val = s_po[pj1]
+                      elsif pk == pj1
+                        assign ph_val = tmp_ph
+                        assign po_val = tmp_po
+                      else
+                        assign ph_val = s_ph[pk]
+                        assign po_val = s_po[pk]
+                      endif
+                      if new_ph == ''
+                        assign new_ph = ph_val
+                        assign new_po = po_val
+                      else
+                        assign new_ph = new_ph | append: '|' | append: ph_val
+                        assign new_po = new_po | append: '|' | append: po_val
+                      endif
+                    endfor
+                    assign s_ph = new_ph | split: '|'
+                    assign s_po = new_po | split: '|'
+                  endif
+                endfor
+              endfor
+            endif
+          -%}
+
+          {%- for pidx in (0..prod_count) -%}
+            {%- if pidx >= prod_count -%}{%- break -%}{%- endif -%}
+            {%- assign p_handle = s_ph[pidx] -%}
+            {%- comment %} Find the product object from game_col.products {% endcomment -%}
+            {%- for p in game_col.products -%}
+              {%- if p.handle == p_handle -%}
+                <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+                  <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+                    <div class="bmc__poster">
+                      {%- if p.featured_media -%}
+                        {{ p.featured_media | image_url: width: 1600 | image_tag:
+                          loading: 'lazy',
+                          class: 'bmc__img',
+                          sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
+                          widths: '220,300,440,600,880,1200,1600',
+                          alt: p.title
+                        }}
+                      {%- else -%}
+                        {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                      {%- endif -%}
+                      {%- if p.tags contains 'sold-out' -%}
+                        <span class="bmc__badge">Sold Out</span>
+                      {%- endif -%}
+                    </div>
+                    <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
+                    <span class="bmc__price">{{ p.price | money }}</span>
+                  </a>
+                </li>
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="{{ na_col.url }}">View all</a>
+      </div>
+    </div>
+  </section>
+  {%- endif -%}
+
+  {% comment %} ── BLOCK 6: Apparel ── {% endcomment %}
   {%- liquid
     assign apparel_total = 0
     assign apparel_types = ''
@@ -638,7 +832,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 6: Merch ── {% endcomment %}
+  {% comment %} ── BLOCK 7: Merch ── {% endcomment %}
   {%- liquid
     assign merch_total = 0
     assign merch_vendors = ''
@@ -755,7 +949,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 7: Moving Equipment ── {% endcomment %}
+  {% comment %} ── BLOCK 8: Moving Equipment ── {% endcomment %}
   {%- liquid
     assign moving_total = 0
     assign moving_vendors = ''
@@ -1284,7 +1478,9 @@
 {% schema %}
 {
   "name": "Shop All blocks",
-  "settings": [],
+  "settings": [
+    { "type": "range", "id": "games_count", "label": "New Arrivals: games shown", "min": 3, "max": 12, "step": 1, "default": 5 }
+  ],
   "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}
