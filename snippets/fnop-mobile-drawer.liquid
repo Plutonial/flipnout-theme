@@ -99,6 +99,11 @@
         {%- comment -%}
           Build groups: walk the menu tree, collect leaves, track parent changes.
           Each run of consecutive leaves sharing a parent = one group.
+
+          RULE: No filter other than `append:` may be chained onto `group_items` or
+          `group_titles`. These accumulators hold raw HTML; any other filter (escape,
+          strip, truncate, upcase …) operates on the entire accumulated blob and
+          silently corrupts it. Filter values into their own variable first, then append.
         {%- endcomment -%}
         {%- liquid
           assign prev_parent_title = '__none__'
@@ -127,7 +132,8 @@
             {%- if top_link.current -%}
               {%- assign group_items = group_items | append: ' aria-current="page"' -%}
             {%- endif -%}
-            {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: top_link.title | escape | append: '</span></a></li>' -%}
+            {%- assign safe_title = top_link.title | escape -%}
+            {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: safe_title | append: '</span></a></li>' -%}
           {%- else -%}
             {%- for child_link in top_link.links -%}
               {%- if child_link.links == blank -%}
@@ -149,7 +155,8 @@
                 {%- if child_link.current -%}
                   {%- assign group_items = group_items | append: ' aria-current="page"' -%}
                 {%- endif -%}
-                {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: child_link.title | escape | append: '</span></a></li>' -%}
+                {%- assign safe_title = child_link.title | escape -%}
+                {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: safe_title | append: '</span></a></li>' -%}
               {%- else -%}
                 {%- for grandchild_link in child_link.links -%}
                   {%- if grandchild_link.links == blank -%}
@@ -171,7 +178,8 @@
                     {%- if grandchild_link.current -%}
                       {%- assign group_items = group_items | append: ' aria-current="page"' -%}
                     {%- endif -%}
-                    {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: grandchild_link.title | escape | append: '</span></a></li>' -%}
+                    {%- assign safe_title = grandchild_link.title | escape -%}
+                    {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: safe_title | append: '</span></a></li>' -%}
                   {%- else -%}
                     {%- for deep_link in grandchild_link.links -%}
                       {%- if deep_link.links == blank -%}
@@ -193,7 +201,8 @@
                         {%- if deep_link.current -%}
                           {%- assign group_items = group_items | append: ' aria-current="page"' -%}
                         {%- endif -%}
-                        {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: deep_link.title | escape | append: '</span></a></li>' -%}
+                        {%- assign safe_title = deep_link.title | escape -%}
+                        {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: safe_title | append: '</span></a></li>' -%}
                       {%- endif -%}
                     {%- endfor -%}
                   {%- endif -%}
@@ -289,7 +298,7 @@
   /* TASK 5 — Two-column grid and rhythm */
   .fnop-drawer .fnop-drawer-group__grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: 16px;
     row-gap: 0;
     padding: 0;
