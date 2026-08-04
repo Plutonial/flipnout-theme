@@ -68,16 +68,17 @@
         aria-label="{{ 'accessibility.header_navigation_label' | t }}"
       >
         {%- comment -%} Logo above the menu list {%- endcomment -%}
-        <a href="{{ routes.root_url }}" class="fnop-drawer-logo">
+        {%- assign logo_height = settings.logo_height_mobile | default: 40 -%}
+        <a href="{{ routes.root_url }}" class="fnop-drawer-logo"
+           style="--fnop-drawer-logo-height: {{ logo_height }}px;">
           {%- if settings.logo != blank -%}
-            {%- assign logo_height = settings.logo_height_mobile | default: 40 -%}
+            {%- assign logo_height_2x = logo_height | times: 2 -%}
             {{
               settings.logo
-              | image_url: height: logo_height
+              | image_url: height: logo_height_2x
               | image_tag:
                 alt: shop.name,
-                height: logo_height,
-                loading: 'lazy'
+                loading: 'eager'
             }}
           {%- else -%}
             {{ shop.name }}
@@ -187,3 +188,12 @@
     </div>
   </details>
 </header-drawer>
+
+{% stylesheet %}
+  .fnop-drawer-logo img {
+    width: auto;
+    height: var(--fnop-drawer-logo-height, 40px);
+    max-width: 100%;
+    object-fit: contain;
+  }
+{% endstylesheet %}
