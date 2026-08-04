@@ -8,6 +8,7 @@
   assign brand_id = collection.id
   assign heading = section.settings.heading | default: 'Machines'
   assign cols_desktop = section.settings.columns_desktop | default: 3
+  assign bmg_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
   assign gap_h = section.settings.gap_horizontal | default: 32
   assign gap_v = section.settings.gap_vertical | default: 32
   assign reveal_initial = section.settings.reveal_initial | default: 12
@@ -276,7 +277,7 @@
             {%- endif -%}
           {%- endfor -%}
           <li class="bmg__item{% if card_product.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
-            {%- render 'brand-machine-card', product: card_product -%}
+            {%- render 'brand-machine-card', product: card_product, sizes: bmg_card_sizes -%}
           </li>
         {%- endfor -%}
       {%- else -%}
@@ -284,7 +285,7 @@
         {%- for p in collection.products -%}
           {%- if p.type == 'Accessory' -%}{%- continue -%}{%- endif -%}
           <li class="bmg__item{% if p.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="" id="{{ section.id }}-{{ p.id }}">
-            {%- render 'brand-machine-card', product: p -%}
+            {%- render 'brand-machine-card', product: p, sizes: bmg_card_sizes -%}
           </li>
         {%- endfor -%}
       {%- endif -%}

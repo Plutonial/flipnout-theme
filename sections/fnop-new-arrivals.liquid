@@ -6,6 +6,7 @@
 {%- liquid
   assign section_id = 'fnop-new-arrivals-' | append: section.id
   assign games_count = section.settings.games_count
+  assign na_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
 
   comment
     ── Collect game collections and their release dates ──
@@ -167,7 +168,7 @@
             {%- assign product = all_products[p_handle] -%}
             {%- if product == blank -%}{%- continue -%}{%- endif -%}
             <li class="fnop-na__item">
-              {%- render 'brand-machine-card', product: product -%}
+              {%- render 'brand-machine-card', product: product, sizes: na_card_sizes -%}
             </li>
           {%- endfor -%}
         {%- endfor -%}
