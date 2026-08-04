@@ -1,181 +1,80 @@
 {%- comment -%}
-  New Arrivals — renders the N most recently released game collections' products
-  as machine cards, sorted by release_date descending, editions by edition_order ASC.
+  New Arrivals — renders the curated Manual collection's products
+  as machine cards, in collection order (Manual sort).
+  Note: collection.products is capped at 50 items by Shopify.
+  If this collection exceeds 50, the page silently truncates.
 {%- endcomment -%}
 
 {%- liquid
   assign section_id = 'fnop-new-arrivals-' | append: section.id
-  assign games_count = section.settings.games_count
   assign na_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
 
   comment
-    ── Collect game collections and their release dates ──
+    ── Build unique vendor list from the collection's own products ──
   endcomment
 
-  assign game_cols = ''
-  assign game_dates = ''
-  assign game_total = 0
+  assign na_vendors = ''
+  assign na_vendor_count = 0
+  assign na_total = 0
 
-  for c in collections
-    assign is_game = c.metafields.collection.is_game
-    if is_game
-      assign rd = c.metafields.custom.release_date.value | default: '1970-01-01'
-      if game_cols == ''
-        assign game_cols = c.handle
-        assign game_dates = rd
-      else
-        assign game_cols = game_cols | append: '|' | append: c.handle
-        assign game_dates = game_dates | append: '|' | append: rd
-      endif
-      assign game_total = game_total | plus: 1
-    endif
-  endfor
-
-  assign gc_arr = game_cols | split: '|'
-  assign gd_arr = game_dates | split: '|'
-
-  comment — Bubble sort by release_date descending
-  endcomment
-  assign sorted_gc = gc_arr
-  assign sorted_gd = gd_arr
-
-  if game_total > 1
-    assign n = game_total | minus: 1
-    for i in (1..n)
-      assign inner = n | minus: i
-      for j in (0..inner)
-        assign j1 = j | plus: 1
-        assign date_a = sorted_gd[j]
-        assign date_b = sorted_gd[j1]
-        if date_a < date_b
-          assign tmp_h = sorted_gc[j]
-          assign tmp_d = sorted_gd[j]
-          assign new_handles = ''
-          assign new_dates = ''
-          for k in (0..n)
-            if k == j
-              assign h_val = sorted_gc[j1]
-              assign d_val = sorted_gd[j1]
-            elsif k == j1
-              assign h_val = tmp_h
-              assign d_val = tmp_d
-            else
-              assign h_val = sorted_gc[k]
-              assign d_val = sorted_gd[k]
-            endif
-            if new_handles == ''
-              assign new_handles = h_val
-              assign new_dates = d_val
-            else
-              assign new_handles = new_handles | append: '|' | append: h_val
-              assign new_dates = new_dates | append: '|' | append: d_val
-            endif
-          endfor
-          assign sorted_gc = new_handles | split: '|'
-          assign sorted_gd = new_dates | split: '|'
+  for p in collection.products
+    assign na_total = na_total | plus: 1
+    assign pv = p.vendor
+    assign already = false
+    if na_vendors != ''
+      assign _nv_arr = na_vendors | split: '|'
+      for _nv in _nv_arr
+        if _nv == pv
+          assign already = true
+          break
         endif
       endfor
-    endfor
-  endif
+    endif
+    unless already
+      if na_vendors == ''
+        assign na_vendors = pv
+      else
+        assign na_vendors = na_vendors | append: '|' | append: pv
+      endif
+      assign na_vendor_count = na_vendor_count | plus: 1
+    endunless
+  endfor
 
-  comment
-    ── Take the first N game collections, collect their products ──
-  endcomment
-  assign limit = games_count
-  if game_total < limit
-    assign limit = game_total
-  endif
+  assign na_v_arr = na_vendors | split: '|'
 -%}
 
-<section id="{{ section_id }}" class="fnop-na">
+<fnop-new-arrivals id="{{ section_id }}" class="fnop-na">
   <div class="brand-section__container">
-    {%- if limit == 0 -%}
+    {%- if na_total == 0 -%}
       <p class="fnop-na__empty">No new arrivals at this time.</p>
     {%- else -%}
-      <ul class="fnop-na__grid" role="list">
-        {%- for idx in (0..limit) -%}
-          {%- if idx >= limit -%}{%- break -%}{%- endif -%}
-          {%- assign handle = sorted_gc[idx] -%}
-          {%- assign game_col = collections[handle] -%}
-          {%- if game_col == blank -%}{%- continue -%}{%- endif -%}
 
-          {%- comment -%} Sort products by edition_order ASC (bubble sort) {%- endcomment -%}
-          {%- liquid
-            assign prod_handles = ''
-            assign prod_orders = ''
-            assign prod_count = 0
+      <div class="bmg__toolbar fnop-na__toolbar">
+        {%- if na_vendor_count > 1 -%}
+          <select class="bmg__select fnop-na__filter-select" aria-label="Filter New Arrivals by manufacturer">
+            <option value="all">All manufacturers ({{ na_vendor_count }})</option>
+            {%- for v in na_v_arr -%}
+              <option value="{{ v | handleize }}">{{ v }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+      </div>
 
-            for p in game_col.products
-              assign eo = p.metafields.product.edition_order.value | default: 999 | append: ''
-              if prod_handles == ''
-                assign prod_handles = p.handle
-                assign prod_orders = eo
-              else
-                assign prod_handles = prod_handles | append: '|' | append: p.handle
-                assign prod_orders = prod_orders | append: '|' | append: eo
-              endif
-              assign prod_count = prod_count | plus: 1
-            endfor
-
-            assign ph_arr = prod_handles | split: '|'
-            assign po_arr = prod_orders | split: '|'
-            assign s_ph = ph_arr
-            assign s_po = po_arr
-
-            if prod_count > 1
-              assign pn = prod_count | minus: 1
-              for pi in (1..pn)
-                assign p_inner = pn | minus: pi
-                for pj in (0..p_inner)
-                  assign pj1 = pj | plus: 1
-                  assign ord_a = s_po[pj] | plus: 0
-                  assign ord_b = s_po[pj1] | plus: 0
-                  if ord_a > ord_b
-                    assign tmp_ph = s_ph[pj]
-                    assign tmp_po = s_po[pj]
-                    assign new_ph = ''
-                    assign new_po = ''
-                    for pk in (0..pn)
-                      if pk == pj
-                        assign ph_val = s_ph[pj1]
-                        assign po_val = s_po[pj1]
-                      elsif pk == pj1
-                        assign ph_val = tmp_ph
-                        assign po_val = tmp_po
-                      else
-                        assign ph_val = s_ph[pk]
-                        assign po_val = s_po[pk]
-                      endif
-                      if new_ph == ''
-                        assign new_ph = ph_val
-                        assign new_po = po_val
-                      else
-                        assign new_ph = new_ph | append: '|' | append: ph_val
-                        assign new_po = new_po | append: '|' | append: po_val
-                      endif
-                    endfor
-                    assign s_ph = new_ph | split: '|'
-                    assign s_po = new_po | split: '|'
-                  endif
-                endfor
-              endfor
-            endif
-          -%}
-
-          {%- for pidx in (0..prod_count) -%}
-            {%- if pidx >= prod_count -%}{%- break -%}{%- endif -%}
-            {%- assign p_handle = s_ph[pidx] -%}
-            {%- assign product = all_products[p_handle] -%}
-            {%- if product == blank -%}{%- continue -%}{%- endif -%}
-            <li class="fnop-na__item">
-              {%- render 'brand-machine-card', product: product, sizes: na_card_sizes -%}
-            </li>
-          {%- endfor -%}
+      <ul class="fnop-na__grid fnop-na--precut" role="list">
+        {%- for p in collection.products -%}
+          <li class="fnop-na__item" data-filter="{{ p.vendor | handleize }}">
+            {%- render 'brand-machine-card', product: p, sizes: na_card_sizes -%}
+          </li>
         {%- endfor -%}
       </ul>
+
+      <div class="fnop-na__controls">
+        <button class="fnop-na__show-more" type="button" hidden>Show more</button>
+      </div>
+
     {%- endif -%}
   </div>
-</section>
+</fnop-new-arrivals>
 
 {% style %}
   #{{ section_id }} {
@@ -200,15 +99,55 @@
     }
   }
 
-  @media (min-width: 1200px) {
-    #{{ section_id }} .fnop-na__grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
   #{{ section_id }} .fnop-na__item {
     min-width: 0;
   }
+
+  {% comment %} Pre-cut: 2 rows. Tracks the column ladder: 2 cols base = 4 items, 3 cols >=900 = 6 items {% endcomment %}
+  #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 5) { display: none; }
+
+  @media (min-width: 900px) {
+    #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 5) { display: list-item; }
+    #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 7) { display: none; }
+  }
+
+  #{{ section_id }} .fnop-na__item--beyond { display: none; }
+
+  #{{ section_id }} .fnop-na__toolbar {
+    margin-bottom: 24px;
+  }
+
+  #{{ section_id }} .fnop-na__controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+
+  #{{ section_id }} .fnop-na__show-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 12px 28px;
+    border: 2px solid rgb(var(--color-foreground-rgb) / 0.81);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  #{{ section_id }} .fnop-na__show-more:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+
+  #{{ section_id }} .fnop-na__show-more[hidden] { display: none; }
 
   #{{ section_id }} .fnop-na__empty {
     text-align: center;
@@ -218,21 +157,102 @@
   }
 {% endstyle %}
 
+<script>
+  if (!customElements.get('fnop-new-arrivals')) {
+    class FnopNewArrivals extends HTMLElement {
+      connectedCallback() {
+        this.grid = this.querySelector('.fnop-na__grid');
+        this.btn = this.querySelector('.fnop-na__show-more');
+        this.select = this.querySelector('.fnop-na__filter-select');
+        if (!this.grid) return;
+
+        this.items = Array.from(this.querySelectorAll('.fnop-na__item'));
+
+        if (this.select) {
+          this.select.addEventListener('change', () => this.applyFilter());
+        }
+
+        if (this.btn) {
+          this.btn.addEventListener('click', () => this.handleShowMore());
+        }
+
+        this._resizeObserver = new ResizeObserver(() => this.update());
+        this._resizeObserver.observe(this.grid);
+
+        this.update();
+      }
+
+      disconnectedCallback() {
+        if (this._resizeObserver) this._resizeObserver.disconnect();
+      }
+
+      getColumns() {
+        const t = getComputedStyle(this.grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
+      }
+
+      getEligible() {
+        return this.items.filter(item =>
+          !item.classList.contains('fnop-na__item--offfilter')
+        );
+      }
+
+      applyFilter() {
+        const val = this.select ? this.select.value : 'all';
+
+        this.items.forEach(item => {
+          item.classList.toggle(
+            'fnop-na__item--offfilter',
+            val !== 'all' && item.dataset.filter !== val
+          );
+        });
+
+        if (val !== 'all') {
+          this.grid.classList.remove('fnop-na--precut');
+          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
+        } else {
+          this.grid.classList.add('fnop-na--precut');
+          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
+        }
+
+        this.update();
+      }
+
+      update() {
+        if (!this.btn) return;
+        const eligible = this.getEligible();
+        const total = eligible.length;
+        const cols = this.getColumns();
+        const precut = this.grid.classList.contains('fnop-na--precut');
+        const visibleCount = precut ? 2 * cols : total;
+
+        if (!precut) {
+          this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
+        }
+
+        if (total > visibleCount) {
+          this.btn.hidden = false;
+          this.btn.textContent = 'Show more \u00B7 ' + (total - visibleCount) + ' remaining';
+        } else {
+          this.btn.hidden = true;
+        }
+      }
+
+      handleShowMore() {
+        this.grid.classList.remove('fnop-na--precut');
+        this.items.forEach(item => item.classList.remove('fnop-na__item--beyond'));
+        this.btn.hidden = true;
+      }
+    }
+    customElements.define('fnop-new-arrivals', FnopNewArrivals);
+  }
+</script>
+
 {% schema %}
 {
   "name": "New Arrivals Grid",
   "tag": "section",
-  "settings": [
-    {
-      "type": "range",
-      "id": "games_count",
-      "label": "Number of recent games",
-      "min": 3,
-      "max": 12,
-      "step": 1,
-      "default": 5
-    }
-  ],
+  "settings": [],
   "presets": [
     {
       "name": "New Arrivals Grid"
