@@ -1,5 +1,7 @@
 {%- doc -%}
-  Renders a flat mobile drawer menu — all leaf links in one list, no accordions.
+  Renders a grouped mobile drawer menu — leaves grouped by parent, each group
+  in an accordion with a two-column grid. Full-screen panel with close ✕ top-left
+  and centred logo.
 
   @param {object} linklist - The linklist to render
   @param {string} [class] - Additional classes to add to the drawer
@@ -7,6 +9,13 @@
   @param {object} [block] - The block that can be used to provide settings
   @param {object} [section] - The section that can be used to provide settings
 {%- enddoc -%}
+
+{%- comment -%}
+  Group labels — indexed by group order (0-based).
+  Fall back to the parent's own Navigation title when the index has no entry.
+  The root group (no parent) falls back to rendering with no header, un-collapsed.
+{%- endcomment -%}
+{%- assign fnop_drawer_group_labels = 'Shop,Brands,More' | split: ',' -%}
 
 {% liquid
   assign block_settings = block.settings
@@ -20,7 +29,7 @@
 ></script>
 
 <header-drawer
-  class="header-drawer {{ class }}"
+  class="header-drawer fnop-drawer {{ class }}"
   style="--menu-image-border-radius: {{ image_border_radius }}px; --resource-card-corner-radius: {{ image_border_radius }}px;"
 >
   <details
@@ -49,25 +58,18 @@
         color-{{ block_settings.color_scheme }}
       "
     >
-      <button
-        class="button close-button menu-drawer__close-button"
-        type="button"
-        aria-label="{{ 'actions.close' | t }}"
-        on:click="/close"
-      >
-        <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
-          {{- 'icon-close.svg' | inline_asset_content -}}
-        </span>
-      </button>
-      <nav
-        class="menu-drawer__navigation"
-        style="
-          {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
-          {%- render 'submenu-font-styles', settings: block_settings %}
-        "
-        aria-label="{{ 'accessibility.header_navigation_label' | t }}"
-      >
-        {%- comment -%} Logo above the menu list {%- endcomment -%}
+      <div class="fnop-drawer-header">
+        <button
+          class="button close-button menu-drawer__close-button fnop-drawer-close"
+          type="button"
+          aria-label="{{ 'actions.close' | t }}"
+          on:click="/close"
+        >
+          <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+            {{- 'icon-close.svg' | inline_asset_content -}}
+          </span>
+        </button>
+
         {%- assign logo_height = settings.logo_height_mobile | default: 40 -%}
         <a href="{{ routes.root_url }}" class="fnop-drawer-logo"
            style="--fnop-drawer-logo-height: {{ logo_height }}px;">
@@ -84,116 +86,267 @@
             {{ shop.name }}
           {%- endif -%}
         </a>
+      </div>
 
-        <ul
-          class="menu-drawer__menu"
-          role="list"
-        >
-          {%- comment -%}
-            Flatten the menu tree: emit only leaf links (those with no children).
-            Emit a divider when the current leaf's parent differs from the previous leaf's parent.
-          {%- endcomment -%}
+      <nav
+        class="menu-drawer__navigation"
+        style="
+          {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
+          {%- render 'submenu-font-styles', settings: block_settings %}
+        "
+        aria-label="{{ 'accessibility.header_navigation_label' | t }}"
+      >
+        {%- comment -%}
+          Build groups: walk the menu tree, collect leaves, track parent changes.
+          Each run of consecutive leaves sharing a parent = one group.
+        {%- endcomment -%}
+        {%- liquid
+          assign prev_parent_title = '__none__'
+          assign group_index = -1
+          assign group_titles = ''
+          assign group_items = ''
+        -%}
+
+        {%- for top_link in linklist.links -%}
+          {%- if top_link.links == blank -%}
+            {%- assign current_parent = 'root' -%}
+            {%- if current_parent != prev_parent_title -%}
+              {%- assign group_index = group_index | plus: 1 -%}
+              {%- if group_index > 0 -%}
+                {%- assign group_titles = group_titles | append: '|||' -%}
+                {%- assign group_items = group_items | append: '|||' -%}
+              {%- endif -%}
+              {%- assign group_titles = group_titles | append: current_parent -%}
+              {%- assign prev_parent_title = current_parent -%}
+            {%- endif -%}
+            {%- assign group_items = group_items | append: '<li class="fnop-drawer-group__item"><a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset' -%}
+            {%- if top_link.current -%}
+              {%- assign group_items = group_items | append: ' menu-drawer__menu-item--active' -%}
+            {%- endif -%}
+            {%- assign group_items = group_items | append: '" href="' | append: top_link.url | append: '"' -%}
+            {%- if top_link.current -%}
+              {%- assign group_items = group_items | append: ' aria-current="page"' -%}
+            {%- endif -%}
+            {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: top_link.title | escape | append: '</span></a></li>' -%}
+          {%- else -%}
+            {%- for child_link in top_link.links -%}
+              {%- if child_link.links == blank -%}
+                {%- assign current_parent = top_link.title -%}
+                {%- if current_parent != prev_parent_title -%}
+                  {%- assign group_index = group_index | plus: 1 -%}
+                  {%- if group_index > 0 -%}
+                    {%- assign group_titles = group_titles | append: '|||' -%}
+                    {%- assign group_items = group_items | append: '|||' -%}
+                  {%- endif -%}
+                  {%- assign group_titles = group_titles | append: current_parent -%}
+                  {%- assign prev_parent_title = current_parent -%}
+                {%- endif -%}
+                {%- assign group_items = group_items | append: '<li class="fnop-drawer-group__item"><a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset' -%}
+                {%- if child_link.current -%}
+                  {%- assign group_items = group_items | append: ' menu-drawer__menu-item--active' -%}
+                {%- endif -%}
+                {%- assign group_items = group_items | append: '" href="' | append: child_link.url | append: '"' -%}
+                {%- if child_link.current -%}
+                  {%- assign group_items = group_items | append: ' aria-current="page"' -%}
+                {%- endif -%}
+                {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: child_link.title | escape | append: '</span></a></li>' -%}
+              {%- else -%}
+                {%- for grandchild_link in child_link.links -%}
+                  {%- if grandchild_link.links == blank -%}
+                    {%- assign current_parent = child_link.title -%}
+                    {%- if current_parent != prev_parent_title -%}
+                      {%- assign group_index = group_index | plus: 1 -%}
+                      {%- if group_index > 0 -%}
+                        {%- assign group_titles = group_titles | append: '|||' -%}
+                        {%- assign group_items = group_items | append: '|||' -%}
+                      {%- endif -%}
+                      {%- assign group_titles = group_titles | append: current_parent -%}
+                      {%- assign prev_parent_title = current_parent -%}
+                    {%- endif -%}
+                    {%- assign group_items = group_items | append: '<li class="fnop-drawer-group__item"><a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset' -%}
+                    {%- if grandchild_link.current -%}
+                      {%- assign group_items = group_items | append: ' menu-drawer__menu-item--active' -%}
+                    {%- endif -%}
+                    {%- assign group_items = group_items | append: '" href="' | append: grandchild_link.url | append: '"' -%}
+                    {%- if grandchild_link.current -%}
+                      {%- assign group_items = group_items | append: ' aria-current="page"' -%}
+                    {%- endif -%}
+                    {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: grandchild_link.title | escape | append: '</span></a></li>' -%}
+                  {%- else -%}
+                    {%- for deep_link in grandchild_link.links -%}
+                      {%- if deep_link.links == blank -%}
+                        {%- assign current_parent = grandchild_link.title -%}
+                        {%- if current_parent != prev_parent_title -%}
+                          {%- assign group_index = group_index | plus: 1 -%}
+                          {%- if group_index > 0 -%}
+                            {%- assign group_titles = group_titles | append: '|||' -%}
+                            {%- assign group_items = group_items | append: '|||' -%}
+                          {%- endif -%}
+                          {%- assign group_titles = group_titles | append: current_parent -%}
+                          {%- assign prev_parent_title = current_parent -%}
+                        {%- endif -%}
+                        {%- assign group_items = group_items | append: '<li class="fnop-drawer-group__item"><a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset' -%}
+                        {%- if deep_link.current -%}
+                          {%- assign group_items = group_items | append: ' menu-drawer__menu-item--active' -%}
+                        {%- endif -%}
+                        {%- assign group_items = group_items | append: '" href="' | append: deep_link.url | append: '"' -%}
+                        {%- if deep_link.current -%}
+                          {%- assign group_items = group_items | append: ' aria-current="page"' -%}
+                        {%- endif -%}
+                        {%- assign group_items = group_items | append: '><span class="menu-drawer__menu-item-text wrap-text">' | append: deep_link.title | escape | append: '</span></a></li>' -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- comment -%} Now render the groups {%- endcomment -%}
+        {%- assign group_titles_arr = group_titles | split: '|||' -%}
+        {%- assign group_items_arr = group_items | split: '|||' -%}
+
+        {%- for raw_title in group_titles_arr -%}
           {%- liquid
-            assign prev_parent_title = '__none__'
-            assign item_index = 0
+            assign label_index = forloop.index0
+            assign custom_label = fnop_drawer_group_labels[label_index]
+            assign is_root = false
+            if raw_title == 'root'
+              assign is_root = true
+            endif
           -%}
 
-          {%- for top_link in linklist.links -%}
-            {%- if top_link.links == blank -%}
-              {%- comment -%} Top-level leaf {%- endcomment -%}
-              {%- liquid
-                assign current_parent = 'root'
-              -%}
-              {%- if prev_parent_title != '__none__' and prev_parent_title != current_parent -%}
-                {%- assign item_index = item_index | plus: 1 -%}
-                <li class="menu-drawer__list-item menu-drawer__list-item--divider-flat" aria-hidden="true"></li>
-              {%- endif -%}
-              {%- liquid
-                assign prev_parent_title = current_parent
-                assign item_index = item_index | plus: 1
-              -%}
-              <li class="menu-drawer__list-item menu-drawer__list-item--flat" style="--menu-drawer-animation-index: {{ item_index }};">
-                <a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset{% if top_link.current %} menu-drawer__menu-item--active{% endif %}"
-                   href="{{ top_link.url }}">
-                  <span class="menu-drawer__menu-item-text wrap-text">{{ top_link.title | escape }}</span>
-                </a>
-              </li>
-            {%- else -%}
-              {%- comment -%} Has children — recurse into them {%- endcomment -%}
-              {%- for child_link in top_link.links -%}
-                {%- if child_link.links == blank -%}
-                  {%- assign current_parent = top_link.title -%}
-                  {%- if prev_parent_title != '__none__' and prev_parent_title != current_parent -%}
-                    {%- assign item_index = item_index | plus: 1 -%}
-                    <li class="menu-drawer__list-item menu-drawer__list-item--divider-flat" aria-hidden="true"></li>
-                  {%- endif -%}
-                  {%- liquid
-                    assign prev_parent_title = current_parent
-                    assign item_index = item_index | plus: 1
-                  -%}
-                  <li class="menu-drawer__list-item menu-drawer__list-item--flat" style="--menu-drawer-animation-index: {{ item_index }};">
-                    <a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset{% if child_link.current %} menu-drawer__menu-item--active{% endif %}"
-                       href="{{ child_link.url }}">
-                      <span class="menu-drawer__menu-item-text wrap-text">{{ child_link.title | escape }}</span>
-                    </a>
-                  </li>
-                {%- else -%}
-                  {%- comment -%} Grandchildren — walk one more level {%- endcomment -%}
-                  {%- for grandchild_link in child_link.links -%}
-                    {%- if grandchild_link.links == blank -%}
-                      {%- assign current_parent = child_link.title -%}
-                      {%- if prev_parent_title != '__none__' and prev_parent_title != current_parent -%}
-                        {%- assign item_index = item_index | plus: 1 -%}
-                        <li class="menu-drawer__list-item menu-drawer__list-item--divider-flat" aria-hidden="true"></li>
-                      {%- endif -%}
-                      {%- liquid
-                        assign prev_parent_title = current_parent
-                        assign item_index = item_index | plus: 1
-                      -%}
-                      <li class="menu-drawer__list-item menu-drawer__list-item--flat" style="--menu-drawer-animation-index: {{ item_index }};">
-                        <a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset{% if grandchild_link.current %} menu-drawer__menu-item--active{% endif %}"
-                           href="{{ grandchild_link.url }}">
-                          <span class="menu-drawer__menu-item-text wrap-text">{{ grandchild_link.title | escape }}</span>
-                        </a>
-                      </li>
-                    {%- else -%}
-                      {%- comment -%} Depth 4+ — continue walking {%- endcomment -%}
-                      {%- for deep_link in grandchild_link.links -%}
-                        {%- if deep_link.links == blank -%}
-                          {%- assign current_parent = grandchild_link.title -%}
-                          {%- if prev_parent_title != '__none__' and prev_parent_title != current_parent -%}
-                            {%- assign item_index = item_index | plus: 1 -%}
-                            <li class="menu-drawer__list-item menu-drawer__list-item--divider-flat" aria-hidden="true"></li>
-                          {%- endif -%}
-                          {%- liquid
-                            assign prev_parent_title = current_parent
-                            assign item_index = item_index | plus: 1
-                          -%}
-                          <li class="menu-drawer__list-item menu-drawer__list-item--flat" style="--menu-drawer-animation-index: {{ item_index }};">
-                            <a class="menu-drawer__menu-item menu-drawer__menu-item--child focus-inset{% if deep_link.current %} menu-drawer__menu-item--active{% endif %}"
-                               href="{{ deep_link.url }}">
-                              <span class="menu-drawer__menu-item-text wrap-text">{{ deep_link.title | escape }}</span>
-                            </a>
-                          </li>
-                        {%- endif -%}
-                      {%- endfor -%}
-                    {%- endif -%}
-                  {%- endfor -%}
-                {%- endif -%}
-              {%- endfor -%}
-            {%- endif -%}
-          {%- endfor -%}
-        </ul>
+          {%- if custom_label != blank -%}
+            {%- assign group_label = custom_label -%}
+          {%- elsif is_root -%}
+            {%- comment -%} Root group with no custom label — render with no header, un-collapsed {%- endcomment -%}
+            {%- assign group_label = '' -%}
+          {%- else -%}
+            {%- assign group_label = raw_title -%}
+          {%- endif -%}
+
+          {%- if group_label != blank -%}
+            <accordion-custom {% if forloop.first %}open-by-default-on-mobile{% endif %}>
+              <details>
+                <summary class="fnop-drawer-group__summary focus-inset">
+                  <span class="fnop-drawer-group__label">{{ group_label }}</span>
+                  <span class="fnop-drawer-group__chevron svg-wrapper">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                </summary>
+                <ul class="fnop-drawer-group__grid details-content" role="list">
+                  {{ group_items_arr[forloop.index0] }}
+                </ul>
+              </details>
+            </accordion-custom>
+          {%- else -%}
+            {%- comment -%} Root group without label — no accordion, always visible {%- endcomment -%}
+            <ul class="fnop-drawer-group__grid fnop-drawer-group__grid--no-header" role="list">
+              {{ group_items_arr[forloop.index0] }}
+            </ul>
+          {%- endif -%}
+        {%- endfor -%}
       </nav>
     </div>
   </details>
 </header-drawer>
 
 {% stylesheet %}
-  .fnop-drawer-logo img {
+  /* TASK 3 — Full screen */
+  .fnop-drawer .menu-drawer {
+    --drawer-width: 100%;
+    --drawer-max-width: 100%;
+    border-right: none;
+    box-shadow: none;
+  }
+
+  /* TASK 4 — Header row: close top-left, logo centred */
+  .fnop-drawer .fnop-drawer-header {
+    display: grid;
+    grid-template-columns: 52px 1fr 52px;
+    align-items: center;
+    padding: 8px 12px;
+  }
+  .fnop-drawer .fnop-drawer-close {
+    grid-column: 1;
+    justify-self: start;
+  }
+  .fnop-drawer .fnop-drawer-logo {
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+  }
+  .fnop-drawer .fnop-drawer-logo img {
     width: auto;
     height: var(--fnop-drawer-logo-height, 40px);
     max-width: 100%;
     object-fit: contain;
+    display: block;
+    margin-inline: auto;
+  }
+
+  /* TASK 5 — Two-column grid and rhythm */
+  .fnop-drawer .fnop-drawer-group__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+    row-gap: 0;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+  }
+  .fnop-drawer .fnop-drawer-group__item {
+    margin: 0;
+  }
+  .fnop-drawer .fnop-drawer-group__item .menu-drawer__menu-item {
+    padding: 10px 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* TASK 6 — Section headers */
+  .fnop-drawer .fnop-drawer-group__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-heading--family);
+    font-size: var(--font-size--lg);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .fnop-drawer .fnop-drawer-group__summary::-webkit-details-marker {
+    display: none;
+  }
+  .fnop-drawer .fnop-drawer-group__summary::marker {
+    display: none;
+    content: '';
+  }
+
+  .fnop-drawer .fnop-drawer-group__chevron {
+    transition: transform 0.3s ease;
+  }
+  .fnop-drawer .fnop-drawer-group__chevron svg {
+    width: 12px;
+    height: 12px;
+  }
+  .fnop-drawer details[open] > .fnop-drawer-group__summary .fnop-drawer-group__chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Navigation padding for the grouped layout */
+  .fnop-drawer .menu-drawer__navigation {
+    padding: 0 20px;
+  }
+
+  /* Remove inherited ul padding from Horizon */
+  .fnop-drawer .menu-drawer__navigation > accordion-custom,
+  .fnop-drawer .menu-drawer__navigation > .fnop-drawer-group__grid--no-header {
+    margin: 0;
   }
 {% endstylesheet %}
