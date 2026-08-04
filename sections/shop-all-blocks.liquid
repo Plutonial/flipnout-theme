@@ -1,6 +1,6 @@
 {%- liquid
   comment
-    Shop All Blocks — seven blocks: Pinball (game tiles), Arcade, Accessories, Preowned, Apparel, Merch, Moving Equipment.
+    Shop All Blocks — six blocks: Pinball (game tiles), Arcade, Preowned, Apparel, Merch, Moving Equipment.
   endcomment
 
   comment
@@ -225,7 +225,6 @@
   endcomment
   assign pinball_col = collections['pinball-machines']
   assign arcade_col = collections['arcade-machines']
-  assign accessories_col = collections['accessories']
   assign preowned_col = collections['preowned']
   assign apparel_col = collections['apparel']
   assign merch_col = collections['merchandise']
@@ -354,32 +353,9 @@
         </label>
       </div>
 
-      {% comment %} Stable partition: available products first, then unavailable {% endcomment %}
-      {%- liquid
-        assign arcade_sorted_handles = ''
-        for p in arcade_col.products
-          if p.available
-            if arcade_sorted_handles == ''
-              assign arcade_sorted_handles = p.handle
-            else
-              assign arcade_sorted_handles = arcade_sorted_handles | append: '|' | append: p.handle
-            endif
-          endif
-        endfor
-        for p in arcade_col.products
-          unless p.available
-            if arcade_sorted_handles == ''
-              assign arcade_sorted_handles = p.handle
-            else
-              assign arcade_sorted_handles = arcade_sorted_handles | append: '|' | append: p.handle
-            endif
-          endunless
-        endfor
-        assign arcade_sorted_arr = arcade_sorted_handles | split: '|'
-      -%}
       <ul class="sab__grid sab--precut" role="list">
-        {%- for handle in arcade_sorted_arr -%}
-          {%- assign p = all_products[handle] -%}
+        {%- for p in arcade_col.products -%}
+          {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
@@ -402,97 +378,10 @@
               <span class="bmc__price">{{ p.price | money }}</span>
             </a>
           </li>
+          {%- endif -%}
         {%- endfor -%}
-      </ul>
-      <div class="sab__controls">
-        <button class="sab__show-more" type="button" hidden>Show more</button>
-        <a class="sab__all" href="{{ arcade_col.url }}">View all</a>
-      </div>
-    </div>
-  </section>
-  {%- endif -%}
-
-  {% comment %} ── BLOCK 3: Accessories ── {% endcomment %}
-  {%- liquid
-    assign accessories_total = 0
-    assign accessories_vendors = ''
-    assign accessories_vendor_count = 0
-    if accessories_col
-      for p in accessories_col.products
-        assign accessories_total = accessories_total | plus: 1
-        assign pv = p.vendor
-        assign already = false
-        if accessories_vendors != ''
-          assign _acv_arr = accessories_vendors | split: '|'
-          for _acv in _acv_arr
-            if _acv == pv
-              assign already = true
-              break
-            endif
-          endfor
-        endif
-        unless already
-          if accessories_vendors == ''
-            assign accessories_vendors = pv
-          else
-            assign accessories_vendors = accessories_vendors | append: '|' | append: pv
-          endif
-          assign accessories_vendor_count = accessories_vendor_count | plus: 1
-        endunless
-      endfor
-    endif
-    assign accessories_v_arr = accessories_vendors | split: '|'
-  -%}
-  {%- if accessories_total > 0 -%}
-  <section class="sab__block" data-block="accessories" data-total="{{ accessories_total }}" data-eligible="{{ accessories_total }}">
-    <div class="brand-section__container">
-      <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ accessories_col.url }}">Accessories</a></h2>
-      </div>
-
-      <div class="bmg__toolbar sab__block-toolbar">
-        {%- if accessories_vendor_count > 1 -%}
-          <select class="bmg__select sab__filter-select" aria-label="Filter Accessories by manufacturer">
-            <option value="all">All manufacturers ({{ accessories_vendor_count }})</option>
-            {%- for av in accessories_v_arr -%}
-              <option value="{{ av | handleize }}">{{ av }}</option>
-            {%- endfor -%}
-          </select>
-        {%- endif -%}
-
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
-      </div>
-
-      {% comment %} Stable partition: available products first, then unavailable {% endcomment %}
-      {%- liquid
-        assign accessories_sorted_handles = ''
-        for p in accessories_col.products
-          if p.available
-            if accessories_sorted_handles == ''
-              assign accessories_sorted_handles = p.handle
-            else
-              assign accessories_sorted_handles = accessories_sorted_handles | append: '|' | append: p.handle
-            endif
-          endif
-        endfor
-        for p in accessories_col.products
-          unless p.available
-            if accessories_sorted_handles == ''
-              assign accessories_sorted_handles = p.handle
-            else
-              assign accessories_sorted_handles = accessories_sorted_handles | append: '|' | append: p.handle
-            endif
-          endunless
-        endfor
-        assign accessories_sorted_arr = accessories_sorted_handles | split: '|'
-      -%}
-      <ul class="sab__grid sab--precut" role="list">
-        {%- for handle in accessories_sorted_arr -%}
-          {%- assign p = all_products[handle] -%}
+        {%- for p in arcade_col.products -%}
+          {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
@@ -511,21 +400,22 @@
                   <span class="bmc__badge">Sold Out</span>
                 {%- endif -%}
               </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
+              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
               <span class="bmc__price">{{ p.price | money }}</span>
             </a>
           </li>
+          {%- endunless -%}
         {%- endfor -%}
       </ul>
       <div class="sab__controls">
         <button class="sab__show-more" type="button" hidden>Show more</button>
-        <a class="sab__all" href="{{ accessories_col.url }}">View all</a>
+        <a class="sab__all" href="{{ arcade_col.url }}">View all</a>
       </div>
     </div>
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 4: Preowned ── {% endcomment %}
+  {% comment %} ── BLOCK 3: Preowned ── {% endcomment %}
   {%- liquid
     assign preowned_total = 0
     assign preowned_vendors = ''
@@ -614,7 +504,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 5: Apparel ── {% endcomment %}
+  {% comment %} ── BLOCK 4: Apparel ── {% endcomment %}
   {%- liquid
     assign apparel_total = 0
     assign apparel_types = ''
@@ -703,7 +593,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 6: Merch ── {% endcomment %}
+  {% comment %} ── BLOCK 5: Merch ── {% endcomment %}
   {%- liquid
     assign merch_total = 0
     assign merch_vendors = ''
@@ -758,32 +648,9 @@
         </label>
       </div>
 
-      {% comment %} Stable partition: available products first, then unavailable {% endcomment %}
-      {%- liquid
-        assign merch_sorted_handles = ''
-        for p in merch_col.products
-          if p.available
-            if merch_sorted_handles == ''
-              assign merch_sorted_handles = p.handle
-            else
-              assign merch_sorted_handles = merch_sorted_handles | append: '|' | append: p.handle
-            endif
-          endif
-        endfor
-        for p in merch_col.products
-          unless p.available
-            if merch_sorted_handles == ''
-              assign merch_sorted_handles = p.handle
-            else
-              assign merch_sorted_handles = merch_sorted_handles | append: '|' | append: p.handle
-            endif
-          endunless
-        endfor
-        assign merch_sorted_arr = merch_sorted_handles | split: '|'
-      -%}
       <ul class="sab__grid sab--precut" role="list">
-        {%- for handle in merch_sorted_arr -%}
-          {%- assign p = all_products[handle] -%}
+        {%- for p in merch_col.products -%}
+          {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
@@ -806,6 +673,33 @@
               <span class="bmc__price">{{ p.price | money }}</span>
             </a>
           </li>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- for p in merch_col.products -%}
+          {%- unless p.available -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 1600 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1532px) 435px, (min-width: 750px) calc(33.33vw - 76px), calc(50vw - 56px)',
+                    widths: '220,300,440,600,880,1200,1600',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
+          </li>
+          {%- endunless -%}
         {%- endfor -%}
       </ul>
       <div class="sab__controls">
@@ -816,7 +710,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 7: Moving Equipment ── {% endcomment %}
+  {% comment %} ── BLOCK 6: Moving Equipment ── {% endcomment %}
   {%- liquid
     assign moving_total = 0
     assign moving_vendors = ''
@@ -871,32 +765,9 @@
         </label>
       </div>
 
-      {% comment %} Stable partition: available products first, then unavailable {% endcomment %}
-      {%- liquid
-        assign moving_sorted_handles = ''
-        for p in moving_col.products
-          if p.available
-            if moving_sorted_handles == ''
-              assign moving_sorted_handles = p.handle
-            else
-              assign moving_sorted_handles = moving_sorted_handles | append: '|' | append: p.handle
-            endif
-          endif
-        endfor
-        for p in moving_col.products
-          unless p.available
-            if moving_sorted_handles == ''
-              assign moving_sorted_handles = p.handle
-            else
-              assign moving_sorted_handles = moving_sorted_handles | append: '|' | append: p.handle
-            endif
-          endunless
-        endfor
-        assign moving_sorted_arr = moving_sorted_handles | split: '|'
-      -%}
       <ul class="sab__grid sab--precut" role="list">
-        {%- for handle in moving_sorted_arr -%}
-          {%- assign p = all_products[handle] -%}
+        {%- for p in moving_col.products -%}
+          {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
@@ -919,6 +790,33 @@
               <span class="bmc__price">{{ p.price | money }}</span>
             </a>
           </li>
+          {%- endif -%}
+        {%- endfor -%}
+        {%- for p in moving_col.products -%}
+          {%- unless p.available -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 1600 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1532px) 435px, (min-width: 750px) calc(33.33vw - 76px), calc(50vw - 56px)',
+                    widths: '220,300,440,600,880,1200,1600',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
+          </li>
+          {%- endunless -%}
         {%- endfor -%}
       </ul>
       <div class="sab__controls">
