@@ -59,10 +59,8 @@
 <div class="section">
   <div class="spacing-style layout-panel section-content-wrapper fnop-ap__wrapper">
 
-    <div class="fnop-ap__layout{% unless has_rail %} fnop-ap__layout--single{% endunless %}">
-
-      {%- comment -%} ── Player — spans both columns ── {%- endcomment -%}
-      <div class="fnop-ap__player"
+    {%- comment -%} ── Player — full site width, above the grid ── {%- endcomment -%}
+    <div class="fnop-ap__player"
         {%- if video_id != blank %} data-video-id="{{ video_id }}" data-video-provider="{{ video_provider }}"{% endif -%}
       >
         {%- if article.image -%}
@@ -82,7 +80,9 @@
             </svg>
           </button>
         {%- endif -%}
-      </div>
+    </div>
+
+    <div class="fnop-ap__layout{% unless has_rail %} fnop-ap__layout--single{% endunless %}">
 
       {%- comment -%} ── Left column ── {%- endcomment -%}
       <div class="fnop-ap__main">
