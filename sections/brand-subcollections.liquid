@@ -29,9 +29,7 @@
         {%- for p in collection.products -%}
           {%- if p.type == 'Accessory' -%}
             <li class="bacc__item" id="{{ section.id }}-acc-{{ p.id }}">
-              <div class="bmc--square">
                 {%- render 'brand-machine-card', product: p, sizes: '(min-width: 1532px) 238px, (min-width: 1200px) calc(20vw - 68px), (min-width: 900px) calc(25vw - 48px), (min-width: 750px) calc(33.33vw - 56px), calc(50vw - 56px)' -%}
-              </div>
             </li>
           {%- endif -%}
         {%- endfor -%}

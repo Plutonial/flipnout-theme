@@ -294,7 +294,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in na_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -363,7 +363,7 @@
             {%- endif -%}
           {%- endfor -%}
           <li class="sab__item" data-vendor="{{ mfr_handle }}">
-            <a class="bmc bmc--square" href="{{ game_col.url }}">
+            <a class="bmc" href="{{ game_col.url }}">
               <div class="bmc__poster">
                 {%- if game_col.image -%}
                   {{ game_col.image | image_url: width: 1600 | image_tag:
@@ -452,7 +452,7 @@
         {%- for p in arcade_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -478,7 +478,7 @@
         {%- for p in arcade_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -525,7 +525,7 @@
       <ul class="sab__grid" role="list">
         {%- for p in accessories_col.products limit: 6 -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -613,7 +613,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in preowned_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -703,7 +703,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in apparel_col.products -%}
           <li class="sab__item" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}">
+            <a class="bmc" href="{{ p.url }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -794,7 +794,7 @@
         {%- for p in merch_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -820,7 +820,7 @@
         {%- for p in merch_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -912,7 +912,7 @@
         {%- for p in moving_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
@@ -938,7 +938,7 @@
         {%- for p in moving_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+            <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
               <div class="bmc__poster">
                 {%- if p.featured_media -%}
                   {{ p.featured_media | image_url: width: 1600 | image_tag:
