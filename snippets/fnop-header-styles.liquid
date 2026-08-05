@@ -25,26 +25,41 @@
     }
   }
 
-  /* P68 — Breathing room below the header on all widths.
+  /* P68 — Breathing room below the header.
      Applied to <main> padding-top so it does not conflict with the transparent-header
      offset, which lives on main > .shopify-section:first-child .spacing-style
      (a descendant, not <main> itself). When transparent header is enabled, the first
      section is pulled up via a negative margin on .spacing-style — that margin acts on
      a child of <main>, not on <main> itself, so this padding-top is additive only when
-     the header is opaque and harmlessly absorbed when it overlaps. */
-  .content-for-layout {
-    padding-top: var(--padding-xl);
+     the header is opaque and harmlessly absorbed when it overlaps.
+     P70: scoped to desktop only — on mobile the taller header (P69) provides enough
+     separation and Serg asked to close the white band. */
+  @media screen and (min-width: 750px) {
+    .content-for-layout {
+      padding-top: var(--padding-xl);
+    }
   }
 
   /* P69 — Taller mobile header so the logo has vertical breathing room.
      The header row sizes itself from the logo (no explicit height), so the logo
-     touches both edges. Adding vertical padding to the header row gives the logo
+     touches both edges. Adding vertical padding to the top row only gives the logo
      clearance above and below. Applied below 750px only; desktop is untouched.
      Uses the header's own row element; sections/header.liquid is not modified. */
   @media screen and (max-width: 749px) {
-    header-component .header__row {
+    header-component .header__row--top {
       padding-top: var(--padding-sm);
       padding-bottom: var(--padding-sm);
+    }
+
+    /* P70 — Collapse the empty navigation-bar row on mobile.
+       This row carries the desktop nav; on mobile it renders with zero content height
+       but inherits the same vertical padding from the .header__row rule above.
+       Zeroing its padding here keeps the row in the DOM (so desktop is unaffected)
+       while removing the 22px empty band below the logo row. Keyed on the row's
+       own class — if it ever gains mobile content, give it its own padding rule. */
+    header-component .header__navigation-bar-row {
+      padding-top: 0;
+      padding-bottom: 0;
     }
   }
 </style>
