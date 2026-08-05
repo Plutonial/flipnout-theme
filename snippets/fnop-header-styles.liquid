@@ -25,20 +25,6 @@
     }
   }
 
-  /* P68 — Breathing room below the header.
-     Applied to <main> padding-top so it does not conflict with the transparent-header
-     offset, which lives on main > .shopify-section:first-child .spacing-style
-     (a descendant, not <main> itself). When transparent header is enabled, the first
-     section is pulled up via a negative margin on .spacing-style — that margin acts on
-     a child of <main>, not on <main> itself, so this padding-top is additive only when
-     the header is opaque and harmlessly absorbed when it overlaps.
-     P70: scoped to desktop only — on mobile the taller header (P69) provides enough
-     separation and Serg asked to close the white band. */
-  @media screen and (min-width: 750px) {
-    .content-for-layout {
-      padding-top: var(--padding-xl);
-    }
-  }
 
   /* P69 — Taller mobile header so the logo has vertical breathing room.
      The header row sizes itself from the logo (no explicit height), so the logo
