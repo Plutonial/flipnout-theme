@@ -525,6 +525,12 @@
   }
   .cbg__block { padding-block: clamp(48px, 8vw, 120px); }
 
+  /* The first block sits directly under the hero, so its top padding matches the
+     hero's own inner padding rather than the between-blocks rhythm. Same expression
+     as .collection-hero__content in snippets/collection-hero-styles.liquid — do not
+     hardcode the pixel, it has to track the hero at every width. */
+  .cbg__block:first-of-type { padding-top: clamp(32px, 6vw, 56px); }
+
   .cbg__more,
   .cbg__all {
     display: inline-flex;
