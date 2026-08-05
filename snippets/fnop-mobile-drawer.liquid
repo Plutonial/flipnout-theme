@@ -28,9 +28,18 @@
   fetchpriority="low"
 ></script>
 
+{%- comment -%}
+  Derive burger icon size from the logo height setting so they move together.
+  --header-logo-image-height-mobile is scoped to .header-logo and doesn't reach
+  the drawer, so we read settings.logo_height_mobile directly.
+  The burger is 80% of the logo height, capped to never exceed the logo.
+{%- endcomment -%}
+{%- assign fnop_logo_h_mobile = settings.logo_height_mobile | default: 64 -%}
+{%- assign fnop_burger_size = fnop_logo_h_mobile | times: 0.8 | round -%}
+
 <header-drawer
   class="header-drawer fnop-drawer {{ class }}"
-  style="--menu-image-border-radius: {{ image_border_radius }}px; --resource-card-corner-radius: {{ image_border_radius }}px;"
+  style="--menu-image-border-radius: {{ image_border_radius }}px; --resource-card-corner-radius: {{ image_border_radius }}px; --fnop-burger-size: {{ fnop_burger_size }}px;"
 >
   <details
     id="Details-menu-drawer-container"
@@ -262,20 +271,25 @@
 </header-drawer>
 
 {% stylesheet %}
-  /* P61 TASK 3 — Custom hamburger icon sized to match the logo */
-  .fnop-burger-icon {
-    --fnop-burger-size: var(--header-logo-image-height-mobile, 64px);
+  /* P68 — Custom hamburger icon sized to track the logo.
+     --fnop-burger-size is set as an inline custom property on <header-drawer>,
+     derived from settings.logo_height_mobile in Liquid (80% of logo height).
+     The wrapper selector beats upstream `summary .svg-wrapper` (0-1-1) with
+     `.fnop-drawer summary .fnop-burger-icon` (0-2-1). */
+  .fnop-drawer summary .fnop-burger-icon {
+    width: var(--fnop-burger-size);
+    height: var(--fnop-burger-size);
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .fnop-burger-icon img {
-    width: var(--fnop-burger-size);
-    height: var(--fnop-burger-size);
+  .fnop-drawer summary .fnop-burger-icon img {
+    width: 100%;
+    height: 100%;
     display: block;
   }
   /* Ensure tap target is at least 44px and grows with the icon */
-  .header__icon--menu:has(.fnop-burger-icon) {
+  .fnop-drawer summary.header__icon--menu {
     min-width: 44px;
     min-height: 44px;
     padding: 0;

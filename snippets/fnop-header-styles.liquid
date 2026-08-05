@@ -25,13 +25,14 @@
     }
   }
 
-  /* TASK 2 (P61) — Mobile gap between header and body.
+  /* P68 — Breathing room below the header on all widths.
      Applied to <main> padding-top so it does not conflict with the transparent-header
      offset, which lives on main > .shopify-section:first-child .spacing-style
-     (a descendant, not <main> itself). */
-  @media screen and (max-width: 749px) {
-    .content-for-layout {
-      padding-top: var(--padding-sm);
-    }
+     (a descendant, not <main> itself). When transparent header is enabled, the first
+     section is pulled up via a negative margin on .spacing-style — that margin acts on
+     a child of <main>, not on <main> itself, so this padding-top is additive only when
+     the header is opaque and harmlessly absorbed when it overlaps. */
+  .content-for-layout {
+    padding-top: var(--padding-xl);
   }
 </style>
