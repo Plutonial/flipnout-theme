@@ -10,6 +10,16 @@
   assign na_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
 
   comment
+    ── Resolve collection: use page collection on /collections/new-arrivals,
+       fall back to handle lookup on the home page or any other surface ──
+  endcomment
+  if collection and collection.handle == 'new-arrivals'
+    assign na_col = collection
+  else
+    assign na_col = collections['new-arrivals']
+  endif
+
+  comment
     ── Build unique vendor list from the collection's own products ──
   endcomment
 
@@ -17,7 +27,7 @@
   assign na_vendor_count = 0
   assign na_total = 0
 
-  for p in collection.products
+  for p in na_col.products
     assign na_total = na_total | plus: 1
     assign pv = p.vendor
     assign already = false
@@ -49,6 +59,8 @@
       <p class="fnop-na__empty">No new arrivals at this time.</p>
     {%- else -%}
 
+      <h2 class="brand-section__heading">Shop New Releases</h2>
+
       <div class="bmg__toolbar fnop-na__toolbar">
         {%- if na_vendor_count > 1 -%}
           <select class="bmg__select fnop-na__filter-select" aria-label="Filter New Arrivals by manufacturer">
@@ -58,10 +70,11 @@
             {%- endfor -%}
           </select>
         {%- endif -%}
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="fnop-na__grid fnop-na--precut" role="list">
-        {%- for p in collection.products -%}
+      <ul class="fnop-na__grid fnop-na--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+        {%- for p in na_col.products -%}
           <li class="fnop-na__item" data-filter="{{ p.vendor | handleize }}">
             {%- render 'brand-machine-card', product: p, sizes: na_card_sizes -%}
           </li>
@@ -77,13 +90,16 @@
 </fnop-new-arrivals>
 
 {% style %}
+  {%- render 'brand-toolbar-styles' -%}
+
   #{{ section_id }} {
-    padding-block: clamp(48px, 8vw, 120px);
+    padding-top: clamp(32px, 6vw, 56px);
+    padding-bottom: clamp(48px, 8vw, 120px);
   }
 
   #{{ section_id }} .fnop-na__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--fnop-na-mobile-cols, 2), 1fr);
     column-gap: 20px;
     row-gap: 20px;
     list-style: none;
@@ -93,7 +109,7 @@
 
   @media (min-width: 900px) {
     #{{ section_id }} .fnop-na__grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(var(--fnop-na-desktop-cols, {{ settings.grid_columns_desktop | default: '3' }}), 1fr);
       column-gap: 32px;
       row-gap: 32px;
     }
@@ -103,19 +119,23 @@
     min-width: 0;
   }
 
-  {% comment %} Pre-cut: 2 rows. Tracks the column ladder: 2 cols base = 4 items, 3 cols >=900 = 6 items {% endcomment %}
+  {% comment %} Pre-cut: 2 rows. 2 cols = 4 items, 1 col = 2, 3 cols = 6, 4 cols = 8 {% endcomment %}
   #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 5) { display: none; }
+
+  @media (max-width: 899px) {
+    #{{ section_id }} .fnop-na__grid[data-mcols="1"].fnop-na--precut .fnop-na__item:nth-child(n + 3) { display: none; }
+  }
 
   @media (min-width: 900px) {
     #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 5) { display: list-item; }
     #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 7) { display: none; }
+
+    #{{ section_id }} .fnop-na__grid[data-cols="4"].fnop-na--precut .fnop-na__item:nth-child(n + 7) { display: list-item; }
+    #{{ section_id }} .fnop-na__grid[data-cols="4"].fnop-na--precut .fnop-na__item:nth-child(n + 9) { display: none; }
   }
 
   #{{ section_id }} .fnop-na__item--offfilter { display: none; }
 
-  #{{ section_id }} .fnop-na__toolbar {
-    margin-bottom: 24px;
-  }
 
   #{{ section_id }} .fnop-na__controls {
     display: flex;
@@ -174,6 +194,38 @@
 
         if (this.btn) {
           this.btn.addEventListener('click', () => this.handleShowMore());
+        }
+
+        const sizeToggle = this.querySelector('.fnop-toggle--mobile');
+        if (sizeToggle) {
+          sizeToggle.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fnop-toggle-btn');
+            if (!btn) return;
+            if (this.grid) {
+              this.grid.style.setProperty('--fnop-na-mobile-cols', btn.dataset.cols);
+              this.grid.dataset.mcols = btn.dataset.cols;
+            }
+            sizeToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+              b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
+            this.update();
+          });
+        }
+
+        const desktopToggle = this.querySelector('.fnop-toggle--desktop');
+        if (desktopToggle) {
+          desktopToggle.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fnop-toggle-btn');
+            if (!btn) return;
+            if (this.grid) {
+              this.grid.style.setProperty('--fnop-na-desktop-cols', btn.dataset.cols);
+              this.grid.dataset.cols = btn.dataset.cols;
+            }
+            desktopToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+              b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
+            this.update();
+          });
         }
 
         this._resizeObserver = new ResizeObserver(() => this.update());
