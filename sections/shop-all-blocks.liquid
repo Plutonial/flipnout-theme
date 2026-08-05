@@ -234,7 +234,98 @@
 -%}
 
 <shop-all-blocks class="sab">
-  {% comment %} ── BLOCK 1: Pinball Machines (game tiles) ── {% endcomment %}
+  {% comment %} ── BLOCK 1: New Arrivals (reads the curated na_col collection) ── {% endcomment %}
+  {%- liquid
+    assign na_total = 0
+    assign na_vendors = ''
+    assign na_vendor_count = 0
+
+    if na_col
+      for p in na_col.products
+        assign na_total = na_total | plus: 1
+        assign pv = p.vendor
+        assign already = false
+        if na_vendors != ''
+          assign _nav_arr = na_vendors | split: '|'
+          for _nav in _nav_arr
+            if _nav == pv
+              assign already = true
+              break
+            endif
+          endfor
+        endif
+        unless already
+          if na_vendors == ''
+            assign na_vendors = pv
+          else
+            assign na_vendors = na_vendors | append: '|' | append: pv
+          endif
+          assign na_vendor_count = na_vendor_count | plus: 1
+        endunless
+      endfor
+    endif
+    assign na_v_arr = na_vendors | split: '|'
+  -%}
+  {%- if na_total > 0 -%}
+  <section class="sab__block" data-block="new-arrivals" data-total="{{ na_total }}" data-eligible="{{ na_total }}">
+    <div class="brand-section__container">
+      <div class="sab__brandbar">
+        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ na_col.url }}">New Arrivals</a></h2>
+      </div>
+
+      <div class="bmg__toolbar sab__block-toolbar">
+        {%- if na_vendor_count > 1 -%}
+          <select class="bmg__select sab__filter-select" aria-label="Filter New Arrivals by manufacturer">
+            <option value="all">All manufacturers ({{ na_vendor_count }})</option>
+            {%- for nv in na_v_arr -%}
+              <option value="{{ nv | handleize }}">{{ nv }}</option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+
+        <label class="bmg__switch sab__switch bmg__switch--on">
+          <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+          <span class="bmg__switch-label">Show Out of Stock</span>
+        </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+      </div>
+
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+        {%- for p in na_col.products -%}
+          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
+              <div class="bmc__poster">
+                {%- if p.featured_media -%}
+                  {{ p.featured_media | image_url: width: 1600 | image_tag:
+                    loading: 'lazy',
+                    class: 'bmc__img',
+                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
+                    widths: '220,300,440,600,880,1200,1600',
+                    alt: p.title
+                  }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
+                {%- endif -%}
+                {%- if p.tags contains 'sold-out' -%}
+                  <span class="bmc__badge">Sold Out</span>
+                {%- endif -%}
+              </div>
+              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
+              <span class="bmc__price">{{ p.price | money }}</span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+      <div class="sab__controls">
+        <button class="sab__show-more" type="button" hidden>Show more</button>
+        <a class="sab__all" href="{{ na_col.url }}">View all</a>
+      </div>
+    </div>
+  </section>
+  {%- endif -%}
+
+  {% comment %} ── BLOCK 2: Pinball Machines (game tiles) ── {% endcomment %}
   <section class="sab__block" data-block="pinball" data-total="{{ game_count }}" data-eligible="{{ game_count }}">
     <div class="brand-section__container">
       <div class="sab__brandbar">
@@ -250,9 +341,10 @@
             {%- endfor -%}
           </select>
         {%- endif -%}
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for gh in sorted_gc -%}
           {%- assign game_col = collections[gh] -%}
           {%- assign mfr_ref = game_col.metafields.custom.manufacturer.value -%}
@@ -300,7 +392,7 @@
     </div>
   </section>
 
-  {% comment %} ── BLOCK 2: Arcade Machines ── {% endcomment %}
+  {% comment %} ── BLOCK 3: Arcade Machines ── {% endcomment %}
   {%- liquid
     assign arcade_total = 0
     assign arcade_vendors = ''
@@ -353,9 +445,10 @@
           <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
           <span class="bmg__switch-label">Show Out of Stock</span>
         </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in arcade_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
@@ -417,7 +510,7 @@
   </section>
   {%- endif -%}
 
-  {% comment %} ── BLOCK 3: Accessories (navigating block — teaser + links to /collections/accessories) ── {% endcomment %}
+  {% comment %} ── BLOCK 4: Accessories (navigating block — teaser + links to /collections/accessories) ── {% endcomment %}
   {%- liquid
     assign accessories_shown = 6
   -%}
@@ -461,7 +554,7 @@
     </div>
   </section>
 
-  {% comment %} ── BLOCK 4: Preowned ── {% endcomment %}
+  {% comment %} ── BLOCK 5: Preowned ── {% endcomment %}
   {%- liquid
     assign preowned_total = 0
     assign preowned_vendors = ''
@@ -514,9 +607,10 @@
           <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
           <span class="bmg__switch-label">Show Out of Stock</span>
         </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in preowned_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
@@ -545,96 +639,6 @@
       <div class="sab__controls">
         <button class="sab__show-more" type="button" hidden>Show more</button>
         <a class="sab__all" href="{{ preowned_col.url }}">View all</a>
-      </div>
-    </div>
-  </section>
-  {%- endif -%}
-
-  {% comment %} ── BLOCK 5: New Arrivals (reads the curated na_col collection) ── {% endcomment %}
-  {%- liquid
-    assign na_total = 0
-    assign na_vendors = ''
-    assign na_vendor_count = 0
-
-    if na_col
-      for p in na_col.products
-        assign na_total = na_total | plus: 1
-        assign pv = p.vendor
-        assign already = false
-        if na_vendors != ''
-          assign _nav_arr = na_vendors | split: '|'
-          for _nav in _nav_arr
-            if _nav == pv
-              assign already = true
-              break
-            endif
-          endfor
-        endif
-        unless already
-          if na_vendors == ''
-            assign na_vendors = pv
-          else
-            assign na_vendors = na_vendors | append: '|' | append: pv
-          endif
-          assign na_vendor_count = na_vendor_count | plus: 1
-        endunless
-      endfor
-    endif
-    assign na_v_arr = na_vendors | split: '|'
-  -%}
-  {%- if na_total > 0 -%}
-  <section class="sab__block" data-block="new-arrivals" data-total="{{ na_total }}" data-eligible="{{ na_total }}">
-    <div class="brand-section__container">
-      <div class="sab__brandbar">
-        <h2 class="brand-section__heading sab__heading"><a class="sab__heading-link" href="{{ na_col.url }}">New Arrivals</a></h2>
-      </div>
-
-      <div class="bmg__toolbar sab__block-toolbar">
-        {%- if na_vendor_count > 1 -%}
-          <select class="bmg__select sab__filter-select" aria-label="Filter New Arrivals by manufacturer">
-            <option value="all">All manufacturers ({{ na_vendor_count }})</option>
-            {%- for nv in na_v_arr -%}
-              <option value="{{ nv | handleize }}">{{ nv }}</option>
-            {%- endfor -%}
-          </select>
-        {%- endif -%}
-
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
-      </div>
-
-      <ul class="sab__grid sab--precut" role="list">
-        {%- for p in na_col.products -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            <a class="bmc bmc--square" href="{{ p.url }}" aria-label="{{ p.title }}">
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            </a>
-          </li>
-        {%- endfor -%}
-      </ul>
-      <div class="sab__controls">
-        <button class="sab__show-more" type="button" hidden>Show more</button>
-        <a class="sab__all" href="{{ na_col.url }}">View all</a>
       </div>
     </div>
   </section>
@@ -693,9 +697,10 @@
           <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
           <span class="bmg__switch-label">Show Out of Stock</span>
         </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in apparel_col.products -%}
           <li class="sab__item" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             <a class="bmc bmc--square" href="{{ p.url }}">
@@ -782,9 +787,10 @@
           <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
           <span class="bmg__switch-label">Show Out of Stock</span>
         </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in merch_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
@@ -899,9 +905,10 @@
           <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
           <span class="bmg__switch-label">Show Out of Stock</span>
         </label>
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list">
+      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in moving_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
@@ -973,7 +980,7 @@
 
   .sab__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(var(--sab-mobile-cols, 2), 1fr);
     column-gap: 20px;
     row-gap: 20px;
     list-style: none;
@@ -983,7 +990,7 @@
 
   @media (min-width: 900px) {
     .sab__grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(var(--sab-desktop-cols, {{ settings.grid_columns_desktop | default: '3' }}), 1fr);
       column-gap: 32px;
       row-gap: 32px;
     }
@@ -993,12 +1000,19 @@
   .sab__item { min-width: 0; }
   .sab__item--beyond { display: none; }
 
-  {% comment %} Pre-cut: 2 rows. Must track the column ladder: 2 cols base = 4 items, 3 cols >=900 = 6 items {% endcomment %}
+  {% comment %} Pre-cut: 2 rows. 2 cols = 4 items, 1 col = 2, 3 cols = 6, 4 cols = 8 {% endcomment %}
   .sab--precut .sab__item:nth-child(n + 5) { display: none; }
+
+  @media (max-width: 899px) {
+    .sab__grid[data-mcols="1"].sab--precut .sab__item:nth-child(n + 3) { display: none; }
+  }
 
   @media (min-width: 900px) {
     .sab--precut .sab__item:nth-child(n + 5) { display: list-item; }
     .sab--precut .sab__item:nth-child(n + 7) { display: none; }
+
+    .sab__grid[data-cols="4"].sab--precut .sab__item:nth-child(n + 7) { display: list-item; }
+    .sab__grid[data-cols="4"].sab--precut .sab__item:nth-child(n + 9) { display: none; }
   }
 
 
@@ -1150,6 +1164,40 @@
               } else {
                 this.applyBlockFilters(block);
               }
+            });
+          }
+
+          const sizeToggle = block.querySelector('.fnop-toggle--mobile');
+          if (sizeToggle) {
+            sizeToggle.addEventListener('click', (e) => {
+              const btn = e.target.closest('.fnop-toggle-btn');
+              if (!btn) return;
+              const grid = block.querySelector('.sab__grid');
+              if (grid) {
+                grid.style.setProperty('--sab-mobile-cols', btn.dataset.cols);
+                grid.dataset.mcols = btn.dataset.cols;
+              }
+              sizeToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+              });
+              this.updateBlock(block);
+            });
+          }
+
+          const desktopToggle = block.querySelector('.fnop-toggle--desktop');
+          if (desktopToggle) {
+            desktopToggle.addEventListener('click', (e) => {
+              const btn = e.target.closest('.fnop-toggle-btn');
+              if (!btn) return;
+              const grid = block.querySelector('.sab__grid');
+              if (grid) {
+                grid.style.setProperty('--sab-desktop-cols', btn.dataset.cols);
+                grid.dataset.cols = btn.dataset.cols;
+              }
+              desktopToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+              });
+              this.updateBlock(block);
             });
           }
         });
