@@ -4,6 +4,7 @@
   Params:
     product    — the product object
     sizes      — (optional) sizes attribute override
+    square     — (optional) if true, adds bmc--square for 1:1 poster ratio
 {%- endcomment -%}
 
 {%- liquid
@@ -17,7 +18,7 @@
   endunless
 -%}
 
-<a class="bmc" href="{{ product.url }}" aria-label="{{ product.title }}">
+<a class="bmc{% if square %} bmc--square{% endif %}" href="{{ product.url }}" aria-label="{{ product.title }}">
   <div class="bmc__poster">
     {%- if product.featured_media -%}
       {{ product.featured_media | image_url: width: 1600 | image_tag:
