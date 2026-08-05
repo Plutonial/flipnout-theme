@@ -35,4 +35,16 @@
   .content-for-layout {
     padding-top: var(--padding-xl);
   }
+
+  /* P69 — Taller mobile header so the logo has vertical breathing room.
+     The header row sizes itself from the logo (no explicit height), so the logo
+     touches both edges. Adding vertical padding to the header row gives the logo
+     clearance above and below. Applied below 750px only; desktop is untouched.
+     Uses the header's own row element; sections/header.liquid is not modified. */
+  @media screen and (max-width: 749px) {
+    header-component .header__row {
+      padding-top: var(--padding-sm);
+      padding-bottom: var(--padding-sm);
+    }
+  }
 </style>
