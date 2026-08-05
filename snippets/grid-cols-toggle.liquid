@@ -1,0 +1,26 @@
+{%- comment -%}
+  Accepts: mobile_cols (default 1), desktop_cols (default from settings.grid_columns_desktop)
+{%- endcomment -%}
+
+{%- liquid
+  assign m_cols = mobile_cols | default: 1
+  assign d_cols = desktop_cols | default: settings.grid_columns_desktop | default: '3'
+-%}
+
+<div class="fnop-toggle fnop-toggle--mobile">
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == 1 %}true{% else %}false{% endif %}" aria-label="One column" data-cols="1">
+    <svg viewBox="0 0 18 18"><rect x="3" y="2" width="12" height="14" rx="1.5"/></svg>
+  </button>
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == 2 %}true{% else %}false{% endif %}" aria-label="Two columns" data-cols="2">
+    <svg viewBox="0 0 18 18"><rect x="1.5" y="2" width="6" height="14" rx="1.5"/><rect x="10.5" y="2" width="6" height="14" rx="1.5"/></svg>
+  </button>
+</div>
+
+<div class="fnop-toggle fnop-toggle--desktop">
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if d_cols == '3' %}true{% else %}false{% endif %}" aria-label="Three columns" data-cols="3">
+    <svg viewBox="0 0 18 18"><rect x="1" y="3" width="4" height="12" rx="1"/><rect x="7" y="3" width="4" height="12" rx="1"/><rect x="13" y="3" width="4" height="12" rx="1"/></svg>
+  </button>
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if d_cols == '4' %}true{% else %}false{% endif %}" aria-label="Four columns" data-cols="4">
+    <svg viewBox="0 0 18 18"><rect x="0.5" y="3" width="3" height="12" rx="0.9"/><rect x="5" y="3" width="3" height="12" rx="0.9"/><rect x="9.5" y="3" width="3" height="12" rx="0.9"/><rect x="14" y="3" width="3" height="12" rx="0.9"/></svg>
+  </button>
+</div>

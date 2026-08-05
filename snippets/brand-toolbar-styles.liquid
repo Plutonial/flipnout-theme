@@ -1,5 +1,6 @@
 {%- comment -%}
-  Shared toolbar styles for brand-machines-grid and category-brand-grids.
+  Shared toolbar styles for every grid surface (brand-machines-grid,
+  category-brand-grids, shop-all-blocks, fnop-new-arrivals, etc.).
   Rendered inside {% style %} blocks — do not wrap in <style> tags.
 {%- endcomment -%}
 
@@ -113,3 +114,42 @@
     width: 100%;
   }
 }
+
+/* ── Shared toggle-button chrome ── */
+.fnop-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgb(var(--color-foreground-rgb) / 0.3);
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: rgb(var(--color-foreground-rgb) / 0.6);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.fnop-toggle-btn[aria-pressed="true"] {
+  background: rgb(var(--color-foreground-rgb));
+  color: rgb(var(--color-background-rgb));
+  border-color: rgb(var(--color-foreground-rgb));
+}
+
+.fnop-toggle-btn:focus-visible {
+  outline: 2px solid rgb(var(--color-foreground-rgb));
+  outline-offset: 2px;
+}
+
+.fnop-toggle-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+
+.fnop-toggle { display: none; }
+@media (min-width: 900px)  { .fnop-toggle--desktop { display: inline-flex; gap: 4px; margin-left: auto; } }
+@media (max-width: 899px)  { .fnop-toggle--mobile  { display: inline-flex; gap: 4px; } }
