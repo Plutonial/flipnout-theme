@@ -446,9 +446,18 @@
               <svg viewBox="0 0 18 18"><rect x="1.5" y="2" width="6" height="14" rx="1.5"/><rect x="10.5" y="2" width="6" height="14" rx="1.5"/></svg>
             </button>
           </div>
+
+          <div class="cbg__cols-toggle">
+            <button type="button" class="cbg__size-btn" aria-pressed="{% if settings.grid_columns_desktop == '3' %}true{% else %}false{% endif %}" aria-label="Three columns" data-cols="3">
+              <svg viewBox="0 0 18 18"><rect x="1" y="3" width="4" height="12" rx="1"/><rect x="7" y="3" width="4" height="12" rx="1"/><rect x="13" y="3" width="4" height="12" rx="1"/></svg>
+            </button>
+            <button type="button" class="cbg__size-btn" aria-pressed="{% if settings.grid_columns_desktop == '4' %}true{% else %}false{% endif %}" aria-label="Four columns" data-cols="4">
+              <svg viewBox="0 0 18 18"><rect x="0.5" y="3" width="3" height="12" rx="0.9"/><rect x="5" y="3" width="3" height="12" rx="0.9"/><rect x="9.5" y="3" width="3" height="12" rx="0.9"/><rect x="14" y="3" width="3" height="12" rx="0.9"/></svg>
+            </button>
+          </div>
         </div>
 
-        <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}">
+        <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
           {%- for pair in product_pairs -%}
             {%- assign pair_parts = pair | split: ':' -%}
             {%- assign gh = pair_parts[0] -%}
@@ -496,7 +505,7 @@
 
   @media (min-width: 900px) {
     .cbg__grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(var(--cbg-desktop-cols, {{ settings.grid_columns_desktop | default: 3 }}), 1fr);
       column-gap: 32px;
       row-gap: 32px;
     }
@@ -511,6 +520,9 @@
   @media (min-width: 900px) {
     .cbg--precut .cbg__item:nth-child(n + 3)  { display: list-item; }
     .cbg--precut .cbg__item:nth-child(n + 7)  { display: none; }           /* 3 cols × 2 = 6  */
+
+    .cbg__grid[data-cols="4"].cbg--precut .cbg__item:nth-child(n + 7) { display: list-item; }
+    .cbg__grid[data-cols="4"].cbg--precut .cbg__item:nth-child(n + 9) { display: none; }  /* 4 cols × 2 = 8 */
   }
 
   .cbg__controls {
@@ -602,9 +614,55 @@
   @media (min-width: 900px) {
     .cbg__block[data-eligible="3"] .cbg__controls { justify-content: flex-start; }
   }
+  {% comment %} ── Shared button styles for size/column toggles ── {% endcomment %}
+  .cbg__size-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.3);
+    border-radius: var(--radius-sm, 6px);
+    background: transparent;
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .cbg__size-btn[aria-pressed="true"] {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+    border-color: rgb(var(--color-foreground-rgb));
+  }
+
+  .cbg__size-btn:focus-visible {
+    outline: 2px solid rgb(var(--color-foreground-rgb));
+    outline-offset: 2px;
+  }
+
+  .cbg__size-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
   {% comment %} ── Mobile size toggle (visible below the 3-col breakpoint) ── {% endcomment %}
   .cbg__size-toggle {
     display: none;
+  }
+
+  {% comment %} ── Desktop column toggle (visible at ≥900px) ── {% endcomment %}
+  .cbg__cols-toggle { display: none; }
+
+  @media (min-width: 900px) {
+    .cbg__cols-toggle {
+      display: inline-flex;
+      gap: 4px;
+      margin-left: auto;
+    }
   }
 
   @media (max-width: 899px) {
@@ -622,40 +680,6 @@
     .cbg__size-toggle {
       display: inline-flex;
       gap: 4px;
-    }
-
-    .cbg__size-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      padding: 0;
-      border: 1px solid rgb(var(--color-foreground-rgb) / 0.3);
-      border-radius: var(--radius-sm, 6px);
-      background: transparent;
-      color: rgb(var(--color-foreground-rgb) / 0.6);
-      cursor: pointer;
-      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-    }
-
-    .cbg__size-btn[aria-pressed="true"] {
-      background: rgb(var(--color-foreground-rgb));
-      color: rgb(var(--color-background-rgb));
-      border-color: rgb(var(--color-foreground-rgb));
-    }
-
-    .cbg__size-btn:focus-visible {
-      outline: 2px solid rgb(var(--color-foreground-rgb));
-      outline-offset: 2px;
-    }
-
-    .cbg__size-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.5;
     }
   }
 {% endstyle %}
@@ -708,6 +732,25 @@
               sizeToggle.querySelectorAll('.cbg__size-btn').forEach(b => {
                 b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
               });
+              this.updateBlock(block);
+            });
+          }
+
+          const colsToggle = block.querySelector('.cbg__cols-toggle');
+          if (colsToggle) {
+            colsToggle.addEventListener('click', (e) => {
+              const btn = e.target.closest('.cbg__size-btn');
+              if (!btn) return;
+              const cols = btn.dataset.cols;
+              const grid = block.querySelector('.cbg__grid');
+              if (grid) {
+                grid.style.setProperty('--cbg-desktop-cols', cols);
+                grid.dataset.cols = cols;
+              }
+              colsToggle.querySelectorAll('.cbg__size-btn').forEach(b => {
+                b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+              });
+              this.updateBlock(block);
             });
           }
         });

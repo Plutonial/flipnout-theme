@@ -2287,5 +2287,21 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "Product grid",
+    "settings": [
+      {
+        "type": "select",
+        "id": "grid_columns_desktop",
+        "label": "Desktop columns",
+        "info": "Default number of columns for the product grids on Shop All, category and manufacturer pages. Visitors can switch between 3 and 4 from the toolbar.",
+        "options": [
+          { "value": "3", "label": "3 columns" },
+          { "value": "4", "label": "4 columns" }
+        ],
+        "default": "3"
+      }
+    ]
   }
 ]
