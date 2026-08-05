@@ -1,0 +1,144 @@
+{%- comment -%}
+  Episode article styles. Rendered once from layout/theme.liquid.
+  Namespaced fnop-ap__* per §6.
+{%- endcomment -%}
+
+<style>
+  /* ── Layout ── */
+  .fnop-ap__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  @media (min-width: 900px) {
+    .fnop-ap__layout {
+      grid-template-columns: minmax(0, 1fr) 360px;
+    }
+
+    .fnop-ap__layout--single {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ── Header ── */
+  .fnop-ap__header {
+    text-align: center;
+  }
+
+  .fnop-ap__title {
+    font-size: var(--font-size--3xl);
+    line-height: 1.2;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .fnop-ap__meta {
+    margin-top: 8px;
+  }
+
+  .fnop-ap__date {
+    font-size: var(--font-size--sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+  }
+
+  /* ── Player ── */
+  .fnop-ap__player {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #000;
+    margin-top: 24px;
+  }
+
+  .fnop-ap__poster {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fnop-ap__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .fnop-ap__play:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .fnop-ap__play-icon {
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease;
+  }
+
+  .fnop-ap__play:hover .fnop-ap__play-icon {
+    transform: scale(1.1);
+  }
+
+  .fnop-ap__player iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* ── Article body — preserve existing max-width ── */
+  .fnop-ap__main .blog-post-content {
+    max-width: var(--normal-content-width);
+    margin-top: 32px;
+  }
+
+  /* ── Rail ── */
+  .fnop-ap__rail {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .fnop-ap__rail-heading {
+    font-size: var(--font-size--lg);
+    text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+
+  .fnop-ap__rail-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Collection card (rail) ── */
+  .fnop-ap__collection-card {
+    display: block;
+    background: var(--color-surface-cream, #F7F2EA);
+    padding: 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .fnop-ap__collection-img {
+    display: block;
+    width: 100%;
+    border-radius: 4px;
+  }
+
+  .fnop-ap__collection-title {
+    font-size: var(--font-size--md);
+    margin: 8px 0 0;
+  }
+</style>

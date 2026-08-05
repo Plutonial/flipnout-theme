@@ -1,0 +1,187 @@
+{%- comment -%}
+  Episode article page — click-to-play player, two-column layout with related rail.
+  Template: article.vlog.json
+  Styles: snippets/fnop-article-episode-styles.liquid (rendered from theme.liquid)
+  Namespace: fnop-ap__*
+{%- endcomment -%}
+
+{%- liquid
+  comment
+    ── Video URL → embed ID ──
+    Handles: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/embed/ID, vimeo.com/ID
+  endcomment
+
+  assign video_url_raw = article.metafields.episode.video_url.value.url
+  assign video_id = ''
+  assign video_provider = ''
+
+  if video_url_raw != blank
+    if video_url_raw contains 'youtu.be/'
+      assign video_provider = 'youtube'
+      assign video_id = video_url_raw | split: 'youtu.be/' | last | split: '?' | first | split: '/' | last
+    elsif video_url_raw contains 'youtube.com/embed/'
+      assign video_provider = 'youtube'
+      assign video_id = video_url_raw | split: '/embed/' | last | split: '?' | first | split: '/' | first
+    elsif video_url_raw contains 'youtube.com/watch'
+      assign video_provider = 'youtube'
+      assign video_id = video_url_raw | split: 'v=' | last | split: '&' | first
+    elsif video_url_raw contains 'vimeo.com/'
+      assign video_provider = 'vimeo'
+      assign video_id = video_url_raw | split: 'vimeo.com/' | last | split: '?' | first | split: '/' | last
+    endif
+  endif
+
+  comment
+    ── Related metafields ──
+  endcomment
+
+  assign related_collections = article.metafields.episode.related_collections.value
+  assign featured_products = article.metafields.episode.featured_products.value
+
+  assign has_related = false
+  if related_collections != blank and related_collections.size > 0
+    assign has_related = true
+  endif
+
+  assign has_featured = false
+  if featured_products != blank and featured_products.size > 0
+    assign has_featured = true
+  endif
+
+  assign has_rail = false
+  if has_related or has_featured
+    assign has_rail = true
+  endif
+
+  assign rail_card_sizes = '(min-width: 900px) 360px, calc(100vw - 32px)'
+-%}
+
+<div class="section">
+  <div class="spacing-style layout-panel section-content-wrapper fnop-ap__wrapper">
+
+    <div class="fnop-ap__layout{% unless has_rail %} fnop-ap__layout--single{% endunless %}">
+
+      {%- comment -%} ── Left column ── {%- endcomment -%}
+      <div class="fnop-ap__main">
+
+        {%- comment -%} ── Title block ── {%- endcomment -%}
+        <header class="fnop-ap__header">
+          <h1 class="fnop-ap__title">{{ article.title }}</h1>
+          <div class="fnop-ap__meta">
+            <time class="fnop-ap__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+              {{ article.published_at | date: '%b %d, %Y' }}
+            </time>
+          </div>
+        </header>
+
+        {%- comment -%} ── Player ── {%- endcomment -%}
+        <div class="fnop-ap__player"
+          {%- if video_id != blank %} data-video-id="{{ video_id }}" data-video-provider="{{ video_provider }}"{% endif -%}
+        >
+          {%- if article.image -%}
+            {{ article.image | image_url: width: 1280 | image_tag:
+              class: 'fnop-ap__poster',
+              loading: 'eager',
+              sizes: '(min-width: 900px) 1017px, 100vw',
+              widths: '400,600,800,1017,1280',
+              alt: article.title
+            }}
+          {%- endif -%}
+          {%- if video_id != blank -%}
+            <button class="fnop-ap__play" aria-label="Play {{ article.title }}" type="button">
+              <svg class="fnop-ap__play-icon" viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
+                <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
+                <path d="M45 24 27 14v20" fill="#fff"/>
+              </svg>
+            </button>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%} ── Article body ── {%- endcomment -%}
+        <div class="blog-post-content rte">
+          {{ article.content }}
+        </div>
+      </div>
+
+      {%- comment -%} ── Right column (rail) ── {%- endcomment -%}
+      {%- if has_rail -%}
+        <aside class="fnop-ap__rail">
+
+          {%- if has_related -%}
+            <div class="fnop-ap__rail-group">
+              <h2 class="fnop-ap__rail-heading">Related Games</h2>
+              <div class="fnop-ap__rail-cards">
+                {%- for col in related_collections -%}
+                  <a class="fnop-ap__collection-card" href="{{ col.url }}">
+                    {%- if col.image -%}
+                      {{ col.image | image_url: width: 720 | image_tag:
+                        loading: 'lazy',
+                        class: 'fnop-ap__collection-img',
+                        sizes: rail_card_sizes,
+                        widths: '360,480,720',
+                        alt: col.title
+                      }}
+                    {%- endif -%}
+                    <h3 class="fnop-ap__collection-title">{{ col.title }}</h3>
+                  </a>
+                {%- endfor -%}
+              </div>
+            </div>
+          {%- endif -%}
+
+          {%- if has_featured -%}
+            <div class="fnop-ap__rail-group">
+              <h2 class="fnop-ap__rail-heading">Featured Machines</h2>
+              <div class="fnop-ap__rail-cards">
+                {%- for p in featured_products -%}
+                  {%- render 'brand-machine-card', product: p, sizes: rail_card_sizes -%}
+                {%- endfor -%}
+              </div>
+            </div>
+          {%- endif -%}
+
+        </aside>
+      {%- endif -%}
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function() {
+    var players = document.querySelectorAll('.fnop-ap__player[data-video-id]');
+    players.forEach(function(player) {
+      var btn = player.querySelector('.fnop-ap__play');
+      if (!btn) return;
+      btn.addEventListener('click', function() {
+        var id = player.getAttribute('data-video-id');
+        var provider = player.getAttribute('data-video-provider');
+        var iframe = document.createElement('iframe');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+        iframe.setAttribute('title', '{{ article.title | escape }}');
+        if (provider === 'vimeo') {
+          iframe.src = 'https://player.vimeo.com/video/' + id + '?autoplay=1';
+        } else {
+          iframe.src = 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0';
+        }
+        player.textContent = '';
+        player.appendChild(iframe);
+      });
+    });
+  })();
+</script>
+
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Episode Article",
+  "class": "section-wrapper",
+  "settings": [],
+  "presets": []
+}
+{% endschema %}

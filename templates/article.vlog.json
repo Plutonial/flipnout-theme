@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "fnop-article-episode",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
