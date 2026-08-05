@@ -33,49 +33,15 @@
     width: 100%;
   }
 
-  #{{ section_id }} .collection-hero__h1::before,
-  #{{ section_id }} .collection-hero__h1::after {
-    content: '';
-    flex: 0 0 72px;
-    /* Span the visible height of the type. actualBoundingBoxAscent for this face is
-       0.820em, so with align-items: baseline and no bottom margin the bar runs from
-       the baseline to the cap top — the same band the capitals occupy. Measured top
-       edge within 0.02px of the cap top from 32px to 64px, and 98.6-98.7% of the
-       cap height, so it still never exceeds the letters. */
-    height: 0.82em;
-    /* Zero: the bar sits on the baseline with the capitals. The 0.08em offset from
-       P35 existed to optically centre a bar that was shorter than the caps; a bar
-       that spans them needs no offset. Do not reinstate it. */
-    margin-block-end: 0;
-    background: repeating-linear-gradient(
-      currentcolor 0 12.9%,
-      transparent 12.9% 29.03%
-    );
-  }
 
   @media (max-width: 749px) {
-    /* justify-content centres the [bar · title · bar] group — the H1 is flex-start
-       by default, so without this the group collapses to the left edge. */
+    /* justify-content centres the title on mobile — the H1 is flex-start by default,
+       so without this it sits at the left edge. */
     #{{ section_id }} .collection-hero__h1 {
       gap: 10px;
       justify-content: center;
     }
 
-    #{{ section_id }} .collection-hero__h1::before {
-      display: block;
-    }
-
-    #{{ section_id }} .collection-hero__h1::before,
-    #{{ section_id }} .collection-hero__h1::after {
-      /* flex-basis 0 means the bars add nothing to the line's base size, so there is
-         never a deficit and the title is never asked to shrink — the bars simply take
-         what is left, up to the desktop width. A larger flex-shrink does NOT work:
-         flexbox still takes a sliver (measured 0.12px) off the title, which is enough
-         to wrap it. */
-      flex: 1 1 0;
-      max-width: 72px;
-      min-width: 0;
-    }
   }
 
   #{{ section_id }} .collection-hero__stack {
