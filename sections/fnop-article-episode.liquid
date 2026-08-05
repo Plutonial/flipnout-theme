@@ -105,7 +105,7 @@
 
           {%- if has_related -%}
             <div class="fnop-ap__rail-group">
-              <h2 class="fnop-ap__rail-heading">Related Games</h2>
+              <h3 class="fnop-ap__rail-heading">Related Games</h3>
               <div class="fnop-ap__rail-cards">
                 {%- for col in related_collections -%}
                   <a class="fnop-ap__collection-card" href="{{ col.url }}">
@@ -127,7 +127,7 @@
 
           {%- if has_featured -%}
             <div class="fnop-ap__rail-group">
-              <h2 class="fnop-ap__rail-heading">Featured Machines</h2>
+              <h3 class="fnop-ap__rail-heading">Featured Machines</h3>
               <div class="fnop-ap__rail-cards">
                 {%- for p in featured_products -%}
                   {%- render 'brand-machine-card', product: p, sizes: rail_card_sizes -%}

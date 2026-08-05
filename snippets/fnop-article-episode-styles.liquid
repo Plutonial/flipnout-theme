@@ -9,6 +9,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 32px;
+    margin-block-start: 48px;
   }
 
   @media (min-width: 900px) {
@@ -96,19 +97,39 @@
   /* ── Top breathing room — matches Horizon's blog index (48px) ── */
   .fnop-ap__wrapper {
     padding-top: 48px;
+    padding-block-end: 48px;
   }
 
   /* ── Article body RTE ── */
   .fnop-ap__main .blog-post-content {
     margin-top: 32px;
+    margin-inline: 0;
+    max-width: none;
   }
 
+  /* ── Branded body subheads ──
+     Visual match of .sab__heading (P22 TASK 3, Shop All). Replicated here
+     to avoid coupling two sections. Reconcile if the source changes. */
   .fnop-ap__main .blog-post-content h2 {
-    font-size: var(--font-size--2xl);
-    line-height: 1.2;
+    font-size: var(--font-size--4xl);
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.4px;
     text-transform: uppercase;
-    margin-block-start: 2em;
-    margin-block-end: 0.5em;
+    position: relative;
+    padding-block-end: 12px;
+    margin-block-start: 48px;
+    margin-block-end: 12px;
+  }
+
+  .fnop-ap__main .blog-post-content h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 56px;
+    height: 4px;
+    background: rgba(255, 0, 0, 0.9);
   }
 
   .fnop-ap__main .blog-post-content h2:first-child {
@@ -140,10 +161,27 @@
     gap: 32px;
   }
 
+  /* ── Branded rail group headings ──
+     Same visual as body h2 above and .sab__heading (P22 TASK 3). */
   .fnop-ap__rail-heading {
-    font-size: var(--font-size--lg);
+    font-size: var(--font-size--4xl);
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: -0.4px;
     text-transform: uppercase;
+    position: relative;
+    padding-block-end: 12px;
     margin: 0 0 12px;
+  }
+
+  .fnop-ap__rail-heading::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 56px;
+    height: 4px;
+    background: rgba(255, 0, 0, 0.9);
   }
 
   .fnop-ap__rail-cards {
