@@ -7,6 +7,7 @@
   .fnop-vg__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     gap: 20px;
     list-style: none;
     margin: 0;
@@ -28,6 +29,7 @@
     flex-direction: column;
     text-decoration: none;
     color: inherit;
+    height: 100%;
   }
 
   .fnop-vg__media {
@@ -61,6 +63,6 @@
   .fnop-vg__date {
     font-size: var(--font-size--sm);
     color: var(--color-foreground-secondary, #888);
-    margin-top: 6px;
+    margin-top: auto;
   }
 </style>
