@@ -1,0 +1,62 @@
+{%- comment -%}
+  Vlog grid — uniform 2→3 column branded card grid for show blogs.
+  Assigned via the blog.vlog template (admin: Blog posts → Manage blogs → Theme template).
+  No conditional on blog.handle — the template assignment is admin data.
+{%- endcomment -%}
+
+{% paginate blog.articles by 24 %}
+
+<div class="brand-section__container">
+  <h1 class="fnop-vg__page-title">{{ blog.title }}</h1>
+
+  {%- if blog.articles.size > 0 -%}
+    <ul class="fnop-vg__grid" role="list">
+      {%- for article in blog.articles -%}
+        <li>
+          <a class="fnop-vg__card" href="{{ article.url }}">
+            {%- if article.image -%}
+              {{ article.image | image_url: width: 1600 | image_tag:
+                loading: 'lazy',
+                class: 'fnop-vg__media',
+                sizes: '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)',
+                widths: '220,300,440,600,880,1280',
+                alt: article.image.alt | default: article.title
+              }}
+            {%- endif -%}
+
+            {%- assign ep_num = article.metafields.episode.episode_number.value -%}
+            {%- if ep_num != blank -%}
+              <span class="fnop-vg__eyebrow">Ep {{ ep_num }}</span>
+            {%- endif -%}
+
+            <h2 class="fnop-vg__title">{{ article.title }}</h2>
+            <time class="fnop-vg__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+              {{ article.published_at | date: '%b %-d, %Y' }}
+            </time>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  {%- if paginate.pages > 1 -%}
+    <div class="fnop-vg__pagination">
+      {{ paginate | default_pagination }}
+    </div>
+  {%- endif -%}
+</div>
+
+{% endpaginate %}
+
+{% schema %}
+{
+  "name": "Vlog Grid",
+  "tag": "section",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Vlog Grid"
+    }
+  ]
+}
+{% endschema %}

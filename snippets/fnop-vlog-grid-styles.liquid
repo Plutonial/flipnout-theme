@@ -1,0 +1,66 @@
+{% comment %}
+  Vlog grid styles. Rendered once from layout/theme.liquid.
+  Namespaced fnop-vg__* per §6.
+{% endcomment %}
+
+<style>
+  .fnop-vg__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 900px) {
+    .fnop-vg__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 32px;
+    }
+  }
+
+  .fnop-vg__card {
+    background: var(--color-surface-cream, #F7F2EA);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .fnop-vg__media {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .fnop-vg__eyebrow {
+    font-size: var(--font-size--xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-foreground-secondary, #888);
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .fnop-vg__title {
+    font-size: var(--font-size--md);
+    line-height: 1.4;
+    margin-top: 6px;
+    margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fnop-vg__date {
+    font-size: var(--font-size--sm);
+    color: var(--color-foreground-secondary, #888);
+    margin-top: 6px;
+  }
+</style>

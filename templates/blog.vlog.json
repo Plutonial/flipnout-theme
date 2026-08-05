@@ -1,0 +1,11 @@
+{
+  "sections": {
+    "main": {
+      "type": "fnop-vlog-grid",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
