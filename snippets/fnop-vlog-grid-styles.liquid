@@ -11,7 +11,7 @@
 
   .fnop-vg__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: 1fr;
     gap: 20px;
     list-style: none;
@@ -20,10 +20,16 @@
     padding-block-end: 48px;
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 750px) {
+    .fnop-vg__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 32px;
+    }
+  }
+
+  @media (min-width: 1400px) {
     .fnop-vg__grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 32px;
     }
   }
 
@@ -58,29 +64,29 @@
     margin-bottom: 0;
   }
 
-  /* P79 TASK 2 — title reserves exactly 2 lines, no truncation */
+  /* P80 TASK 2 — title reserves 3 lines, no truncation */
   .fnop-vg__title {
     font-family: var(--font-heading--family);
     font-size: var(--font-size--lg);
     line-height: calc(24 / 18);
     font-weight: 600;
-    min-height: calc(var(--font-size--lg) * (24 / 18) * 2);
+    min-height: calc(var(--font-size--lg) * (24 / 18) * 3);
     margin-top: 6px;
     margin-bottom: 0;
   }
 
-  /* P79 TASK 3 — excerpt reserves exactly 3 lines */
+  /* P80 TASK 3 — excerpt reserves 4 lines for narrowest card width */
   .fnop-vg__excerpt {
     font-size: var(--font-size--md);
     line-height: calc(26 / 16);
     font-weight: 400;
-    min-height: calc(var(--font-size--md) * (26 / 16) * 3);
     color: rgb(var(--color-foreground-rgb) / 0.7);
     margin: 6px 0 0;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    -webkit-line-clamp: 4;
+    min-height: calc(var(--font-size--md) * (26 / 16) * 4);
   }
 
   /* P79 TASK 4 — date matches fnop-ap__date: 20/32 */

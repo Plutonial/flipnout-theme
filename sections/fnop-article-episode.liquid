@@ -150,7 +150,7 @@
                           <div class="fnop-ap__game-card-body">
                             <p class="fnop-ap__game-card-name">{{ _gc_title }}</p>
                             {%- if _gc_mfr != blank -%}
-                              <p class="fnop-ap__game-card-mfr">By: {%- if _gc_mfr_url != blank -%}<a href="{{ _gc_mfr_url }}" class="fnop-ap__game-card-mfr-link">{{ _gc_mfr }}</a>{%- else -%}{{ _gc_mfr }}{%- endif -%}</p>
+                              <p class="fnop-ap__game-card-mfr">By: {% if _gc_mfr_url != blank %}<a href="{{ _gc_mfr_url }}" class="fnop-ap__game-card-mfr-link">{{ _gc_mfr }}</a>{% else %}{{ _gc_mfr }}{% endif %}</p>
                             {%- endif -%}
                             {%- if col.metafields.custom.release_date.value != blank -%}
                               <p class="fnop-ap__game-card-date">Release Date: {{ col.metafields.custom.release_date.value | date: '%B %-d, %Y' }}</p>
