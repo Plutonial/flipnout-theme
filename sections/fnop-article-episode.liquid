@@ -65,7 +65,14 @@
       {%- comment -%} ── Left column ── {%- endcomment -%}
       <div class="fnop-ap__main">
 
-        {%- comment -%} ── Player — inside column 1 (P75 TASK 1) ── {%- endcomment -%}
+        <h1 class="fnop-ap__title">{{ article.title }}</h1>
+        <div class="fnop-ap__meta">
+          <time class="fnop-ap__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+            {{ article.published_at | date: '%b %-d, %Y' }}
+          </time>
+        </div>
+
+        {%- comment -%} ── Player — inside column 1 (P75 TASK 1, reordered P77 TASK 2) ── {%- endcomment -%}
         <div class="fnop-ap__player"
             {%- if video_id != blank %} data-video-id="{{ video_id }}" data-video-provider="{{ video_provider }}"{% endif -%}
           >
@@ -88,13 +95,6 @@
             {%- endif -%}
         </div>
 
-        <h1 class="fnop-ap__title">{{ article.title }}</h1>
-        <div class="fnop-ap__meta">
-          <time class="fnop-ap__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
-            {{ article.published_at | date: '%b %-d, %Y' }}
-          </time>
-        </div>
-
         {%- comment -%} ── Article body — rendered exactly as authored (P76 TASK 2) ── {%- endcomment -%}
         <div class="blog-post-content rte">
           {{ article.content }}
@@ -105,10 +105,12 @@
       {%- if has_rail -%}
         <aside class="fnop-ap__rail">
 
-          {%- comment -%} ── Rail heading — static label (P76 TASK 2) ── {%- endcomment -%}
-          <div class="fnop-ap__rail-ite">
-            <h2>In This Episode:</h2>
-          </div>
+          {%- comment -%} ── Rail heading — static label (P76 TASK 2, renamed P77 TASK 1) ── {%- endcomment -%}
+          {%- if section.settings.rail_heading != blank -%}
+            <div class="fnop-ap__rail-ite">
+              <h2>{{ section.settings.rail_heading }}</h2>
+            </div>
+          {%- endif -%}
 
           {%- if has_related -%}
             <div class="fnop-ap__rail-group fnop-ap__rail-group--games">
@@ -245,7 +247,14 @@
 {
   "name": "Episode Article",
   "class": "section-wrapper",
-  "settings": [],
+  "settings": [
+    {
+      "type": "text",
+      "id": "rail_heading",
+      "label": "Rail heading",
+      "default": "The Lineup"
+    }
+  ],
   "presets": []
 }
 {% endschema %}
