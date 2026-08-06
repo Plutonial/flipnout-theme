@@ -8,13 +8,14 @@
   .fnop-ap__layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
+    row-gap: 32px;
     margin-block-start: 48px;
   }
 
   @media (min-width: 900px) {
     .fnop-ap__layout {
-      grid-template-columns: minmax(0, 1fr) 320px;
+      grid-template-columns: minmax(0, 1fr) 400px;
+      column-gap: 72px;
     }
 
     .fnop-ap__layout--single {
@@ -175,7 +176,7 @@
       content: "";
       position: absolute;
       inset-block: 0;
-      inset-inline-start: -16px;
+      inset-inline-start: -36px;
       width: 1px;
       background: rgb(var(--color-border-rgb));
     }
@@ -206,6 +207,11 @@
   .fnop-ap__rail-dotnav {
     justify-content: center;
     margin-top: 12px;
+  }
+
+  /* Hide dotnav when only one item — no navigation needed */
+  [data-gc-count="1"] .fnop-ap__rail-dotnav {
+    display: none;
   }
 
   /* ── Horizontal separator between groups ── */
