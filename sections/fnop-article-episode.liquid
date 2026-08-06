@@ -56,54 +56,26 @@
   assign rail_card_sizes = '(min-width: 900px) 320px, calc(100vw - 32px)'
 
   comment
-    ── Split article.content on <h2>Summary</h2> ──
-    Everything before that boundary is "In This Episode" and goes in the rail.
-    Everything from Summary onward stays in the content column.
-    If no Summary heading exists, the whole body stays in the content column.
+    ── Extract only the first <h2> from article.content (P75 TASK 3) ──
+    That one heading renders in the rail above Featured Games.
+    Everything else stays in the content column, in order.
+    If the body has no <h2> at all, nothing goes to the rail.
   endcomment
 
   assign body_html = article.content
-  assign ite_html = ''
-  assign summary_html = body_html
+  assign first_h2_html = ''
+  assign body_without_h2 = body_html
 
-  if body_html contains '<h2>Summary</h2>'
-    assign _parts = body_html | split: '<h2>Summary</h2>'
-    assign ite_html = _parts | first
-    assign summary_html = _parts | last | prepend: '<h2>Summary</h2>'
-  elsif body_html contains '<h2>Summary'
-    assign _split_tag = body_html | split: '<h2>' 
-    assign _before = ''
-    assign _found_summary = false
-    assign _after = ''
-    for _chunk in _split_tag
-      if _found_summary
-        if _after == blank
-          assign _after = _chunk | prepend: '<h2>'
-        else
-          assign _after = _after | append: '<h2>' | append: _chunk
-        endif
-      elsif _chunk contains 'Summary'
-        assign _test = _chunk | strip | split: '>' | first | strip
-        if _test == 'Summary' or _test contains 'Summary'
-          assign _found_summary = true
-          assign _after = _chunk | prepend: '<h2>'
-          assign ite_html = _before
-        else
-          assign _before = _before | append: '<h2>' | append: _chunk
-        endif
-      else
-        if forloop.first
-          assign _before = _chunk
-        else
-          assign _before = _before | append: '<h2>' | append: _chunk
-        endif
-      endif
-    endfor
-    if _found_summary
-      assign summary_html = _after
-    else
-      assign ite_html = ''
-      assign summary_html = body_html
+  if body_html contains '<h2>'
+    comment
+      Find the first <h2>…</h2> element via split/remove_first.
+    endcomment
+    assign _before_first_h2 = body_html | split: '<h2>' | first
+    assign _after_open = body_html | remove_first: _before_first_h2 | remove_first: '<h2>'
+    if _after_open contains '</h2>'
+      assign _h2_text = _after_open | split: '</h2>' | first
+      assign first_h2_html = '<h2>' | append: _h2_text | append: '</h2>'
+      assign body_without_h2 = body_html | remove_first: first_h2_html
     endif
   endif
 -%}
@@ -146,9 +118,9 @@
           </time>
         </div>
 
-        {%- comment -%} ── Article body — Summary onward only (P75 TASK 3) ── {%- endcomment -%}
+        {%- comment -%} ── Article body — minus the first <h2> (P75 TASK 3) ── {%- endcomment -%}
         <div class="blog-post-content rte">
-          {{ summary_html }}
+          {{ body_without_h2 }}
         </div>
       </div>
 
@@ -156,10 +128,10 @@
       {%- if has_rail -%}
         <aside class="fnop-ap__rail">
 
-          {%- comment -%} ── In This Episode block (P75 TASK 3) ── {%- endcomment -%}
-          {%- if ite_html != blank -%}
+          {%- comment -%} ── First <h2> from the body (P75 TASK 3) ── {%- endcomment -%}
+          {%- if first_h2_html != blank -%}
             <div class="fnop-ap__rail-ite">
-              {{ ite_html }}
+              {{ first_h2_html }}
             </div>
             <hr class="fnop-ap__rail-hr">
           {%- endif -%}
