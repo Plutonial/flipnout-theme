@@ -135,17 +135,22 @@
                           {%- liquid
                             assign _gc_title = col.title
                             assign _gc_mfr = ''
+                            assign _gc_mfr_url = ''
                             if _gc_title contains ' - '
                               assign _gc_parts = _gc_title | split: ' - '
                               assign _gc_mfr = _gc_parts | first
                               assign _gc_title = _gc_parts | last
+                            endif
+                            assign _gc_mfr_col = col.metafields.custom.manufacturer.value
+                            if _gc_mfr_col and _gc_mfr_col.url != blank
+                              assign _gc_mfr_url = _gc_mfr_col.url
                             endif
                           -%}
 
                           <div class="fnop-ap__game-card-body">
                             <p class="fnop-ap__game-card-name">{{ _gc_title }}</p>
                             {%- if _gc_mfr != blank -%}
-                              <p class="fnop-ap__game-card-mfr">By: {{ _gc_mfr }}</p>
+                              <p class="fnop-ap__game-card-mfr">By: {%- if _gc_mfr_url != blank -%}<a href="{{ _gc_mfr_url }}" class="fnop-ap__game-card-mfr-link">{{ _gc_mfr }}</a>{%- else -%}{{ _gc_mfr }}{%- endif -%}</p>
                             {%- endif -%}
                             {%- if col.metafields.custom.release_date.value != blank -%}
                               <p class="fnop-ap__game-card-date">Release Date: {{ col.metafields.custom.release_date.value | date: '%B %-d, %Y' }}</p>
