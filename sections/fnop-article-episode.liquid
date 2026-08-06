@@ -55,29 +55,6 @@
 
   assign rail_card_sizes = '(min-width: 900px) 320px, calc(100vw - 32px)'
 
-  comment
-    ── Extract only the first <h2> from article.content (P75 TASK 3) ──
-    That one heading renders in the rail above Featured Games.
-    Everything else stays in the content column, in order.
-    If the body has no <h2> at all, nothing goes to the rail.
-  endcomment
-
-  assign body_html = article.content
-  assign first_h2_html = ''
-  assign body_without_h2 = body_html
-
-  if body_html contains '<h2>'
-    comment
-      Find the first <h2>…</h2> element via split/remove_first.
-    endcomment
-    assign _before_first_h2 = body_html | split: '<h2>' | first
-    assign _after_open = body_html | remove_first: _before_first_h2 | remove_first: '<h2>'
-    if _after_open contains '</h2>'
-      assign _h2_text = _after_open | split: '</h2>' | first
-      assign first_h2_html = '<h2>' | append: _h2_text | append: '</h2>'
-      assign body_without_h2 = body_html | remove_first: first_h2_html
-    endif
-  endif
 -%}
 
 <div class="section">
@@ -118,9 +95,9 @@
           </time>
         </div>
 
-        {%- comment -%} ── Article body — minus the first <h2> (P75 TASK 3) ── {%- endcomment -%}
+        {%- comment -%} ── Article body — rendered exactly as authored (P76 TASK 2) ── {%- endcomment -%}
         <div class="blog-post-content rte">
-          {{ body_without_h2 }}
+          {{ article.content }}
         </div>
       </div>
 
@@ -128,13 +105,10 @@
       {%- if has_rail -%}
         <aside class="fnop-ap__rail">
 
-          {%- comment -%} ── First <h2> from the body (P75 TASK 3) ── {%- endcomment -%}
-          {%- if first_h2_html != blank -%}
-            <div class="fnop-ap__rail-ite">
-              {{ first_h2_html }}
-            </div>
-            <hr class="fnop-ap__rail-hr">
-          {%- endif -%}
+          {%- comment -%} ── Rail heading — static label (P76 TASK 2) ── {%- endcomment -%}
+          <div class="fnop-ap__rail-ite">
+            <h2>In This Episode:</h2>
+          </div>
 
           {%- if has_related -%}
             <div class="fnop-ap__rail-group fnop-ap__rail-group--games">

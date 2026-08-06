@@ -179,6 +179,10 @@
 
     /* P74 TASK 2 — vertical separator on the layout, not the rail,
        so it spans the full band height and doesn't scroll with sticky. */
+    .fnop-ap__layout {
+      position: relative;
+    }
+
     .fnop-ap__layout::after {
       content: "";
       position: absolute;
@@ -189,8 +193,9 @@
       background: rgb(51, 51, 51);
     }
 
-    .fnop-ap__layout {
-      position: relative;
+    /* P76 TASK 3 — no rail, no divider */
+    .fnop-ap__layout--single::after {
+      content: none;
     }
   }
 
