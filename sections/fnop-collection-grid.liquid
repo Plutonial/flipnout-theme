@@ -26,8 +26,6 @@
   assign rows = section.settings.rows | default: 2
 -%}
 
-{% paginate grid_col.products by 250 %}
-
 {%- liquid
   comment
     ── Build unique filter-value list from the current page of products ──
@@ -123,29 +121,9 @@
         <button class="fnop-na__show-more" type="button" hidden>Show more</button>
       </div>
 
-      {%- if paginate.pages > 1 -%}
-        <nav class="fnop-na__pagination" aria-label="Pagination">
-          {%- if paginate.previous -%}
-            <a href="{{ paginate.previous.url }}" class="fnop-na__page-link">&laquo; Previous</a>
-          {%- endif -%}
-          {%- for part in paginate.parts -%}
-            {%- if part.is_link -%}
-              <a href="{{ part.url }}" class="fnop-na__page-link">{{ part.title }}</a>
-            {%- else -%}
-              <span class="fnop-na__page-link fnop-na__page-link--current">{{ part.title }}</span>
-            {%- endif -%}
-          {%- endfor -%}
-          {%- if paginate.next -%}
-            <a href="{{ paginate.next.url }}" class="fnop-na__page-link">Next &raquo;</a>
-          {%- endif -%}
-        </nav>
-      {%- endif -%}
-
     {%- endif -%}
   </div>
 </fnop-collection-grid>
-
-{% endpaginate %}
 
 {% style %}
   {%- render 'brand-toolbar-styles' -%}
