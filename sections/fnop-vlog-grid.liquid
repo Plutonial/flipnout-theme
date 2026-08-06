@@ -24,9 +24,6 @@
       if hero_related != blank and hero_related.size > 0
         assign hero_has_rail = true
       endif
-      if hero_featured != blank and hero_featured.size > 0
-        assign hero_has_rail = true
-      endif
     -%}
 
     <div class="fnop-vg__hero{% unless hero_has_rail %} fnop-vg__hero--no-rail{% endunless %}">
@@ -54,7 +51,9 @@
               related_collections: hero_related,
               featured_products: hero_featured,
               rail_heading: section.settings.rail_heading,
-              rail_card_sizes: '(min-width: 900px) 320px, calc(100vw - 32px)'
+              rail_card_sizes: '(min-width: 900px) 320px, calc(100vw - 32px)',
+              hero_variant: true,
+              games_heading: section.settings.games_heading
             -%}
           </aside>
         {%- endif -%}
@@ -132,6 +131,13 @@
       "label": "Rail heading",
       "default": "The Lineup",
       "info": "Heading above the rail in the featured hero."
+    },
+    {
+      "type": "text",
+      "id": "games_heading",
+      "label": "Hero games heading",
+      "default": "In This Episode",
+      "info": "Heading above the games in the hero rail. Blank hides it."
     }
   ],
   "presets": [

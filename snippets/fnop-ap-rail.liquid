@@ -1,12 +1,14 @@
 {%- comment -%}
   Shared rail component — used by the episode article page and the blog index hero.
-  Renders the "THE LINEUP" heading, Featured Games slider, separator, and Featured Machines slider.
+  Hero variant (hero_variant: true) shows games only, no rail-ite, no machines, no hr.
 
-  Required variables (passed via render):
+  Variables (passed via render):
     related_collections  — list of collection objects (episode.related_collections)
     featured_products    — list of product objects (episode.featured_products)
-    rail_heading         — string, e.g. "The Lineup"
+    rail_heading         — string, e.g. "The Lineup" (ignored in hero variant)
     rail_card_sizes      — sizes attribute for responsive images
+    hero_variant         — boolean, true for blog hero (games only, no rail-ite)
+    games_heading        — string, overrides "Featured Games" when set
 {%- endcomment -%}
 
 {%- liquid
@@ -21,15 +23,17 @@
   endif
 -%}
 
-{%- if rail_heading != blank -%}
-  <div class="fnop-ap__rail-ite">
-    <h2>{{ rail_heading }}</h2>
-  </div>
-{%- endif -%}
+{%- unless hero_variant -%}
+  {%- if rail_heading != blank -%}
+    <div class="fnop-ap__rail-ite">
+      <h2>{{ rail_heading }}</h2>
+    </div>
+  {%- endif -%}
+{%- endunless -%}
 
 {%- if _has_related -%}
   <div class="fnop-ap__rail-group fnop-ap__rail-group--games">
-    <h3 class="fnop-ap__rail-heading">Featured Games</h3>
+    <h3 class="fnop-ap__rail-heading">{% if games_heading != blank %}{{ games_heading }}{% else %}Featured Games{% endif %}</h3>
 
     <div class="fnop-ap__rail-slider" uk-slider="finite: true; autoplay: false" data-gc-count="{{ related_collections.size }}">
       <div class="uk-slider-container">
@@ -82,46 +86,48 @@
   </div>
 {%- endif -%}
 
-{%- if _has_related and _has_featured -%}
-  <hr class="fnop-ap__rail-hr">
-{%- endif -%}
+{%- unless hero_variant -%}
+  {%- if _has_related and _has_featured -%}
+    <hr class="fnop-ap__rail-hr">
+  {%- endif -%}
 
-{%- if _has_featured -%}
-  <div class="fnop-ap__rail-group fnop-ap__rail-group--machines">
-    <h3 class="fnop-ap__rail-heading">Featured Machines</h3>
+  {%- if _has_featured -%}
+    <div class="fnop-ap__rail-group fnop-ap__rail-group--machines">
+      <h3 class="fnop-ap__rail-heading">Featured Machines</h3>
 
-    <div class="fnop-ap__rail-slider" uk-slider="finite: true; autoplay: false" data-gc-count="{{ featured_products.size }}">
-      <div class="uk-slider-container">
-        <ul class="uk-slider-items fnop-ap__rail-slider-list">
-          {%- for p in featured_products -%}
-            <li class="fnop-ap__rail-slide">
-              <div class="fnop-ap__machine-card">
-                {%- if p.featured_image -%}
-                  {{ p.featured_image | image_url: width: 720 | image_tag:
-                    loading: 'lazy',
-                    class: 'fnop-ap__machine-card-img',
-                    sizes: rail_card_sizes,
-                    widths: '360,480,720',
-                    alt: p.title
-                  }}
-                {%- endif -%}
-                <div class="fnop-ap__machine-card-body">
-                  <p class="fnop-ap__machine-card-title">{{ p.title }}</p>
-                  {%- comment -%} Price — replicated from .bmc__price, not coupled {%- endcomment -%}
-                  <p class="fnop-ap__machine-card-price">{{ p.price | money }}</p>
-                  {%- comment -%} Geometry from .editions-grid__btn — replicated, not coupled {%- endcomment -%}
-                  {%- if p.tags contains 'sold-out' -%}
-                    <span class="fnop-ap__rail-btn fnop-ap__rail-btn--sold-out" aria-disabled="true">Sold Out</span>
-                  {%- else -%}
-                    <a href="{{ p.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--shop">Shop Now</a>
+      <div class="fnop-ap__rail-slider" uk-slider="finite: true; autoplay: false" data-gc-count="{{ featured_products.size }}">
+        <div class="uk-slider-container">
+          <ul class="uk-slider-items fnop-ap__rail-slider-list">
+            {%- for p in featured_products -%}
+              <li class="fnop-ap__rail-slide">
+                <div class="fnop-ap__machine-card">
+                  {%- if p.featured_image -%}
+                    {{ p.featured_image | image_url: width: 720 | image_tag:
+                      loading: 'lazy',
+                      class: 'fnop-ap__machine-card-img',
+                      sizes: rail_card_sizes,
+                      widths: '360,480,720',
+                      alt: p.title
+                    }}
                   {%- endif -%}
+                  <div class="fnop-ap__machine-card-body">
+                    <p class="fnop-ap__machine-card-title">{{ p.title }}</p>
+                    {%- comment -%} Price — replicated from .bmc__price, not coupled {%- endcomment -%}
+                    <p class="fnop-ap__machine-card-price">{{ p.price | money }}</p>
+                    {%- comment -%} Geometry from .editions-grid__btn — replicated, not coupled {%- endcomment -%}
+                    {%- if p.tags contains 'sold-out' -%}
+                      <span class="fnop-ap__rail-btn fnop-ap__rail-btn--sold-out" aria-disabled="true">Sold Out</span>
+                    {%- else -%}
+                      <a href="{{ p.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--shop">Shop Now</a>
+                    {%- endif -%}
+                  </div>
                 </div>
-              </div>
-            </li>
-          {%- endfor -%}
-        </ul>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+        <ul class="uk-slider-nav uk-dotnav fnop-ap__rail-dotnav"></ul>
       </div>
-      <ul class="uk-slider-nav uk-dotnav fnop-ap__rail-dotnav"></ul>
     </div>
-  </div>
-{%- endif -%}
+  {%- endif -%}
+{%- endunless -%}
