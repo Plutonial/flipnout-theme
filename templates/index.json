@@ -10,7 +10,7 @@
 {
   "sections": {
     "fnop_new_arrivals": {
-      "type": "fnop-collection-grid",
+      "type": "fnop-new-arrivals",
       "settings": {
         "heading": "Shop New Releases",
         "collection": "new-arrivals"

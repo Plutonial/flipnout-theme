@@ -71,7 +71,7 @@
   assign na_f_arr = na_filters | split: '|'
 -%}
 
-<fnop-collection-grid id="{{ section_id }}" class="fnop-na" data-rows="{{ rows }}">
+<fnop-new-arrivals id="{{ section_id }}" class="fnop-na" data-rows="{{ rows }}">
   <div class="brand-section__container">
     {%- if na_total == 0 -%}
       <p class="fnop-na__empty">No products at this time.</p>
@@ -123,7 +123,7 @@
 
     {%- endif -%}
   </div>
-</fnop-collection-grid>
+</fnop-new-arrivals>
 
 {% style %}
   {%- render 'brand-toolbar-styles' -%}
@@ -251,8 +251,8 @@
 {% endstyle %}
 
 <script>
-  if (!customElements.get('fnop-collection-grid')) {
-    class FnopCollectionGrid extends HTMLElement {
+  if (!customElements.get('fnop-new-arrivals')) {
+    class FnopNewArrivals extends HTMLElement {
       connectedCallback() {
         this.grid = this.querySelector('.fnop-na__grid');
         this.btn = this.querySelector('.fnop-na__show-more');
@@ -364,13 +364,13 @@
         this.btn.hidden = true;
       }
     }
-    customElements.define('fnop-collection-grid', FnopCollectionGrid);
+    customElements.define('fnop-new-arrivals', FnopNewArrivals);
   }
 </script>
 
 {% schema %}
 {
-  "name": "Collection Grid",
+  "name": "New Arrivals Grid",
   "tag": "section",
   "settings": [
     {
@@ -413,7 +413,7 @@
   ],
   "presets": [
     {
-      "name": "Collection Grid"
+      "name": "New Arrivals Grid"
     }
   ]
 }
