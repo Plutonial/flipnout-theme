@@ -7,7 +7,6 @@
 
   assign brand_id = collection.id
   assign heading = section.settings.heading | default: 'Machines'
-  assign cols_desktop = section.settings.columns_desktop | default: 3
   assign bmg_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
   assign gap_h = section.settings.gap_horizontal | default: 32
   assign gap_v = section.settings.gap_vertical | default: 32
@@ -250,10 +249,11 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
+        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
     {%- endif -%}
 
-    <ul class="bmg__grid">
+    <ul class="bmg__grid" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
       {%- if games_count > 0 -%}
         {%- comment %} Mode 1: iterate each sorted game, then its edition-ordered products {% endcomment -%}
         {%- for i in (0..999) -%}
@@ -346,6 +346,34 @@
             } else {
               this.clicks++;
             }
+            this.update();
+          });
+        }
+
+        const colsToggle = this.querySelector('.fnop-toggle--desktop');
+        if (colsToggle) {
+          colsToggle.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fnop-toggle-btn');
+            if (!btn) return;
+            this.grid.style.setProperty('--bmg-desktop-cols', btn.dataset.cols);
+            this.grid.dataset.cols = btn.dataset.cols;
+            colsToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+              b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
+            this.update();
+          });
+        }
+
+        const mobileSizeToggle = this.querySelector('.fnop-toggle--mobile');
+        if (mobileSizeToggle) {
+          mobileSizeToggle.addEventListener('click', (e) => {
+            const btn = e.target.closest('.fnop-toggle-btn');
+            if (!btn) return;
+            this.grid.style.setProperty('--bmg-cols', btn.dataset.cols);
+            this.grid.dataset.mcols = btn.dataset.cols;
+            mobileSizeToggle.querySelectorAll('.fnop-toggle-btn').forEach(b => {
+              b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+            });
             this.update();
           });
         }
@@ -505,7 +533,7 @@
 
   .bmg__grid {
     display: grid;
-    grid-template-columns: repeat(var(--bmg-cols, {{ cols_desktop }}), 1fr);
+    grid-template-columns: repeat(var(--bmg-cols, 2), 1fr);
     column-gap: {{ gap_h }}px;
     row-gap: {{ gap_v }}px;
     list-style: none;
@@ -515,21 +543,14 @@
 
   @media (max-width: 899px) {
     .bmg__grid {
-      --bmg-cols: 2;
       column-gap: 20px;
       row-gap: 20px;
     }
   }
 
-  @media (min-width: 900px) and (max-width: 1199px) {
+  @media (min-width: 900px) {
     .bmg__grid {
-      --bmg-cols: 3;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .bmg__grid {
-      --bmg-cols: {{ cols_desktop }};
+      grid-template-columns: repeat(var(--bmg-desktop-cols, {{ settings.grid_columns_desktop | default: '3' }}), 1fr);
     }
   }
 
@@ -565,7 +586,6 @@
   "name": "Brand machines grid",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Machines" },
-    { "type": "range", "id": "columns_desktop", "label": "Desktop columns", "min": 3, "max": 5, "step": 1, "default": 3 },
     { "type": "range", "id": "gap_horizontal", "label": "Horizontal gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
     { "type": "range", "id": "gap_vertical", "label": "Vertical gap (px)", "min": 0, "max": 50, "step": 2, "default": 32 },
     { "type": "range", "id": "reveal_initial", "label": "Initial cards shown", "min": 4, "max": 40, "step": 4, "default": 12 },
