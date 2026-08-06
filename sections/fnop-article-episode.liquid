@@ -54,38 +54,91 @@
   endif
 
   assign rail_card_sizes = '(min-width: 900px) 320px, calc(100vw - 32px)'
+
+  comment
+    ── Split article.content on <h2>Summary</h2> ──
+    Everything before that boundary is "In This Episode" and goes in the rail.
+    Everything from Summary onward stays in the content column.
+    If no Summary heading exists, the whole body stays in the content column.
+  endcomment
+
+  assign body_html = article.content
+  assign ite_html = ''
+  assign summary_html = body_html
+
+  if body_html contains '<h2>Summary</h2>'
+    assign _parts = body_html | split: '<h2>Summary</h2>'
+    assign ite_html = _parts | first
+    assign summary_html = _parts | last | prepend: '<h2>Summary</h2>'
+  elsif body_html contains '<h2>Summary'
+    assign _split_tag = body_html | split: '<h2>' 
+    assign _before = ''
+    assign _found_summary = false
+    assign _after = ''
+    for _chunk in _split_tag
+      if _found_summary
+        if _after == blank
+          assign _after = _chunk | prepend: '<h2>'
+        else
+          assign _after = _after | append: '<h2>' | append: _chunk
+        endif
+      elsif _chunk contains 'Summary'
+        assign _test = _chunk | strip | split: '>' | first | strip
+        if _test == 'Summary' or _test contains 'Summary'
+          assign _found_summary = true
+          assign _after = _chunk | prepend: '<h2>'
+          assign ite_html = _before
+        else
+          assign _before = _before | append: '<h2>' | append: _chunk
+        endif
+      else
+        if forloop.first
+          assign _before = _chunk
+        else
+          assign _before = _before | append: '<h2>' | append: _chunk
+        endif
+      endif
+    endfor
+    if _found_summary
+      assign summary_html = _after
+    else
+      assign ite_html = ''
+      assign summary_html = body_html
+    endif
+  endif
 -%}
 
 <div class="section">
   <div class="spacing-style layout-panel section-content-wrapper fnop-ap__wrapper">
 
-    {%- comment -%} ── Player — full site width, above the grid ── {%- endcomment -%}
-    <div class="fnop-ap__player"
-        {%- if video_id != blank %} data-video-id="{{ video_id }}" data-video-provider="{{ video_provider }}"{% endif -%}
-      >
-        {%- if article.image -%}
-          {{ article.image | image_url: width: 1920 | image_tag:
-            class: 'fnop-ap__poster',
-            loading: 'eager',
-            sizes: '100vw',
-            widths: '400,600,800,1080,1440,1920',
-            alt: article.title
-          }}
-        {%- endif -%}
-        {%- if video_id != blank -%}
-          <button class="fnop-ap__play" aria-label="Play {{ article.title }}" type="button">
-            <svg class="fnop-ap__play-icon" viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
-              <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
-              <path d="M45 24 27 14v20" fill="#fff"/>
-            </svg>
-          </button>
-        {%- endif -%}
-    </div>
-
     <div class="fnop-ap__layout{% unless has_rail %} fnop-ap__layout--single{% endunless %}">
 
       {%- comment -%} ── Left column ── {%- endcomment -%}
       <div class="fnop-ap__main">
+
+        {%- comment -%} ── Player — inside column 1 (P75 TASK 1) ── {%- endcomment -%}
+        <div class="fnop-ap__player"
+            {%- if video_id != blank %} data-video-id="{{ video_id }}" data-video-provider="{{ video_provider }}"{% endif -%}
+          >
+            {%- if article.image -%}
+              {{ article.image | image_url: width: 1920 | image_tag:
+                class: 'fnop-ap__poster',
+                loading: 'eager',
+                sizes: '(min-width: 900px) 937px, 100vw',
+                widths: '400,600,800,1080,1440,1920',
+                alt: article.title
+              }}
+            {%- endif -%}
+            {%- if video_id != blank -%}
+              <button class="fnop-ap__play" aria-label="Play {{ article.title }}" type="button">
+                <svg class="fnop-ap__play-icon" viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
+                  <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
+                  <path d="M45 24 27 14v20" fill="#fff"/>
+                </svg>
+              </button>
+            {%- endif -%}
+        </div>
+
         <h1 class="fnop-ap__title">{{ article.title }}</h1>
         <div class="fnop-ap__meta">
           <time class="fnop-ap__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
@@ -93,15 +146,23 @@
           </time>
         </div>
 
-        {%- comment -%} ── Article body ── {%- endcomment -%}
+        {%- comment -%} ── Article body — Summary onward only (P75 TASK 3) ── {%- endcomment -%}
         <div class="blog-post-content rte">
-          {{ article.content }}
+          {{ summary_html }}
         </div>
       </div>
 
       {%- comment -%} ── Right column (rail) ── {%- endcomment -%}
       {%- if has_rail -%}
         <aside class="fnop-ap__rail">
+
+          {%- comment -%} ── In This Episode block (P75 TASK 3) ── {%- endcomment -%}
+          {%- if ite_html != blank -%}
+            <div class="fnop-ap__rail-ite">
+              {{ ite_html }}
+            </div>
+            <hr class="fnop-ap__rail-hr">
+          {%- endif -%}
 
           {%- if has_related -%}
             <div class="fnop-ap__rail-group fnop-ap__rail-group--games">
