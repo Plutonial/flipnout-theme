@@ -120,6 +120,14 @@
     }
   }
 
+  /* P85 FIX 1: at 3-col step, lock col2 = exactly one grid track so the seam aligns.
+     Grid track = (container − 2 × 32) / 3.  Using 100% = band content width = container. */
+  @media (min-width: 1400px) {
+    .fnop-vg__hero-band {
+      grid-template-columns: minmax(0, 1fr) calc((100% - 64px) / 3);
+    }
+  }
+
   /* ── P83: Column 1 wrapper — poster + meta stacked ── */
   .fnop-vg__hero-col1 {
     display: flex;

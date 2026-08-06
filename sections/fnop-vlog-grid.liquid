@@ -98,7 +98,7 @@
             {%- endif -%}
 
             {%- assign ep_num = article.metafields.episode.episode_number.value -%}
-            <span class="fnop-vg__eyebrow">{%- if ep_num != blank -%}Ep {{ ep_num }} - {%- endif -%}{{ article.published_at | date: '%b %-d, %Y' }}</span>
+            <span class="fnop-vg__eyebrow">{%- if ep_num != blank -%}Ep {{ ep_num }} - {{ article.published_at | date: '%b %-d, %Y' }}{%- else -%}{{ article.published_at | date: '%b %-d, %Y' }}{%- endif -%}</span>
 
             <h2 class="fnop-vg__title">{{ article.title }}</h2>
             <p class="fnop-vg__excerpt">{%- if article.excerpt != blank -%}{{ article.excerpt | strip_html | truncate: 200 }}{%- endif -%}</p>
