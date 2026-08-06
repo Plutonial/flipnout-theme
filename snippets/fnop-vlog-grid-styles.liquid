@@ -66,6 +66,18 @@
     overflow: hidden;
   }
 
+  /* P74 TASK 6 — excerpt, clamped to 2 lines */
+  .fnop-vg__excerpt {
+    font-size: var(--font-size--sm);
+    line-height: 1.5;
+    color: rgb(var(--color-foreground-rgb) / 0.7);
+    margin: 6px 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
   .fnop-vg__date {
     font-size: var(--font-size--sm);
     color: var(--color-foreground-secondary, #888);
