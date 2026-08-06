@@ -160,7 +160,10 @@
   .fnop-ap__rail {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 24px;
+    background: var(--color-surface-cream, #F7F2EA);
+    padding: 16px;
+    border-radius: 8px;
   }
 
   @media (min-width: 900px) {
@@ -186,7 +189,7 @@
     font-weight: 700;
     letter-spacing: -0.4px;
     text-transform: uppercase;
-    margin: 0 0 12px;
+    margin: 0 0 16px;
   }
 
   /* ── Rail slider (UIkit) ── */
@@ -212,12 +215,8 @@
     margin: 0;
   }
 
-  /* ── Featured Games panel (cream) ── */
-  .fnop-ap__rail-group--games {
-    background: var(--color-surface-cream, #F7F2EA);
-    padding: 12px;
-    border-radius: 8px;
-  }
+  /* ── Featured Games group — no longer its own panel;
+     the whole rail is cream (TASK 1, P72). ── */
 
   /* ── Game card ── */
   .fnop-ap__game-card {
@@ -277,6 +276,15 @@
     margin: 0;
   }
 
+  /* Price — replicated from .bmc__price: Archivo 20/32 w500, rgba(0,0,0,0.8) */
+  .fnop-ap__machine-card-price {
+    font-size: var(--font-size--xl);
+    line-height: 1.6;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.8);
+    margin: 4px 0 0;
+  }
+
   /* ── Rail buttons ──
      Geometry replicated from .editions-grid__btn — not coupled. */
   .fnop-ap__rail-btn {
@@ -303,6 +311,14 @@
   .fnop-ap__rail-btn--shop {
     background: rgb(255, 0, 0);
     color: rgb(255, 255, 255);
+  }
+
+  /* Sold Out — mirrors .editions-grid__btn--sold-out */
+  .fnop-ap__rail-btn--sold-out {
+    background: #999;
+    color: rgb(255, 255, 255);
+    cursor: not-allowed;
+    pointer-events: none;
   }
 
   /* Explore! — dark */

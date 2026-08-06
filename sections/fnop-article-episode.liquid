@@ -178,8 +178,14 @@
                           {%- endif -%}
                           <div class="fnop-ap__machine-card-body">
                             <p class="fnop-ap__machine-card-title">{{ p.title }}</p>
+                            {%- comment -%} Price — replicated from .bmc__price, not coupled {%- endcomment -%}
+                            <p class="fnop-ap__machine-card-price">{{ p.price | money }}</p>
                             {%- comment -%} Geometry from .editions-grid__btn — replicated, not coupled {%- endcomment -%}
-                            <a href="{{ p.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--shop">Shop Now</a>
+                            {%- if p.tags contains 'sold-out' -%}
+                              <span class="fnop-ap__rail-btn fnop-ap__rail-btn--sold-out" aria-disabled="true">Sold Out</span>
+                            {%- else -%}
+                              <a href="{{ p.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--shop">Shop Now</a>
+                            {%- endif -%}
                           </div>
                         </div>
                       </li>
