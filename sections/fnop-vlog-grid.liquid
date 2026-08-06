@@ -27,31 +27,46 @@
     -%}
 
     <div class="fnop-vg__hero{% unless hero_has_rail %} fnop-vg__hero--no-rail{% endunless %}">
-      {%- comment -%} ── Top band: poster + rail ── {%- endcomment -%}
+      {%- comment -%} ── P83: 3-track band aligned to the grid below ── {%- endcomment -%}
       <div class="fnop-vg__hero-band{% unless hero_has_rail %} fnop-vg__hero-band--no-rail{% endunless %}">
-        {%- if hero_article.image -%}
-          <a class="fnop-vg__hero-poster" href="{{ hero_article.url }}" aria-label="{{ hero_article.title }}">
-            {{ hero_article.image | image_url: width: 1920 | image_tag:
-              loading: 'eager',
-              class: 'fnop-vg__hero-poster-img',
-              sizes: '(min-width: 900px) 937px, 100vw',
-              widths: '400,600,800,1080,1440,1920',
-              alt: hero_article.title
-            }}
-            <svg class="fnop-vg__hero-play" viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
-              <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
-              <path d="M45 24 27 14v20" fill="#fff"/>
-            </svg>
-          </a>
-        {%- endif -%}
+        {%- comment -%} ── Column 1-2: poster + meta stacked ── {%- endcomment -%}
+        <div class="fnop-vg__hero-col1">
+          {%- if hero_article.image -%}
+            <a class="fnop-vg__hero-poster" href="{{ hero_article.url }}" aria-label="{{ hero_article.title }}">
+              {{ hero_article.image | image_url: width: 1920 | image_tag:
+                loading: 'eager',
+                class: 'fnop-vg__hero-poster-img',
+                sizes: '(min-width: 1400px) 928px, (min-width: 750px) calc(100vw - 80px), 100vw',
+                widths: '400,600,800,1080,1440,1920',
+                alt: hero_article.title
+              }}
+              <svg class="fnop-vg__hero-play" viewBox="0 0 68 48" width="68" height="48" aria-hidden="true">
+                <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="red"/>
+                <path d="M45 24 27 14v20" fill="#fff"/>
+              </svg>
+            </a>
+          {%- endif -%}
 
+          <div class="fnop-vg__hero-meta">
+            <h2 class="fnop-vg__hero-title">{{ hero_article.title }}</h2>
+            <time class="fnop-vg__hero-date" datetime="{{ hero_article.published_at | date: '%Y-%m-%d' }}">
+              {{ hero_article.published_at | date: '%b %-d, %Y' }}
+            </time>
+            {%- if hero_article.excerpt != blank -%}
+              <p class="fnop-vg__hero-excerpt">{{ hero_article.excerpt | strip_html | truncate: 300 }}</p>
+            {%- endif -%}
+            <a class="fnop-vg__hero-more" href="{{ hero_article.url }}">More</a>
+          </div>
+        </div>
+
+        {%- comment -%} ── Column 3: rail ── {%- endcomment -%}
         {%- if hero_has_rail -%}
           <aside class="fnop-ap__rail">
             {%- render 'fnop-ap-rail',
               related_collections: hero_related,
               featured_products: hero_featured,
               rail_heading: section.settings.rail_heading,
-              rail_card_sizes: '(min-width: 900px) 320px, calc(100vw - 32px)',
+              rail_card_sizes: '(min-width: 1400px) 416px, (min-width: 750px) 320px, calc(100vw - 32px)',
               hero_variant: true,
               games_heading: section.settings.games_heading
             -%}
@@ -59,17 +74,8 @@
         {%- endif -%}
       </div>
 
-      {%- comment -%} ── Below the band: title, date, excerpt, More ── {%- endcomment -%}
-      <div class="fnop-vg__hero-meta">
-        <h2 class="fnop-vg__hero-title">{{ hero_article.title }}</h2>
-        <time class="fnop-vg__hero-date" datetime="{{ hero_article.published_at | date: '%Y-%m-%d' }}">
-          {{ hero_article.published_at | date: '%b %-d, %Y' }}
-        </time>
-        {%- if hero_article.excerpt != blank -%}
-          <p class="fnop-vg__hero-excerpt">{{ hero_article.excerpt | strip_html | truncate: 300 }}</p>
-        {%- endif -%}
-        <a class="fnop-vg__hero-more" href="{{ hero_article.url }}">More</a>
-      </div>
+      {%- comment -%} ── P83 TASK 3: rule between hero and grid ── {%- endcomment -%}
+      <hr class="fnop-vg__hero-hr">
     </div>
   {%- endif -%}
 
