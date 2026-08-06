@@ -20,8 +20,5 @@
       }
     }
   },
-  "order": [
-    "hero",
-    "main"
-  ]
+  "order": ["hero", "main"]
 }
