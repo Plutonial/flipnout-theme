@@ -60,7 +60,9 @@
         {% if block_settings.promo_heading != blank %}
           <span class="mega-menu-tile__heading">{{ block_settings.promo_heading }}</span>
         {% endif %}
-        <span class="mega-menu-tile__cta">{{ block_settings.promo_cta_text | default: 'Reserve Now' }}</span>
+        {% if block_settings.promo_cta_text != blank %}
+          <span class="mega-menu-tile__cta">{{ block_settings.promo_cta_text }}</span>
+        {% endif %}
       </div>
     </a>
   {% endif %}

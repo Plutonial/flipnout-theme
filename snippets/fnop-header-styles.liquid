@@ -25,6 +25,16 @@
     }
   }
 
+  /* P93 — Pin each tile to 280px so the tiles track never grows beyond what P33 verified.
+     Without this, flex:1 inside the auto-sized grid track lets tiles expand and steal
+     width from the brand column, making brand links unclickable under the tiles. */
+  @media screen and (min-width: 990px) {
+    .mega-menu-tile {
+      width: 280px;
+      flex: 0 0 280px;
+    }
+  }
+
 
   /* P69 — Taller mobile header so the logo has vertical breathing room.
      The header row sizes itself from the logo (no explicit height), so the logo
