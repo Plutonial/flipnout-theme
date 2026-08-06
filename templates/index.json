@@ -10,8 +10,11 @@
 {
   "sections": {
     "fnop_new_arrivals": {
-      "type": "fnop-new-arrivals",
-      "settings": {}
+      "type": "fnop-collection-grid",
+      "settings": {
+        "heading": "Shop New Releases",
+        "collection": "new-arrivals"
+      }
     },
     "latest_releases": {
       "type": "fnop-latest-releases-carousel",

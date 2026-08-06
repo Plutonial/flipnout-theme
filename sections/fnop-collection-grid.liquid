@@ -1,71 +1,100 @@
 {%- comment -%}
-  New Arrivals — renders the curated Manual collection's products
-  as machine cards, in collection order (Manual sort).
-  Note: collection.products is capped at 50 items by Shopify.
-  If this collection exceeds 50, the page silently truncates.
+  Collection Grid — reusable grid section for any collection.
+  Generalised from fnop-new-arrivals (P85). The fnop-na__ class prefix
+  is retained to keep the diff reviewable; classes are already scoped
+  by #{{ section_id }}.
+
+  Schema settings:
+    heading      — text, blank = no <h2>
+    collection   — collection picker; blank = page's collection object
+    filter_by    — vendor | type | none
+    show_oos_switch — checkbox (reserved, not yet wired)
+    rows         — number of rows before "Show more"
 {%- endcomment -%}
 
 {%- liquid
-  assign section_id = 'fnop-new-arrivals-' | append: section.id
+  assign section_id = 'fnop-na-' | append: section.id
   assign na_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
 
   comment
-    ── Resolve collection: use page collection on /collections/new-arrivals,
-       fall back to handle lookup on the home page or any other surface ──
+    ── Resolve collection: setting > page collection ──
   endcomment
-  if collection and collection.handle == 'new-arrivals'
-    assign na_col = collection
-  else
-    assign na_col = collections['new-arrivals']
-  endif
+  assign grid_col = section.settings.collection | default: collection
 
-  comment
-    ── Build unique vendor list from the collection's own products ──
-  endcomment
-
-  assign na_vendors = ''
-  assign na_vendor_count = 0
-  assign na_total = 0
-
-  for p in na_col.products
-    assign na_total = na_total | plus: 1
-    assign pv = p.vendor
-    assign already = false
-    if na_vendors != ''
-      assign _nv_arr = na_vendors | split: '|'
-      for _nv in _nv_arr
-        if _nv == pv
-          assign already = true
-          break
-        endif
-      endfor
-    endif
-    unless already
-      if na_vendors == ''
-        assign na_vendors = pv
-      else
-        assign na_vendors = na_vendors | append: '|' | append: pv
-      endif
-      assign na_vendor_count = na_vendor_count | plus: 1
-    endunless
-  endfor
-
-  assign na_v_arr = na_vendors | split: '|'
+  assign filter_by = section.settings.filter_by | default: 'vendor'
+  assign heading = section.settings.heading
+  assign rows = section.settings.rows | default: 2
 -%}
 
-<fnop-new-arrivals id="{{ section_id }}" class="fnop-na">
+{% paginate grid_col.products by 250 %}
+
+{%- liquid
+  comment
+    ── Build unique filter-value list from the current page of products ──
+  endcomment
+
+  assign na_filters = ''
+  assign na_filter_count = 0
+  assign na_total = 0
+
+  for p in grid_col.products
+    assign na_total = na_total | plus: 1
+
+    if filter_by == 'vendor'
+      assign pval = p.vendor
+    elsif filter_by == 'type'
+      assign pval = p.type
+    else
+      assign pval = ''
+    endif
+
+    if pval != blank
+      assign already = false
+      if na_filters != ''
+        assign _nf_arr = na_filters | split: '|'
+        for _nf in _nf_arr
+          if _nf == pval
+            assign already = true
+            break
+          endif
+        endfor
+      endif
+      unless already
+        if na_filters == ''
+          assign na_filters = pval
+        else
+          assign na_filters = na_filters | append: '|' | append: pval
+        endif
+        assign na_filter_count = na_filter_count | plus: 1
+      endunless
+    endif
+  endfor
+
+  assign na_f_arr = na_filters | split: '|'
+-%}
+
+<fnop-collection-grid id="{{ section_id }}" class="fnop-na" data-rows="{{ rows }}">
   <div class="brand-section__container">
     {%- if na_total == 0 -%}
-      <p class="fnop-na__empty">No new arrivals at this time.</p>
+      <p class="fnop-na__empty">No products at this time.</p>
     {%- else -%}
 
-      <h2 class="brand-section__heading">Shop New Releases</h2>
+      {%- if heading != blank -%}
+        <h2 class="brand-section__heading">{{ heading }}</h2>
+      {%- endif -%}
 
       <div class="bmg__toolbar fnop-na__toolbar">
-        {%- if na_vendor_count > 1 -%}
-          <select class="bmg__select fnop-na__filter-select" aria-label="Filter New Arrivals by manufacturer">
-            <option value="all">All manufacturers ({{ na_vendor_count }})</option>
-            {%- for v in na_v_arr -%}
+        {%- if filter_by != 'none' and na_filter_count > 1 -%}
+          {%- liquid
+            if filter_by == 'vendor'
+              assign filter_label = 'manufacturer'
+            else
+              assign filter_label = filter_by
+            endif
+          -%}
+          <select class="bmg__select fnop-na__filter-select" aria-label="Filter by {{ filter_label }}">
+            <option value="all">All {{ filter_label }}s ({{ na_filter_count }})</option>
+            {%- for v in na_f_arr -%}
               <option value="{{ v | handleize }}">{{ v }}</option>
             {%- endfor -%}
           </select>
@@ -74,8 +103,17 @@
       </div>
 
       <ul class="fnop-na__grid fnop-na--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
-        {%- for p in na_col.products -%}
-          <li class="fnop-na__item" data-filter="{{ p.vendor | handleize }}">
+        {%- for p in grid_col.products -%}
+          {%- liquid
+            if filter_by == 'vendor'
+              assign _filter_val = p.vendor | handleize
+            elsif filter_by == 'type'
+              assign _filter_val = p.type | handleize
+            else
+              assign _filter_val = ''
+            endif
+          -%}
+          <li class="fnop-na__item" data-filter="{{ _filter_val }}">
             {%- render 'brand-machine-card', product: p, sizes: na_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -85,9 +123,29 @@
         <button class="fnop-na__show-more" type="button" hidden>Show more</button>
       </div>
 
+      {%- if paginate.pages > 1 -%}
+        <nav class="fnop-na__pagination" aria-label="Pagination">
+          {%- if paginate.previous -%}
+            <a href="{{ paginate.previous.url }}" class="fnop-na__page-link">&laquo; Previous</a>
+          {%- endif -%}
+          {%- for part in paginate.parts -%}
+            {%- if part.is_link -%}
+              <a href="{{ part.url }}" class="fnop-na__page-link">{{ part.title }}</a>
+            {%- else -%}
+              <span class="fnop-na__page-link fnop-na__page-link--current">{{ part.title }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if paginate.next -%}
+            <a href="{{ paginate.next.url }}" class="fnop-na__page-link">Next &raquo;</a>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+
     {%- endif -%}
   </div>
-</fnop-new-arrivals>
+</fnop-collection-grid>
+
+{% endpaginate %}
 
 {% style %}
   {%- render 'brand-toolbar-styles' -%}
@@ -119,7 +177,7 @@
     min-width: 0;
   }
 
-  {% comment %} Pre-cut: 2 rows. 2 cols = 4 items, 1 col = 2, 3 cols = 6, 4 cols = 8 {% endcomment %}
+  {% comment %} Pre-cut: rows × cols. 2 cols = 4 items, 1 col = 2, 3 cols = 6, 4 cols = 8 {% endcomment %}
   #{{ section_id }} .fnop-na--precut .fnop-na__item:nth-child(n + 5) { display: none; }
 
   @media (max-width: 899px) {
@@ -175,15 +233,53 @@
     color: rgb(var(--color-foreground-rgb) / 0.6);
     padding: 48px 0;
   }
+
+  #{{ section_id }} .fnop-na__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+
+  #{{ section_id }} .fnop-na__page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.2);
+    border-radius: var(--radius-sm, 8px);
+    font-size: var(--font-size--sm);
+    font-weight: 600;
+    text-decoration: none;
+    color: rgb(var(--color-foreground-rgb) / 0.81);
+    background: transparent;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  #{{ section_id }} .fnop-na__page-link:hover {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+  }
+
+  #{{ section_id }} .fnop-na__page-link--current {
+    background: rgb(var(--color-foreground-rgb));
+    color: rgb(var(--color-background-rgb));
+    pointer-events: none;
+  }
 {% endstyle %}
 
 <script>
-  if (!customElements.get('fnop-new-arrivals')) {
-    class FnopNewArrivals extends HTMLElement {
+  if (!customElements.get('fnop-collection-grid')) {
+    class FnopCollectionGrid extends HTMLElement {
       connectedCallback() {
         this.grid = this.querySelector('.fnop-na__grid');
         this.btn = this.querySelector('.fnop-na__show-more');
         this.select = this.querySelector('.fnop-na__filter-select');
+        this.rows = parseInt(this.dataset.rows, 10) || 2;
         if (!this.grid) return;
 
         this.items = Array.from(this.querySelectorAll('.fnop-na__item'));
@@ -274,7 +370,7 @@
         const total = eligible.length;
         const cols = this.getColumns();
         const precut = this.grid.classList.contains('fnop-na--precut');
-        const visibleCount = precut ? 2 * cols : total;
+        const visibleCount = precut ? this.rows * cols : total;
 
 
         if (total > visibleCount) {
@@ -290,18 +386,56 @@
         this.btn.hidden = true;
       }
     }
-    customElements.define('fnop-new-arrivals', FnopNewArrivals);
+    customElements.define('fnop-collection-grid', FnopCollectionGrid);
   }
 </script>
 
 {% schema %}
 {
-  "name": "New Arrivals Grid",
+  "name": "Collection Grid",
   "tag": "section",
-  "settings": [],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": ""
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "select",
+      "id": "filter_by",
+      "label": "Filter dropdown",
+      "options": [
+        { "value": "vendor", "label": "Manufacturer" },
+        { "value": "type", "label": "Product type" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "vendor"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_oos_switch",
+      "label": "Show Out of Stock switch",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "rows",
+      "label": "Rows before Show More",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 2
+    }
+  ],
   "presets": [
     {
-      "name": "New Arrivals Grid"
+      "name": "Collection Grid"
     }
   ]
 }

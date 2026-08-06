@@ -16,7 +16,10 @@
     "main": {
       "type": "fnop-collection-grid",
       "settings": {
-        "heading": "Shop New Releases"
+        "heading": "",
+        "filter_by": "vendor",
+        "show_oos_switch": true,
+        "rows": 2
       }
     }
   },
