@@ -64,15 +64,19 @@
     margin-bottom: 0;
   }
 
-  /* P80 TASK 2 — title reserves 3 lines, no truncation */
+  /* P84 TASK 2 — title reserves 2 lines, clamped with ellipsis */
   .fnop-vg__title {
     font-family: var(--font-heading--family);
     font-size: var(--font-size--lg);
     line-height: calc(24 / 18);
     font-weight: 600;
-    min-height: calc(var(--font-size--lg) * (24 / 18) * 3);
+    min-height: calc(var(--font-size--lg) * (24 / 18) * 2);
     margin-top: 6px;
     margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
   /* P80 TASK 3 — excerpt reserves 4 lines for narrowest card width */
@@ -89,13 +93,6 @@
     min-height: calc(var(--font-size--md) * (26 / 16) * 4);
   }
 
-  /* P79 TASK 4 — date matches fnop-ap__date: 20/32 */
-  .fnop-vg__date {
-    font-size: var(--font-size--xl);
-    line-height: calc(32 / 20);
-    color: var(--color-foreground-secondary, #888);
-    margin-top: auto;
-  }
 
   /* ══════════════════════════════════════════════
      P81 — Featured hero above the grid
