@@ -1,0 +1,127 @@
+{%- comment -%}
+  Shared rail component — used by the episode article page and the blog index hero.
+  Renders the "THE LINEUP" heading, Featured Games slider, separator, and Featured Machines slider.
+
+  Required variables (passed via render):
+    related_collections  — list of collection objects (episode.related_collections)
+    featured_products    — list of product objects (episode.featured_products)
+    rail_heading         — string, e.g. "The Lineup"
+    rail_card_sizes      — sizes attribute for responsive images
+{%- endcomment -%}
+
+{%- liquid
+  assign _has_related = false
+  if related_collections != blank and related_collections.size > 0
+    assign _has_related = true
+  endif
+
+  assign _has_featured = false
+  if featured_products != blank and featured_products.size > 0
+    assign _has_featured = true
+  endif
+-%}
+
+{%- if rail_heading != blank -%}
+  <div class="fnop-ap__rail-ite">
+    <h2>{{ rail_heading }}</h2>
+  </div>
+{%- endif -%}
+
+{%- if _has_related -%}
+  <div class="fnop-ap__rail-group fnop-ap__rail-group--games">
+    <h3 class="fnop-ap__rail-heading">Featured Games</h3>
+
+    <div class="fnop-ap__rail-slider" uk-slider="finite: true; autoplay: false" data-gc-count="{{ related_collections.size }}">
+      <div class="uk-slider-container">
+        <ul class="uk-slider-items fnop-ap__rail-slider-list">
+          {%- for col in related_collections -%}
+            <li class="fnop-ap__rail-slide">
+              <div class="fnop-ap__game-card">
+                {%- if col.image -%}
+                  {{ col.image | image_url: width: 720 | image_tag:
+                    loading: 'lazy',
+                    class: 'fnop-ap__game-card-img',
+                    sizes: rail_card_sizes,
+                    widths: '360,480,720',
+                    alt: col.title
+                  }}
+                {%- endif -%}
+
+                {%- liquid
+                  assign _gc_title = col.title
+                  assign _gc_mfr = ''
+                  assign _gc_mfr_url = ''
+                  if _gc_title contains ' - '
+                    assign _gc_parts = _gc_title | split: ' - '
+                    assign _gc_mfr = _gc_parts | first
+                    assign _gc_title = _gc_parts | last
+                  endif
+                  assign _gc_mfr_col = col.metafields.custom.manufacturer.value
+                  if _gc_mfr_col and _gc_mfr_col.url != blank
+                    assign _gc_mfr_url = _gc_mfr_col.url
+                  endif
+                -%}
+
+                <div class="fnop-ap__game-card-body">
+                  <p class="fnop-ap__game-card-name">{{ _gc_title }}</p>
+                  {%- if _gc_mfr != blank -%}
+                    <p class="fnop-ap__game-card-mfr">By: {% if _gc_mfr_url != blank %}<a href="{{ _gc_mfr_url }}" class="fnop-ap__game-card-mfr-link">{{ _gc_mfr }}</a>{% else %}{{ _gc_mfr }}{% endif %}</p>
+                  {%- endif -%}
+                  {%- if col.metafields.custom.release_date.value != blank -%}
+                    <p class="fnop-ap__game-card-date">Release Date: {{ col.metafields.custom.release_date.value | date: '%B %-d, %Y' }}</p>
+                  {%- endif -%}
+                  <a href="{{ col.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--explore">Explore!</a>
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+      <ul class="uk-slider-nav uk-dotnav fnop-ap__rail-dotnav"></ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{%- if _has_related and _has_featured -%}
+  <hr class="fnop-ap__rail-hr">
+{%- endif -%}
+
+{%- if _has_featured -%}
+  <div class="fnop-ap__rail-group fnop-ap__rail-group--machines">
+    <h3 class="fnop-ap__rail-heading">Featured Machines</h3>
+
+    <div class="fnop-ap__rail-slider" uk-slider="finite: true; autoplay: false" data-gc-count="{{ featured_products.size }}">
+      <div class="uk-slider-container">
+        <ul class="uk-slider-items fnop-ap__rail-slider-list">
+          {%- for p in featured_products -%}
+            <li class="fnop-ap__rail-slide">
+              <div class="fnop-ap__machine-card">
+                {%- if p.featured_image -%}
+                  {{ p.featured_image | image_url: width: 720 | image_tag:
+                    loading: 'lazy',
+                    class: 'fnop-ap__machine-card-img',
+                    sizes: rail_card_sizes,
+                    widths: '360,480,720',
+                    alt: p.title
+                  }}
+                {%- endif -%}
+                <div class="fnop-ap__machine-card-body">
+                  <p class="fnop-ap__machine-card-title">{{ p.title }}</p>
+                  {%- comment -%} Price — replicated from .bmc__price, not coupled {%- endcomment -%}
+                  <p class="fnop-ap__machine-card-price">{{ p.price | money }}</p>
+                  {%- comment -%} Geometry from .editions-grid__btn — replicated, not coupled {%- endcomment -%}
+                  {%- if p.tags contains 'sold-out' -%}
+                    <span class="fnop-ap__rail-btn fnop-ap__rail-btn--sold-out" aria-disabled="true">Sold Out</span>
+                  {%- else -%}
+                    <a href="{{ p.url }}" class="fnop-ap__rail-btn fnop-ap__rail-btn--shop">Shop Now</a>
+                  {%- endif -%}
+                </div>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+      <ul class="uk-slider-nav uk-dotnav fnop-ap__rail-dotnav"></ul>
+    </div>
+  </div>
+{%- endif -%}

@@ -96,4 +96,148 @@
     color: var(--color-foreground-secondary, #888);
     margin-top: auto;
   }
+
+  /* ══════════════════════════════════════════════
+     P81 — Featured hero above the grid
+     ══════════════════════════════════════════════ */
+
+  .fnop-vg__hero {
+    margin-block-end: 48px;
+  }
+
+  /* ── Hero band: poster + rail, mirrors episode layout ── */
+  .fnop-vg__hero-band {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+  }
+
+  @media (min-width: 750px) {
+    .fnop-vg__hero-band {
+      grid-template-columns: minmax(0, 1fr) 400px;
+      column-gap: 72px;
+    }
+
+    .fnop-vg__hero-band--no-rail {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ── Poster — link wrapping image + play glyph ── */
+  .fnop-vg__hero-poster {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #000;
+  }
+
+  .fnop-vg__hero-poster-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .fnop-vg__hero-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease;
+    z-index: 1;
+  }
+
+  .fnop-vg__hero-poster:hover .fnop-vg__hero-play {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+
+  .fnop-vg__hero-poster:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  /* ── Meta block below the band ── */
+  .fnop-vg__hero-meta {
+    margin-top: 24px;
+  }
+
+  .fnop-vg__hero-title {
+    font-family: var(--font-heading--family);
+    font-size: var(--font-size--2xl);
+    line-height: calc(32 / 24);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .fnop-vg__hero-date {
+    display: block;
+    font-size: var(--font-size--xl);
+    line-height: calc(32 / 20);
+    color: var(--color-foreground-secondary, #888);
+    margin-top: 8px;
+  }
+
+  .fnop-vg__hero-excerpt {
+    font-size: var(--font-size--md);
+    line-height: calc(26 / 16);
+    font-weight: 400;
+    color: rgb(var(--color-foreground-rgb) / 0.7);
+    margin: 12px 0 0;
+  }
+
+  .fnop-vg__hero-more {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 12px 24px;
+    font-size: var(--font-size--xl);
+    line-height: calc(32 / 20);
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 8px;
+    background: rgb(51, 51, 51);
+    color: rgb(255, 255, 255);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .fnop-vg__hero-more:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+  }
+
+  .fnop-vg__hero-more:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  /* ── Mobile: stack poster → title → date → excerpt → More → rail ── */
+  @media (max-width: 749px) {
+    .fnop-vg__hero-band {
+      display: contents;
+    }
+
+    .fnop-vg__hero {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .fnop-vg__hero-poster {
+      order: 1;
+    }
+
+    .fnop-vg__hero-meta {
+      order: 2;
+    }
+
+    .fnop-vg__hero .fnop-ap__rail {
+      order: 3;
+      margin-top: 32px;
+    }
+  }
 </style>

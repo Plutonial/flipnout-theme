@@ -2,7 +2,10 @@
   "sections": {
     "main": {
       "type": "fnop-vlog-grid",
-      "settings": {}
+      "settings": {
+        "featured_hero": true,
+        "rail_heading": "The Lineup"
+      }
     }
   },
   "order": [
