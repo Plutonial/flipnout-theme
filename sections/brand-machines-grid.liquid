@@ -13,8 +13,8 @@
   if oos_mode == 'inherit'
     assign oos_mode = settings.grid_oos_control | default: 'switch-show'
   endif
-  assign reveal_initial = section.settings.reveal_initial | default: 12
-  assign reveal_step = section.settings.reveal_step | default: 12
+  assign rows_initial = section.settings.rows_initial | default: 4
+  assign rows_step = section.settings.rows_step | default: 4
 
   comment
     ── Pass 1: collect game collections for this brand ──
@@ -232,7 +232,7 @@
   {%- assign gn_label_arr = game_name_labels | split: '|' -%}
 {%- endif -%}
 
-<brand-machines-grid class="bmg" data-initial="{{ reveal_initial }}" data-step="{{ reveal_step }}">
+<brand-machines-grid class="bmg" data-rows-initial="{{ rows_initial }}" data-rows-step="{{ rows_step }}">
   <div class="brand-section__container">
     <h2 class="brand-section__heading">{{ collection.title }} {{ heading }}</h2>
 
@@ -313,8 +313,8 @@
         this.emptyEl = this.querySelector('.bmg__empty');
         this.switchInput = this.querySelector('.bmg__switch-input');
         this.resultLine = null;
-        this.initial = parseInt(this.dataset.initial, 10) || 12;
-        this.step = parseInt(this.dataset.step, 10) || 12;
+        this.rowsInitial = parseInt(this.dataset.rowsInitial, 10) || 4;
+        this.rowsStep = parseInt(this.dataset.rowsStep, 10) || 4;
         this.clicks = 0;
         this.totalMachines = this.items.length;
 
@@ -389,9 +389,9 @@
         window.removeEventListener('resize', this._onResize);
       }
 
-      get columns() {
-        var t = getComputedStyle(this.grid).gridTemplateColumns;
-        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 1;
+      getColumns() {
+        const t = getComputedStyle(this.grid).gridTemplateColumns;
+        return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
       }
 
       get showOOS() {
@@ -409,9 +409,9 @@
       }
 
       revealLimit(total, clicks) {
-        var target = this.initial + clicks * this.step;
-        var cols = this.columns;
-        return Math.min(total, Math.ceil(target / cols) * cols);
+        var cols = this.getColumns();
+        var target = (this.rowsInitial + clicks * this.rowsStep) * cols;
+        return Math.min(total, target);
       }
 
       get isFilterActive() {
@@ -486,7 +486,7 @@
         }
 
         if (this.btn) {
-          if (vis.length === 0 || vis.length <= this.initial) {
+          if (vis.length === 0 || vis.length <= this.rowsInitial * this.getColumns()) {
             this.btn.hidden = true;
           } else if (limit >= vis.length) {
             this.btn.hidden = false;
@@ -601,8 +601,8 @@
       ],
       "default": "inherit"
     },
-    { "type": "range", "id": "reveal_initial", "label": "Initial cards shown", "min": 4, "max": 40, "step": 4, "default": 12 },
-    { "type": "range", "id": "reveal_step", "label": "Cards per click", "min": 4, "max": 40, "step": 4, "default": 12 }
+    { "type": "range", "id": "rows_initial", "label": "Rows before Show More", "min": 1, "max": 10, "step": 1, "default": 4 },
+    { "type": "range", "id": "rows_step", "label": "Rows per click", "min": 1, "max": 10, "step": 1, "default": 4 }
   ],
   "disabled_on": { "groups": ["header", "footer"] }
 }
