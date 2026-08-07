@@ -187,7 +187,8 @@
     #{{ section_id }} .brand-about__grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: var(--_about-gap);
+      row-gap: var(--_about-gap);
+      column-gap: 0;
     }
 
     #{{ section_id }} .brand-about__releases {
@@ -206,6 +207,7 @@
     #{{ section_id }} .brand-about__copy {
       font-size: var(--font-size--xl);
       line-height: 1.7;
+      padding-right: var(--_about-gap);
     }
 
     #{{ section_id }} .brand-about__table {
@@ -250,6 +252,10 @@
       #{{ section_id }} .brand-about__releases {
         border-left: none;
         padding-left: 0;
+      }
+
+      #{{ section_id }} .brand-about__copy {
+        padding-right: 0;
       }
 
       #{{ section_id }} .brand-about__table {
