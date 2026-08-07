@@ -386,6 +386,12 @@
 
         this._resizeObserver = new ResizeObserver(() => this.update());
         this._resizeObserver.observe(this.grid);
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.update(), { once: true });
+        } else {
+          requestAnimationFrame(() => this.update());
+        }
       }
 
       disconnectedCallback() {
