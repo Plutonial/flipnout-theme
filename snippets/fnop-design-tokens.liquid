@@ -1,0 +1,15 @@
+{% comment %}
+  Store-wide design tokens. Rendered once from layout/theme.liquid, before every
+  other style snippet. This is the only place these are declared — do not
+  redeclare them in a section or block.
+{% endcomment %}
+
+<style>
+  :root {
+    --color-brand-red: #E31E24;
+    --color-logo-red: #FF0000;
+    --color-surface-cream: #F7F2EA;
+    --bmc-corner: clamp(14px, 2.6vw, 40px);
+    --bmc-ratio: 1600 / 2050;
+  }
+</style>

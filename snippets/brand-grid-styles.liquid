@@ -4,11 +4,6 @@
 {% endcomment %}
 
 <style>
-  :root {
-    --bmc-corner: clamp(14px, 2.6vw, 40px);
-    --bmc-ratio: 1600 / 2050;
-  }
-
   .brand-section__container {
     max-width: var(--page-width, 1520px);
     margin-inline: auto;
@@ -28,7 +23,7 @@
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    background: var(--color-surface-cream);
+    background: var(--color-surface-cream, #F7F2EA);
     border-radius: 0;
     border-top-left-radius: var(--bmc-corner);
     padding: 0 0 12px;
