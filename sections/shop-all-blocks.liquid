@@ -300,7 +300,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -334,7 +334,7 @@
             {%- endfor -%}
           </select>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -444,7 +444,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -555,7 +555,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -632,7 +632,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -709,7 +709,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -795,7 +795,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -832,7 +832,7 @@
 
   .sab__grid {
     display: grid;
-    grid-template-columns: repeat(var(--sab-mobile-cols, 2), 1fr);
+    grid-template-columns: repeat(var(--sab-mobile-cols, var(--bmc-cols-mobile)), 1fr);
     column-gap: var(--bmc-gap-mobile);
     row-gap: var(--bmc-gap-mobile);
     list-style: none;
@@ -914,10 +914,6 @@
   }
 
   .sab__show-more[hidden] { display: none; }
-
-  .sab {
-    --bmc-title-lines: 2;
-  }
 
   {% comment %} ── Brand bar ── {% endcomment %}
   .sab__brandbar {

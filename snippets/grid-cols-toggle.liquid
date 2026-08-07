@@ -3,7 +3,7 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign m_cols = mobile_cols | default: 1
+  assign m_cols = mobile_cols | default: settings.grid_columns_mobile | default: 2
   assign d_cols = desktop_cols | default: settings.grid_columns_desktop | default: '3'
 -%}
 

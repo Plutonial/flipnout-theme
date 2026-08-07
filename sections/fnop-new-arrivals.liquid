@@ -115,7 +115,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
 
       <ul class="fnop-na__grid{% if oos_mode != 'switch-hide' %} fnop-na--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
@@ -154,7 +154,7 @@
 
   #{{ section_id }} .fnop-na__grid {
     display: grid;
-    grid-template-columns: repeat(var(--fnop-na-mobile-cols, 2), 1fr);
+    grid-template-columns: repeat(var(--fnop-na-mobile-cols, var(--bmc-cols-mobile)), 1fr);
     column-gap: var(--bmc-gap-mobile);
     row-gap: var(--bmc-gap-mobile);
     list-style: none;

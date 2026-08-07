@@ -2343,6 +2343,27 @@
           { "value": "switch-hide", "label": "Switch, starts hiding" }
         ],
         "default": "switch-show"
+      },
+      {
+        "type": "select",
+        "id": "grid_columns_mobile",
+        "label": "Mobile columns",
+        "options": [
+          { "value": "1", "label": "1 column" },
+          { "value": "2", "label": "2 columns" }
+        ],
+        "default": "2"
+      },
+      {
+        "type": "select",
+        "id": "grid_title_lines",
+        "label": "Title lines",
+        "info": "How many lines a product title may use before it is truncated. Cards reserve this height so rows stay even.",
+        "options": [
+          { "value": "2", "label": "2 lines" },
+          { "value": "3", "label": "3 lines" }
+        ],
+        "default": "2"
       }
     ]
   }

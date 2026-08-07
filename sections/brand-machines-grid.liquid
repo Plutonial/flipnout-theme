@@ -252,7 +252,7 @@
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
         {%- endif -%}
-        {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
+        {%- render 'grid-cols-toggle' -%}
       </div>
     {%- endif -%}
 
@@ -536,7 +536,7 @@
 
   .bmg__grid {
     display: grid;
-    grid-template-columns: repeat(var(--bmg-cols, 2), 1fr);
+    grid-template-columns: repeat(var(--bmg-cols, var(--bmc-cols-mobile)), 1fr);
     column-gap: var(--bmc-gap-desktop);
     row-gap: var(--bmc-gap-desktop);
     list-style: none;
