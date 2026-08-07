@@ -383,10 +383,14 @@
 
         this._onResize = () => this.update();
         window.addEventListener('resize', this._onResize);
+
+        this._resizeObserver = new ResizeObserver(() => this.update());
+        this._resizeObserver.observe(this.grid);
       }
 
       disconnectedCallback() {
         window.removeEventListener('resize', this._onResize);
+        if (this._resizeObserver) this._resizeObserver.disconnect();
       }
 
       getColumns() {
