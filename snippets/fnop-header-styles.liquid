@@ -35,6 +35,31 @@
     }
   }
 
+  /* P94 TASK 1 — Prevent the grid from compressing link columns below their content width.
+     The mega-menu-inner grid uses repeat(N, auto) tracks. When the total max-content of
+     all tracks exceeds available space, CSS grid shrinks the most compressible track —
+     the brands column, because its balanced sub-columns can reflow. Setting min-width
+     on link columns ensures they keep their full content width; the tiles track (which
+     is hidden below 1520px anyway) absorbs any overflow instead.
+     .mega-menu-sections and .mega-menu__grid both have display:contents at desktop,
+     so .mega-menu__column is a grid item of .mega-menu-inner despite the DOM nesting. */
+  @media screen and (min-width: 990px) {
+    .mega-menu__column {
+      min-width: max-content;
+    }
+  }
+
+  /* P94 TASK 3 — Tile heading: allow wrapping so line-clamp works.
+     The existing -webkit-line-clamp: 2 in _header-menu.liquid requires the text to
+     wrap, but white-space or flex sizing can prevent it. Ensure the heading can wrap
+     and clamp to 2 lines with an ellipsis instead of cutting mid-word. */
+  @media screen and (min-width: 990px) {
+    .mega-menu-tile__heading {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+  }
+
 
   /* P69 — Taller mobile header so the logo has vertical breathing room.
      The header row sizes itself from the logo (no explicit height), so the logo
