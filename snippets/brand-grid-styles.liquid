@@ -6,6 +6,7 @@
 <style>
   :root {
     --bmc-corner: clamp(14px, 2.6vw, 40px);
+    --bmc-ratio: 1600 / 2050;
   }
 
   .brand-section__container {
@@ -36,7 +37,7 @@
 
   .bmc__poster {
     position: relative;
-    aspect-ratio: 1600 / 2050;
+    aspect-ratio: var(--bmc-ratio);
     border-radius: 0;
     overflow: hidden;
     background: transparent;

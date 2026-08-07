@@ -76,7 +76,7 @@
         endif
       -%}
 
-      <div class="editions-grid__card">
+      <div class="editions-grid__card{% if is_sold_out %} editions-grid__card--sold-out{% endif %}">
         {%- if card_image -%}
           <div class="editions-grid__art">
             {{ card_image | image_url: width: 800 | image_tag:
@@ -200,20 +200,21 @@
     flex-direction: column;
     text-decoration: none;
     color: inherit;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: 0;
+    border-top-left-radius: var(--bmc-corner);
     overflow: hidden;
     background: var(--color-surface, #f5f5f5);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .editions-grid__card:hover {
+  .editions-grid__card:not(.editions-grid__card--sold-out):hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
   }
 
   .editions-grid__art {
     position: relative;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: var(--bmc-ratio);
     overflow: hidden;
   }
 
