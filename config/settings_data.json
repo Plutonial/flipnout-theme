@@ -47,7 +47,7 @@
     "page_transition_enabled": true,
     "transition_to_main_product": true,
     "card_hover_effect": "subtle-zoom",
-    "badge_position": "top-left",
+    "badge_position": "top-right",
     "badge_corner_radius": 4,
     "badge_sale_color_scheme": "scheme-1",
     "badge_sold_out_color_scheme": "scheme-badge-sold-out",
