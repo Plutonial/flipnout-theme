@@ -3,16 +3,16 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign m_cols = mobile_cols | default: settings.grid_columns_mobile | default: 2
+  assign m_cols = mobile_cols | default: settings.grid_columns_mobile | default: '2'
   assign d_cols = desktop_cols | default: settings.grid_columns_desktop | default: '3'
 -%}
 
 {%- if settings.grid_show_column_toggle -%}
 <div class="fnop-toggle fnop-toggle--mobile">
-  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == 1 %}true{% else %}false{% endif %}" aria-label="One column" data-cols="1">
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == '1' %}true{% else %}false{% endif %}" aria-label="One column" data-cols="1">
     <svg viewBox="0 0 18 18"><rect x="3" y="2" width="12" height="14" rx="1.5"/></svg>
   </button>
-  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == 2 %}true{% else %}false{% endif %}" aria-label="Two columns" data-cols="2">
+  <button type="button" class="fnop-toggle-btn" aria-pressed="{% if m_cols == '2' %}true{% else %}false{% endif %}" aria-label="Two columns" data-cols="2">
     <svg viewBox="0 0 18 18"><rect x="1.5" y="2" width="6" height="14" rx="1.5"/><rect x="10.5" y="2" width="6" height="14" rx="1.5"/></svg>
   </button>
 </div>

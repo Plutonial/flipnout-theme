@@ -19,9 +19,9 @@
 -%}
 
 {%- if is_sold_out -%}
-  <div class="bmc bmc--sold-out{% if square %} bmc--square{% endif %}">
+  <div class="bmc bmc--sold-out color-{{ settings.grid_card_scheme | default: 'scheme-cream' }}{% if square %} bmc--square{% endif %}">
 {%- else -%}
-  <a class="bmc{% if square %} bmc--square{% endif %}" href="{{ product.url }}" aria-label="{{ product.title }}">
+  <a class="bmc color-{{ settings.grid_card_scheme | default: 'scheme-cream' }}{% if square %} bmc--square{% endif %}" href="{{ product.url }}" aria-label="{{ product.title }}">
 {%- endif -%}
   <div class="bmc__poster">
     {%- if product.featured_media -%}
@@ -36,7 +36,7 @@
       {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
     {%- endif -%}
     {%- if is_sold_out -%}
-      <span class="bmc__badge">Sold Out</span>
+      <span class="bmc__badge color-scheme-badge-sold-out">Sold Out</span>
     {%- endif -%}
   </div>
   <h3 class="bmc__title">{{ display_title }}</h3>

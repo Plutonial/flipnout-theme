@@ -960,7 +960,7 @@
   }
 
   {% comment %} ── Alternating bands ── {% endcomment %}
-  .sab__block:nth-of-type(even) { background: var(--color-surface-cream, #F7F2EA); }
+  .sab__block:nth-of-type(even) { background: {{ section.settings.band_color | default: '#F7F2EA' }}; }
   .sab__block:nth-of-type(even) .bmc { background: rgb(var(--color-background-rgb)); }
 
   {% comment %} ── Toolbar spacing ── {% endcomment %}
@@ -1289,6 +1289,13 @@
         { "value": "switch-hide", "label": "Switch, starts hiding" }
       ],
       "default": "inherit"
+    },
+    {
+      "type": "color",
+      "id": "band_color",
+      "label": "Alternating band colour",
+      "info": "Background of every second block.",
+      "default": "#F7F2EA"
     }
   ],
   "disabled_on": { "groups": ["header", "footer"] }

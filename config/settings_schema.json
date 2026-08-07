@@ -2364,6 +2364,12 @@
           { "value": "3", "label": "3 lines" }
         ],
         "default": "2"
+      },
+      {
+        "type": "color_scheme",
+        "id": "grid_card_scheme",
+        "label": "Card colour scheme",
+        "default": "scheme-cream"
       }
     ]
   }
