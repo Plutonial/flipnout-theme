@@ -612,11 +612,11 @@
   {% comment %} Mega menu child link hover + active: logo red, excluding heading labels {% endcomment %}
   @media screen and (min-width: 990px) {
     .mega-menu__link:not(.mega-menu__link--parent):hover {
-      color: var(--color-logo-red);
+      color: var(--color-logo-red, #FF0000);
     }
     .mega-menu__link:not(.mega-menu__link--parent).mega-menu__link--active,
     .mega-menu__link:not(.mega-menu__link--parent)[aria-current="page"] {
-      color: var(--color-logo-red);
+      color: var(--color-logo-red, #FF0000);
     }
   }
 
@@ -644,10 +644,10 @@
       color: #000;
     }
     .menu-list .menu-list__list-item:where(:hover, :focus-within) .menu-list__link {
-      color: var(--color-logo-red);
+      color: var(--color-logo-red, #FF0000);
     }
     .menu-list .menu-list__list-item:has([aria-expanded="true"]) .menu-list__link {
-      color: var(--color-logo-red);
+      color: var(--color-logo-red, #FF0000);
     }
 
     {% comment %} Active (current-page) nav item — override the CSS variables that
@@ -655,7 +655,7 @@
        red automatically. No specificity war needed. {% endcomment %}
     .menu-list__list-item:has(.menu-list__link--active),
     .menu-list__list-item:has([aria-current="page"]) {
-      --menu-top-level-font-color: var(--color-logo-red);
+      --menu-top-level-font-color: var(--color-logo-red, #FF0000);
       --menu-top-level-font-color-rgb: 255 0 0;
       --opacity-subdued-text: 1;
     }
@@ -690,7 +690,7 @@
       padding-right: 0;
     }
     .menu-list__list-item:not(:last-child):not([slot='more']):not([slot='overflow']):not(:has(+ [slot='more'])):not(:has(+ [slot='overflow'])) {
-      background-image: linear-gradient(var(--color-brand-red), var(--color-brand-red));
+      background-image: linear-gradient(var(--color-brand-red, #E31E24), var(--color-brand-red, #E31E24));
       background-repeat: no-repeat;
       background-size: 2px 18px;
       background-position: right center;
