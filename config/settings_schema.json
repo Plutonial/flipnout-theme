@@ -2331,6 +2331,18 @@
         "label": "Show the column toggle",
         "info": "Lets visitors switch the number of columns. Turning this off hides it on every grid.",
         "default": true
+      },
+      {
+        "type": "select",
+        "id": "grid_oos_control",
+        "label": "Out of stock control",
+        "info": "Applies to every branded grid. Individual sections can override it.",
+        "options": [
+          { "value": "always",      "label": "Always show out of stock" },
+          { "value": "switch-show", "label": "Switch, starts showing" },
+          { "value": "switch-hide", "label": "Switch, starts hiding" }
+        ],
+        "default": "switch-show"
       }
     ]
   }

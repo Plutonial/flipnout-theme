@@ -232,18 +232,27 @@
   assign moving_col = collections['moving-equipment']
   assign na_col = collections['new-arrivals']
   assign sab_card_sizes = '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)'
+
+  assign oos_mode = section.settings.oos_control | default: 'inherit'
+  if oos_mode == 'inherit'
+    assign oos_mode = settings.grid_oos_control | default: 'switch-show'
+  endif
 -%}
 
 <shop-all-blocks class="sab">
   {% comment %} ── BLOCK 1: New Arrivals (reads the curated na_col collection) ── {% endcomment %}
   {%- liquid
     assign na_total = 0
+    assign na_oos_count = 0
     assign na_vendors = ''
     assign na_vendor_count = 0
 
     if na_col
       for p in na_col.products
         assign na_total = na_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign na_oos_count = na_oos_count | plus: 1
+        endif
         assign pv = p.vendor
         assign already = false
         if na_vendors != ''
@@ -284,17 +293,19 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and na_oos_count > 0 and na_oos_count < na_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in na_col.products -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -377,11 +388,15 @@
   {% comment %} ── BLOCK 3: Arcade Machines ── {% endcomment %}
   {%- liquid
     assign arcade_total = 0
+    assign arcade_oos_count = 0
     assign arcade_vendors = ''
     assign arcade_vendor_count = 0
     if arcade_col
       for p in arcade_col.products
         assign arcade_total = arcade_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign arcade_oos_count = arcade_oos_count | plus: 1
+        endif
         assign pv = p.vendor
         assign already = false
         if arcade_vendors != ''
@@ -422,25 +437,27 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and arcade_oos_count > 0 and arcade_oos_count < arcade_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in arcade_col.products -%}
           {%- if p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in arcade_col.products -%}
           {%- unless p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
@@ -482,11 +499,15 @@
   {% comment %} ── BLOCK 5: Preowned ── {% endcomment %}
   {%- liquid
     assign preowned_total = 0
+    assign preowned_oos_count = 0
     assign preowned_vendors = ''
     assign preowned_vendor_count = 0
     if preowned_col
       for p in preowned_col.products
         assign preowned_total = preowned_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign preowned_oos_count = preowned_oos_count | plus: 1
+        endif
         assign pv = p.vendor
         assign already = false
         if preowned_vendors != ''
@@ -527,17 +548,19 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and preowned_oos_count > 0 and preowned_oos_count < preowned_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in preowned_col.products -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -553,11 +576,15 @@
   {% comment %} ── BLOCK 6: Apparel ── {% endcomment %}
   {%- liquid
     assign apparel_total = 0
+    assign apparel_oos_count = 0
     assign apparel_types = ''
     assign apparel_type_count = 0
     if apparel_col
       for p in apparel_col.products
         assign apparel_total = apparel_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign apparel_oos_count = apparel_oos_count | plus: 1
+        endif
         assign pt = p.type
         assign already = false
         if apparel_types != ''
@@ -598,17 +625,19 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and apparel_oos_count > 0 and apparel_oos_count < apparel_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in apparel_col.products -%}
-          <li class="sab__item" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -624,11 +653,15 @@
   {% comment %} ── BLOCK 7: Merch ── {% endcomment %}
   {%- liquid
     assign merch_total = 0
+    assign merch_oos_count = 0
     assign merch_vendors = ''
     assign merch_vendor_count = 0
     if merch_col
       for p in merch_col.products
         assign merch_total = merch_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign merch_oos_count = merch_oos_count | plus: 1
+        endif
         assign pv = p.vendor
         assign already = false
         if merch_vendors != ''
@@ -669,25 +702,27 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and merch_oos_count > 0 and merch_oos_count < merch_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in merch_col.products -%}
           {%- if p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in merch_col.products -%}
           {%- unless p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
@@ -704,11 +739,15 @@
   {% comment %} ── BLOCK 8: Moving Equipment ── {% endcomment %}
   {%- liquid
     assign moving_total = 0
+    assign moving_oos_count = 0
     assign moving_vendors = ''
     assign moving_vendor_count = 0
     if moving_col
       for p in moving_col.products
         assign moving_total = moving_total | plus: 1
+        if p.tags contains 'sold-out'
+          assign moving_oos_count = moving_oos_count | plus: 1
+        endif
         assign pv = p.vendor
         assign already = false
         if moving_vendors != ''
@@ -749,25 +788,27 @@
           </select>
         {%- endif -%}
 
-        <label class="bmg__switch sab__switch bmg__switch--on">
-          <input type="checkbox" role="switch" checked class="bmg__switch-input">
-          <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-          <span class="bmg__switch-label">Show Out of Stock</span>
-        </label>
+        {%- if oos_mode != 'always' and moving_oos_count > 0 and moving_oos_count < moving_total -%}
+          <label class="bmg__switch sab__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="sab__grid{% if oos_mode != 'switch-hide' %} sab--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in moving_col.products -%}
           {%- if p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in moving_col.products -%}
           {%- unless p.available -%}
-          <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="sab__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} sab__item--oos{% endif %}" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
@@ -1240,7 +1281,20 @@
 {% schema %}
 {
   "name": "Shop All blocks",
-  "settings": [],
+  "settings": [
+    {
+      "type": "select",
+      "id": "oos_control",
+      "label": "Out of stock control",
+      "options": [
+        { "value": "inherit",     "label": "Inherit from theme settings" },
+        { "value": "always",      "label": "Always show out of stock" },
+        { "value": "switch-show", "label": "Switch, starts showing" },
+        { "value": "switch-hide", "label": "Switch, starts hiding" }
+      ],
+      "default": "inherit"
+    }
+  ],
   "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}

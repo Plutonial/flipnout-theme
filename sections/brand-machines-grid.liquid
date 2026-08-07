@@ -8,6 +8,11 @@
   assign brand_id = collection.id
   assign heading = section.settings.heading | default: 'Machines'
   assign bmg_card_sizes = '(min-width: 1520px) 435px, (min-width: 900px) calc((100vw - 216px) / 3), (min-width: 750px) calc(50vw - 74px), calc(50vw - 50px)'
+
+  assign oos_mode = section.settings.oos_control | default: 'inherit'
+  if oos_mode == 'inherit'
+    assign oos_mode = settings.grid_oos_control | default: 'switch-show'
+  endif
   assign reveal_initial = section.settings.reveal_initial | default: 12
   assign reveal_step = section.settings.reveal_step | default: 12
 
@@ -202,7 +207,7 @@
     endfor
   endif
   assign show_oos_switch = false
-  if sold_out_count > 0 and sold_out_count < total_machines
+  if oos_mode != 'always' and sold_out_count > 0 and sold_out_count < total_machines
     assign show_oos_switch = true
   endif
 -%}
@@ -241,8 +246,8 @@
           {%- endfor -%}
         </select>
         {%- if show_oos_switch -%}
-          <label class="bmg__switch">
-            <input type="checkbox" role="switch" checked class="bmg__switch-input">
+          <label class="bmg__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
             <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
@@ -274,7 +279,7 @@
               {%- break -%}
             {%- endif -%}
           {%- endfor -%}
-          <li class="bmg__item{% if card_product.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
+          <li class="bmg__item{% if card_product.tags contains 'sold-out' %} bmg__item--sold-out{% if oos_mode == 'switch-hide' %} bmg__item--oos-hidden{% endif %}{% endif %}" data-game="{{ pg }}" id="{{ section.id }}-{{ card_product.id }}">
             {%- render 'brand-machine-card', product: card_product, sizes: bmg_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -282,7 +287,7 @@
         {%- comment %} Mode 2: flat grid from collection.products {% endcomment -%}
         {%- for p in collection.products -%}
           {%- if p.type == 'Accessory' -%}{%- continue -%}{%- endif -%}
-          <li class="bmg__item{% if p.tags contains 'sold-out' %} bmg__item--sold-out{% endif %}" data-game="" id="{{ section.id }}-{{ p.id }}">
+          <li class="bmg__item{% if p.tags contains 'sold-out' %} bmg__item--sold-out{% if oos_mode == 'switch-hide' %} bmg__item--oos-hidden{% endif %}{% endif %}" data-game="" id="{{ section.id }}-{{ p.id }}">
             {%- render 'brand-machine-card', product: p, sizes: bmg_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -584,6 +589,18 @@
   "name": "Brand machines grid",
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Machines" },
+    {
+      "type": "select",
+      "id": "oos_control",
+      "label": "Out of stock control",
+      "options": [
+        { "value": "inherit",     "label": "Inherit from theme settings" },
+        { "value": "always",      "label": "Always show out of stock" },
+        { "value": "switch-show", "label": "Switch, starts showing" },
+        { "value": "switch-hide", "label": "Switch, starts hiding" }
+      ],
+      "default": "inherit"
+    },
     { "type": "range", "id": "reveal_initial", "label": "Initial cards shown", "min": 4, "max": 40, "step": 4, "default": 12 },
     { "type": "range", "id": "reveal_step", "label": "Cards per click", "min": 4, "max": 40, "step": 4, "default": 12 }
   ],

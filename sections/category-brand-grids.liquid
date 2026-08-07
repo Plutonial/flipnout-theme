@@ -393,6 +393,11 @@
   assign final_products_arr = brand_products_str | split: '||'
   assign final_games_arr = brand_games_str | split: '||'
   assign safety_arr = safety_handles | split: '|'
+
+  assign oos_mode = section.settings.oos_control | default: 'inherit'
+  if oos_mode == 'inherit'
+    assign oos_mode = settings.grid_oos_control | default: 'switch-show'
+  endif
 -%}
 
 {%- if final_brand_arr.size > 0 -%}
@@ -404,7 +409,21 @@
       assign total = final_total_arr[forloop.index0] | plus: 0
       assign brand_game_handles = final_games_arr[forloop.index0] | split: '|'
       assign brand_games_count = brand_game_handles.size
-
+      assign cbg_sold_out = 0
+      for pair in product_pairs
+        assign pp = pair | split: ':'
+        assign pp_gh = pp[0]
+        assign pp_ph = pp[1]
+        assign pp_col = collections[pp_gh]
+        for pp_p in pp_col.products
+          if pp_p.handle == pp_ph
+            if pp_p.tags contains 'sold-out'
+              assign cbg_sold_out = cbg_sold_out | plus: 1
+            endif
+            break
+          endif
+        endfor
+      endfor
     -%}
 
     {%- comment %} Safety net HTML comment {% endcomment -%}
@@ -432,16 +451,18 @@
             </select>
           {%- endif -%}
 
-          <label class="bmg__switch cbg__switch bmg__switch--on">
-            <input type="checkbox" role="switch" checked class="bmg__switch-input">
-            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
-            <span class="bmg__switch-label">Show Out of Stock</span>
-          </label>
+          {%- if oos_mode != 'always' and cbg_sold_out > 0 and cbg_sold_out < total -%}
+            <label class="bmg__switch cbg__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+              <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
+              <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+              <span class="bmg__switch-label">Show Out of Stock</span>
+            </label>
+          {%- endif -%}
 
           {%- render 'grid-cols-toggle' -%}
         </div>
 
-        <ul class="cbg__grid cbg--precut" role="list" data-total="{{ total }}" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+        <ul class="cbg__grid{% if oos_mode != 'switch-hide' %} cbg--precut{% endif %}" role="list" data-total="{{ total }}" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
           {%- for pair in product_pairs -%}
             {%- assign pair_parts = pair | split: ':' -%}
             {%- assign gh = pair_parts[0] -%}
@@ -455,7 +476,7 @@
               {%- endif -%}
             {%- endfor -%}
             {%- if card_product != blank -%}
-              <li class="cbg__item" data-game="{{ gh }}"{% if card_product.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+              <li class="cbg__item{% if oos_mode == 'switch-hide' and card_product.tags contains 'sold-out' %} cbg__item--oos{% endif %}" data-game="{{ gh }}"{% if card_product.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
                 {%- render 'brand-machine-card', product: card_product -%}
               </li>
             {%- endif -%}
@@ -922,7 +943,20 @@
 {% schema %}
 {
   "name": "Category brand grids",
-  "settings": [],
+  "settings": [
+    {
+      "type": "select",
+      "id": "oos_control",
+      "label": "Out of stock control",
+      "options": [
+        { "value": "inherit",     "label": "Inherit from theme settings" },
+        { "value": "always",      "label": "Always show out of stock" },
+        { "value": "switch-show", "label": "Switch, starts showing" },
+        { "value": "switch-hide", "label": "Switch, starts hiding" }
+      ],
+      "default": "inherit"
+    }
+  ],
   "disabled_on": { "groups": ["header", "footer"] }
 }
 {% endschema %}

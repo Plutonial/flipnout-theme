@@ -8,8 +8,8 @@
     heading      — text, blank = no <h2>
     collection   — collection picker; blank = page's collection object
     filter_by    — vendor | type | none
-    show_oos_switch — checkbox; renders the Show Out of Stock switch when the
-                      collection contains at least one product tagged sold-out
+    oos_control    — select; controls out-of-stock visibility (inherit / always /
+                      switch-show / switch-hide)
     rows         — number of rows before "Show more"
 {%- endcomment -%}
 
@@ -31,6 +31,11 @@
   comment
     ── Build unique filter-value list from the current page of products ──
   endcomment
+
+  assign oos_mode = section.settings.oos_control | default: 'inherit'
+  if oos_mode == 'inherit'
+    assign oos_mode = settings.grid_oos_control | default: 'switch-show'
+  endif
 
   assign na_filters = ''
   assign na_filter_count = 0
@@ -103,9 +108,9 @@
             {%- endfor -%}
           </select>
         {%- endif -%}
-        {%- if section.settings.show_oos_switch and na_oos_count > 0 -%}
-          <label class="bmg__switch fnop-na__switch bmg__switch--on">
-            <input type="checkbox" role="switch" checked class="bmg__switch-input">
+        {%- if oos_mode != 'always' and na_oos_count > 0 and na_oos_count < na_total -%}
+          <label class="bmg__switch fnop-na__switch{% if oos_mode == 'switch-show' %} bmg__switch--on{% endif %}">
+            <input type="checkbox" role="switch"{% if oos_mode == 'switch-show' %} checked{% endif %} class="bmg__switch-input">
             <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
             <span class="bmg__switch-label">Show Out of Stock</span>
           </label>
@@ -113,7 +118,7 @@
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
-      <ul class="fnop-na__grid fnop-na--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
+      <ul class="fnop-na__grid{% if oos_mode != 'switch-hide' %} fnop-na--precut{% endif %}" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in grid_col.products -%}
           {%- liquid
             if filter_by == 'vendor'
@@ -124,7 +129,7 @@
               assign _filter_val = ''
             endif
           -%}
-          <li class="fnop-na__item" data-filter="{{ _filter_val }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
+          <li class="fnop-na__item{% if oos_mode == 'switch-hide' and p.tags contains 'sold-out' %} fnop-na__item--oos{% endif %}" data-filter="{{ _filter_val }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: na_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -430,10 +435,16 @@
       "default": "vendor"
     },
     {
-      "type": "checkbox",
-      "id": "show_oos_switch",
-      "label": "Show Out of Stock switch",
-      "default": true
+      "type": "select",
+      "id": "oos_control",
+      "label": "Out of stock control",
+      "options": [
+        { "value": "inherit",     "label": "Inherit from theme settings" },
+        { "value": "always",      "label": "Always show out of stock" },
+        { "value": "switch-show", "label": "Switch, starts showing" },
+        { "value": "switch-hide", "label": "Switch, starts hiding" }
+      ],
+      "default": "inherit"
     },
     {
       "type": "range",
