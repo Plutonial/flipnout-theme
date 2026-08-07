@@ -231,6 +231,7 @@
   assign merch_col = collections['merchandise']
   assign moving_col = collections['moving-equipment']
   assign na_col = collections['new-arrivals']
+  assign sab_card_sizes = '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)'
 -%}
 
 <shop-all-blocks class="sab">
@@ -294,30 +295,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in na_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -456,60 +434,14 @@
         {%- for p in arcade_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in arcade_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
         {%- endfor -%}
@@ -537,30 +469,7 @@
       <ul class="sab__grid" role="list">
         {%- for p in accessories_col.products limit: 6 -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -629,30 +538,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in preowned_col.products -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title | remove_first: ' Pinball Machine' }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -723,30 +609,7 @@
       <ul class="sab__grid sab--precut" role="list" data-cols="{{ settings.grid_columns_desktop | default: '3' }}">
         {%- for p in apparel_col.products -%}
           <li class="sab__item" data-filter="{{ p.type | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
         {%- endfor -%}
       </ul>
@@ -818,60 +681,14 @@
         {%- for p in merch_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in merch_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
         {%- endfor -%}
@@ -944,60 +761,14 @@
         {%- for p in moving_col.products -%}
           {%- if p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endif -%}
         {%- endfor -%}
         {%- for p in moving_col.products -%}
           {%- unless p.available -%}
           <li class="sab__item" data-filter="{{ p.vendor | handleize }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
-            {%- if p.tags contains 'sold-out' -%}
-              <div class="bmc bmc--sold-out">
-            {%- else -%}
-              <a class="bmc" href="{{ p.url }}" aria-label="{{ p.title }}">
-            {%- endif -%}
-              <div class="bmc__poster">
-                {%- if p.featured_media -%}
-                  {{ p.featured_media | image_url: width: 1600 | image_tag:
-                    loading: 'lazy',
-                    class: 'bmc__img',
-                    sizes: '(min-width: 1532px) 435px, (min-width: 900px) calc(33.33vw - 76px), calc(50vw - 56px)',
-                    widths: '220,300,440,600,880,1200,1600',
-                    alt: p.title
-                  }}
-                {%- else -%}
-                  {{ 'product-1' | placeholder_svg_tag: 'bmc__img bmc__img--placeholder' }}
-                {%- endif -%}
-                {%- if p.tags contains 'sold-out' -%}
-                  <span class="bmc__badge">Sold Out</span>
-                {%- endif -%}
-              </div>
-              <h3 class="bmc__title">{{ p.title }}</h3>
-              <span class="bmc__price">{{ p.price | money }}</span>
-            {%- if p.tags contains 'sold-out' -%}</div>{%- else -%}</a>{%- endif -%}
+            {%- render 'brand-machine-card', product: p, sizes: sab_card_sizes -%}
           </li>
           {%- endunless -%}
         {%- endfor -%}
