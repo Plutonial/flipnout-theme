@@ -26,6 +26,14 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  @media (max-width: 749px) {
+    [data-template="collection.category"] .product-grid[product-grid-view='mobile-single'],
+    [data-template="collection"] .product-grid[product-grid-view='mobile-single'],
+    [data-template="search"] .product-grid[product-grid-view='mobile-single'] {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
   @media (min-width: 750px) {
     [data-template="collection.category"] .product-grid,
     [data-template="collection"] .product-grid,
