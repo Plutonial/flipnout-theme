@@ -49,12 +49,18 @@
     }
   }
 
-  /* P94 TASK 3 — Tile heading: allow wrapping so line-clamp works.
-     The existing -webkit-line-clamp: 2 in _header-menu.liquid requires the text to
-     wrap, but white-space or flex sizing can prevent it. Ensure the heading can wrap
-     and clamp to 2 lines with an ellipsis instead of cutting mid-word. */
+  /* P95 TASK 2 — Tile heading: two-line clamp.
+     Upstream styles override display to flow-root and add white-space: nowrap, which
+     kills the -webkit-line-clamp set in _header-menu.liquid. Reinforce the full set
+     of properties needed for a working 2-line clamp here, at higher specificity. */
   @media screen and (min-width: 990px) {
     .mega-menu-tile__heading {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      white-space: normal;
+      text-overflow: ellipsis;
       word-break: break-word;
       overflow-wrap: break-word;
     }
