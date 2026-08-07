@@ -2301,6 +2301,36 @@
           { "value": "4", "label": "4 columns" }
         ],
         "default": "3"
+      },
+      {
+        "type": "range",
+        "id": "grid_gap_desktop",
+        "label": "Desktop gap",
+        "info": "Space between cards from 900px up.",
+        "min": 16, "max": 48, "step": 2, "unit": "px",
+        "default": 32
+      },
+      {
+        "type": "range",
+        "id": "grid_gap_mobile",
+        "label": "Mobile gap",
+        "min": 8, "max": 32, "step": 2, "unit": "px",
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "grid_card_corner",
+        "label": "Card corner",
+        "info": "Maximum radius of the branded top-left corner. It scales down with the card on smaller screens.",
+        "min": 24, "max": 56, "step": 2, "unit": "px",
+        "default": 40
+      },
+      {
+        "type": "checkbox",
+        "id": "grid_show_column_toggle",
+        "label": "Show the column toggle",
+        "info": "Lets visitors switch the number of columns. Turning this off hides it on every grid.",
+        "default": true
       }
     ]
   }

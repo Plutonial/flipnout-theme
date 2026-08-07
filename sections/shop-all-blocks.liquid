@@ -792,8 +792,8 @@
   .sab__grid {
     display: grid;
     grid-template-columns: repeat(var(--sab-mobile-cols, 2), 1fr);
-    column-gap: 20px;
-    row-gap: 20px;
+    column-gap: var(--bmc-gap-mobile);
+    row-gap: var(--bmc-gap-mobile);
     list-style: none;
     margin: 0;
     padding: 0;
@@ -802,8 +802,8 @@
   @media (min-width: 900px) {
     .sab__grid {
       grid-template-columns: repeat(var(--sab-desktop-cols, {{ settings.grid_columns_desktop | default: '3' }}), 1fr);
-      column-gap: 32px;
-      row-gap: 32px;
+      column-gap: var(--bmc-gap-desktop);
+      row-gap: var(--bmc-gap-desktop);
     }
   }
 

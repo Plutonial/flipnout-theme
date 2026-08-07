@@ -9,7 +9,9 @@
     --color-brand-red: #E31E24;
     --color-logo-red: #FF0000;
     --color-surface-cream: #F7F2EA;
-    --bmc-corner: clamp(14px, 2.6vw, 40px);
+    --bmc-corner: clamp(14px, 2.6vw, {{ settings.grid_card_corner | default: 40 }}px);
     --bmc-ratio: 1600 / 2050;
+    --bmc-gap-desktop: {{ settings.grid_gap_desktop | default: 32 }}px;
+    --bmc-gap-mobile: {{ settings.grid_gap_mobile | default: 20 }}px;
   }
 </style>
