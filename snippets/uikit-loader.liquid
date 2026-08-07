@@ -12,6 +12,7 @@
   {{ 'fnop-uikit-components.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'fnop-uikit.min.js' | asset_url }}" defer></script>
   <script src="{{ 'fnop-uikit-icons.min.js' | asset_url }}" defer></script>
+  <script src="{{ 'fnop-carousel-align.js' | asset_url }}" defer></script>
   <script>
     {% comment %} Re-init UIkit components after Shopify editor section reload {% endcomment %}
     document.addEventListener('shopify:section:load', function() {
