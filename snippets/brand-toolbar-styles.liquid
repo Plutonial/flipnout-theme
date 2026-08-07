@@ -96,8 +96,9 @@
    rule. The select is 58.21 tall and the switch 43.99, so bottom-aligning drops the
    switch's centre 7.11px. Centre just the switch against the flex line — the select
    is the tallest item, so it defines the line and its centre is the line's centre.
-   Scoped to the row layout: below 750px the toolbar is a column and the cross axis
-   is horizontal, where align-self: center would indent the switch by 155px. */
+   Below 750px the select takes a full-width flex basis and the remaining controls wrap onto a
+   second line, which `align-items: center` on the toolbar already centres — so this rule stays
+   scoped to the row-with-select-inline case above 750px. */
 @media (min-width: 750px) {
   .bmg__switch {
     align-self: center;
@@ -106,11 +107,14 @@
 
 @media (max-width: 749px) {
   .bmg__toolbar {
-    align-items: flex-start;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 12px;
   }
 
   .bmg__toolbar .bmg__select {
+    flex: 0 0 100%;
     width: 100%;
   }
 }
@@ -152,4 +156,4 @@
 
 .fnop-toggle { display: none; }
 @media (min-width: 900px)  { .fnop-toggle--desktop { display: inline-flex; gap: 4px; margin-left: auto; } }
-@media (max-width: 899px)  { .fnop-toggle--mobile  { display: inline-flex; gap: 4px; } }
+@media (max-width: 899px)  { .fnop-toggle--mobile  { display: inline-flex; gap: 4px; margin-left: auto; } }
