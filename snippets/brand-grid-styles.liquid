@@ -4,6 +4,10 @@
 {% endcomment %}
 
 <style>
+  :root {
+    --bmc-corner: clamp(14px, 2.6vw, 40px);
+  }
+
   .brand-section__container {
     max-width: var(--page-width, 1520px);
     margin-inline: auto;
@@ -25,7 +29,7 @@
     color: inherit;
     background: var(--color-surface-cream);
     border-radius: 0;
-    border-top-left-radius: var(--bmc-corner, clamp(14px, 2.6vw, 40px));
+    border-top-left-radius: var(--bmc-corner);
     padding: 0 0 12px;
     overflow: hidden;
   }

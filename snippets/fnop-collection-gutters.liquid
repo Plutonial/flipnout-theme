@@ -114,14 +114,16 @@
   [data-template="collection"] .product-card__content,
   [data-template="search"] .product-card__content {
     background: var(--color-surface-cream);
-    border-radius: var(--radius-sm, 8px);
-    padding: 12px;
+    border-radius: 0;
+    border-top-left-radius: var(--bmc-corner);
+    padding: 0 0 12px;
+    overflow: hidden;
   }
 
   [data-template="collection.category"] .card-gallery,
   [data-template="collection"] .card-gallery,
   [data-template="search"] .card-gallery {
-    border-radius: calc(var(--radius-sm, 8px) - 12px);
+    border-radius: 0;
     overflow: hidden;
     background: transparent;
   }
@@ -157,6 +159,15 @@
   }
 
   {% comment %} ── Sold-out badge: match .bmc__badge appearance ── {% endcomment %}
+  [data-template="collection.category"] .product-card__content > a.contents > *,
+  [data-template="collection"] .product-card__content > a.contents > *,
+  [data-template="search"] .product-card__content > a.contents > *,
+  [data-template="collection.category"] .product-card__content > product-price,
+  [data-template="collection"] .product-card__content > product-price,
+  [data-template="search"] .product-card__content > product-price {
+    padding-inline: 12px;
+  }
+
   [data-template="collection.category"] .product-badges__badge,
   [data-template="collection"] .product-badges__badge,
   [data-template="search"] .product-badges__badge {
