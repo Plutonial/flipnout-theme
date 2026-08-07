@@ -179,20 +179,23 @@
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__heading-row {
+      position: relative;
       max-width: var(--page-content-width, 1200px);
       margin-inline: auto;
       padding-inline: var(--page-margin, 16px);
       margin-bottom: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__heading {
       margin: 0;
+      text-align: center;
     }
 
     #{{ fnop_carousel_id }} .fnop-gc__heading-nav {
+      position: absolute;
+      right: var(--page-margin, 16px);
+      top: 50%;
+      transform: translateY(-50%);
       display: flex;
       gap: 8px;
     }
@@ -224,7 +227,7 @@
       transform-origin: center center;
     }
 
-    #{{ fnop_carousel_id }} .uk-slide-active .fnop-gc__card {
+    #{{ fnop_carousel_id }}.fnop-gc--carousel .uk-slide-active .fnop-gc__card {
       transform: scale(1.12);
     }
 

@@ -98,6 +98,11 @@
       showControls(el);
     } else if (!overflows) {
       /* Case 4 — everything fits, no navigation needed. */
+      /* Strip stray uk-slide-active / uk-active left by UIkit before $destroy */
+      var fitItems = el.querySelectorAll('.uk-slider-items > *');
+      for (var k = 0; k < fitItems.length; k++) {
+        fitItems[k].classList.remove('uk-slide-active', 'uk-active');
+      }
       hideControls(el);
     } else {
       /* Case 5 — overflows and loop is working. Leave it alone. */
