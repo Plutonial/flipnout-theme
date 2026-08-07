@@ -8,7 +8,8 @@
     heading      — text, blank = no <h2>
     collection   — collection picker; blank = page's collection object
     filter_by    — vendor | type | none
-    show_oos_switch — checkbox (reserved, not yet wired)
+    show_oos_switch — checkbox; renders the Show Out of Stock switch when the
+                      collection contains at least one product tagged sold-out
     rows         — number of rows before "Show more"
 {%- endcomment -%}
 
@@ -34,9 +35,14 @@
   assign na_filters = ''
   assign na_filter_count = 0
   assign na_total = 0
+  assign na_oos_count = 0
 
   for p in grid_col.products
     assign na_total = na_total | plus: 1
+
+    if p.tags contains 'sold-out'
+      assign na_oos_count = na_oos_count | plus: 1
+    endif
 
     if filter_by == 'vendor'
       assign pval = p.vendor
@@ -97,6 +103,13 @@
             {%- endfor -%}
           </select>
         {%- endif -%}
+        {%- if section.settings.show_oos_switch and na_oos_count > 0 -%}
+          <label class="bmg__switch fnop-na__switch bmg__switch--on">
+            <input type="checkbox" role="switch" checked class="bmg__switch-input">
+            <span class="bmg__switch-track" aria-hidden="true"><span class="bmg__switch-thumb"></span></span>
+            <span class="bmg__switch-label">Show Out of Stock</span>
+          </label>
+        {%- endif -%}
         {%- render 'grid-cols-toggle', mobile_cols: 2 -%}
       </div>
 
@@ -111,7 +124,7 @@
               assign _filter_val = ''
             endif
           -%}
-          <li class="fnop-na__item" data-filter="{{ _filter_val }}">
+          <li class="fnop-na__item" data-filter="{{ _filter_val }}"{% if p.tags contains 'sold-out' %} data-sold-out="true"{% endif %}>
             {%- render 'brand-machine-card', product: p, sizes: na_card_sizes -%}
           </li>
         {%- endfor -%}
@@ -172,6 +185,7 @@
   }
 
   #{{ section_id }} .fnop-na__item--offfilter { display: none; }
+  #{{ section_id }} .fnop-na__item--oos { display: none; }
 
 
   #{{ section_id }} .fnop-na__controls {
@@ -267,6 +281,15 @@
           this.select.addEventListener('change', () => this.applyFilter());
         }
 
+        this.oosSwitch = this.querySelector('.bmg__switch-input');
+        if (this.oosSwitch) {
+          this.oosSwitch.addEventListener('change', () => {
+            const label = this.querySelector('.fnop-na__switch');
+            if (label) label.classList.toggle('bmg__switch--on', this.oosSwitch.checked);
+            this.applyFilter();
+          });
+        }
+
         if (this.btn) {
           this.btn.addEventListener('click', () => this.handleShowMore());
         }
@@ -318,26 +341,37 @@
         return t && t !== 'none' ? t.split(' ').filter(Boolean).length : 2;
       }
 
+      getShowOOS() {
+        const sw = this.querySelector('.bmg__switch-input');
+        return sw ? sw.checked : true;
+      }
+
       getEligible() {
         return this.items.filter(item =>
-          !item.classList.contains('fnop-na__item--offfilter')
+          !item.classList.contains('fnop-na__item--offfilter') &&
+          !item.classList.contains('fnop-na__item--oos')
         );
       }
 
       applyFilter() {
         const val = this.select ? this.select.value : 'all';
+        const showOOS = this.getShowOOS();
 
         this.items.forEach(item => {
           item.classList.toggle(
             'fnop-na__item--offfilter',
             val !== 'all' && item.dataset.filter !== val
           );
+          item.classList.toggle(
+            'fnop-na__item--oos',
+            !showOOS && item.hasAttribute('data-sold-out')
+          );
         });
 
-        if (val !== 'all') {
-          this.grid.classList.remove('fnop-na--precut');
-        } else {
+        if (val === 'all' && showOOS) {
           this.grid.classList.add('fnop-na--precut');
+        } else {
+          this.grid.classList.remove('fnop-na--precut');
         }
 
         this.update();
