@@ -18,7 +18,11 @@
   endunless
 -%}
 
-<a class="bmc{% if square %} bmc--square{% endif %}" href="{{ product.url }}" aria-label="{{ product.title }}">
+{%- if is_sold_out -%}
+  <div class="bmc bmc--sold-out{% if square %} bmc--square{% endif %}">
+{%- else -%}
+  <a class="bmc{% if square %} bmc--square{% endif %}" href="{{ product.url }}" aria-label="{{ product.title }}">
+{%- endif -%}
   <div class="bmc__poster">
     {%- if product.featured_media -%}
       {{ product.featured_media | image_url: width: 1600 | image_tag:
@@ -37,4 +41,4 @@
   </div>
   <h3 class="bmc__title">{{ display_title }}</h3>
   <span class="bmc__price">{{ product.price | money }}</span>
-</a>
+{%- if is_sold_out -%}</div>{%- else -%}</a>{%- endif -%}

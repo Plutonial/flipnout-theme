@@ -25,13 +25,15 @@
     color: inherit;
     background: var(--color-surface-cream);
     border-radius: var(--radius-sm, 8px);
-    padding: 12px;
+    border-top-left-radius: var(--bmc-corner, clamp(16px, 2.6vw, 40px));
+    padding: 0 0 12px;
+    overflow: hidden;
   }
 
   .bmc__poster {
     position: relative;
     aspect-ratio: 1600 / 2050;
-    border-radius: calc(var(--radius-sm, 8px) - 12px);
+    border-radius: 0;
     overflow: hidden;
     background: transparent;
   }
@@ -82,11 +84,20 @@
     --bmc-title-lines: 3;
   }
 
+  .bmc__title,
+  .bmc__price {
+    padding-inline: 12px;
+  }
+
   .bmc__price {
     margin-top: 4px;
     font-size: var(--font-size--xl);
     font-weight: 500;
     color: rgb(var(--color-foreground-rgb) / 0.8);
+  }
+
+  .bmc--sold-out {
+    cursor: default;
   }
 
   @media (max-width: 749px) {
