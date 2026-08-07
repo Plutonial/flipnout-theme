@@ -57,20 +57,20 @@
   #{{ section_id }} .collection-hero__logo {
     --_logo-scale: {{ logo_scale }};
     max-width:  calc(min(85vw, 300px) * var(--_logo-scale));
-    max-height: calc(clamp(80px, 14vw, 140px) * var(--_logo-scale));
+    max-height: calc(clamp(64px, 11vw, 96px) * var(--_logo-scale));
   }
 
   @media (min-width: 701px) {
     #{{ section_id }} .collection-hero__logo {
       max-width:  calc(320px * var(--_logo-scale));
-      max-height: calc(clamp(100px, 10vw, 150px) * var(--_logo-scale));
+      max-height: calc(clamp(76px, 7vw, 104px) * var(--_logo-scale));
     }
   }
 
   @media (min-width: 1025px) {
     #{{ section_id }} .collection-hero__logo {
       max-width:  calc(320px * var(--_logo-scale));
-      max-height: calc(clamp(120px, 12vw, 180px) * var(--_logo-scale));
+      max-height: calc(clamp(88px, 8vw, 120px) * var(--_logo-scale));
     }
   }
 
@@ -82,7 +82,7 @@
 
     #{{ section_id }} .collection-hero__logo {
       max-width:  calc(min(90vw, 340px) * var(--_logo-scale));
-      max-height: calc(clamp(100px, 20vw, 160px) * var(--_logo-scale));
+      max-height: calc(clamp(68px, 13vw, 96px) * var(--_logo-scale));
     }
   }
 {% endstyle %}
