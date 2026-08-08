@@ -308,13 +308,16 @@
 
       /* Measure content height below the heading for a column element.
          heading.offsetHeight + its computed marginBottom gives the heading's
-         total footprint inside the column. */
+         total footprint inside the column.
+         IMPORTANT: the column must have align-self: start (or equivalent)
+         when measured, otherwise grid stretch makes scrollHeight equal on
+         both columns and the comparison is useless. */
       function contentHeightBelowHeading(colEl) {
         var heading = colEl.querySelector('.brand-about__heading');
         if (!heading) return colEl.scrollHeight;
         var mb = parseFloat(getComputedStyle(heading).marginBottom) || 0;
-        var headingFootprint = heading.offsetHeight + mb;
-        return colEl.scrollHeight - headingFootprint;
+        var hfp = heading.offsetHeight + mb;
+        return colEl.scrollHeight - hfp;
       }
 
       /* Get the heading footprint (height + margin) for a column */
@@ -364,8 +367,19 @@
         var relEl = section.querySelector('.brand-about__releases');
         if (!copyEl || !relEl) return;
 
+        /* Temporarily remove grid stretch so scrollHeight reflects
+           natural content height, not the stretched grid-row height. */
+        copyEl.style.alignSelf = 'start';
+        relEl.style.alignSelf = 'start';
+        /* Force layout reflow before measuring */
+        void copyEl.offsetHeight;
+
         var copyH = contentHeightBelowHeading(copyEl);
         var relH = contentHeightBelowHeading(relEl);
+
+        /* Restore grid stretch */
+        copyEl.style.removeProperty('align-self');
+        relEl.style.removeProperty('align-self');
 
         if (copyH === relH) return;
 
