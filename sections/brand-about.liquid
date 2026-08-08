@@ -276,12 +276,12 @@
     }
 
     /* Copy-side clamp: fade mask at the bottom when clamped */
-    #{{ section_id }} .brand-about__copy[data-clamped] {
+    #{{ section_id }} .brand-about__copy-inner[data-clamped] {
       overflow: hidden;
       position: relative;
     }
 
-    #{{ section_id }} .brand-about__copy[data-clamped]::after {
+    #{{ section_id }} .brand-about__copy-inner[data-clamped]::after {
       content: "";
       position: absolute;
       bottom: 0;
@@ -342,8 +342,11 @@
         var copyEl = section.querySelector('.brand-about__copy');
         var relEl = section.querySelector('.brand-about__releases');
         if (copyEl) {
-          copyEl.style.removeProperty('max-height');
-          copyEl.removeAttribute('data-clamped');
+          var innerEl = copyEl.querySelector('.brand-about__copy-inner');
+          if (innerEl) {
+            innerEl.style.removeProperty('max-height');
+            innerEl.removeAttribute('data-clamped');
+          }
         }
         if (relEl) {
           /* Show all table rows */
@@ -388,15 +391,35 @@
         var target = Math.max(shorter, floor);
 
         if (copyH > relH) {
-          /* Clamp the copy column */
-          var maxH = headingFootprint(copyEl) + target;
+          /* Clamp the copy column — wrap content below heading in an
+             inner div so max-height + overflow:hidden clips the text
+             while the toggle stays visible inside the column. */
+          var innerEl = copyEl.querySelector('.brand-about__copy-inner');
+          if (!innerEl) {
+            innerEl = document.createElement('div');
+            innerEl.className = 'brand-about__copy-inner';
+            var heading = copyEl.querySelector('.brand-about__heading');
+            /* Move all siblings after the heading into the wrapper */
+            var node = heading ? heading.nextSibling : copyEl.firstChild;
+            while (node) {
+              var next = node.nextSibling;
+              innerEl.appendChild(node);
+              node = next;
+            }
+            copyEl.appendChild(innerEl);
+          }
 
-          if (maxH >= copyEl.scrollHeight) return; /* nothing to clamp */
+          var innerMaxH = target;
+          /* Measure inner's natural scrollHeight */
+          innerEl.style.removeProperty('max-height');
+          innerEl.removeAttribute('data-clamped');
+          void innerEl.offsetHeight;
+          if (innerMaxH >= innerEl.scrollHeight) return; /* nothing to clamp */
 
-          copyEl.style.maxHeight = maxH + 'px';
-          copyEl.setAttribute('data-clamped', '');
+          innerEl.style.maxHeight = innerMaxH + 'px';
+          innerEl.setAttribute('data-clamped', '');
 
-          /* Inject toggle */
+          /* Inject toggle inside copyEl, after the inner wrapper */
           var wrap = document.createElement('div');
           wrap.className = 'brand-about__controls brand-about__controls--balance';
           var btn = document.createElement('button');
@@ -405,18 +428,18 @@
           btn.setAttribute('aria-expanded', 'false');
           btn.textContent = 'Read more';
           wrap.appendChild(btn);
-          copyEl.parentNode.insertBefore(wrap, copyEl.nextSibling);
+          copyEl.appendChild(wrap);
 
           btn.addEventListener('click', function() {
             var expanded = btn.getAttribute('aria-expanded') === 'true';
             if (expanded) {
-              copyEl.style.maxHeight = maxH + 'px';
-              copyEl.setAttribute('data-clamped', '');
+              innerEl.style.maxHeight = innerMaxH + 'px';
+              innerEl.setAttribute('data-clamped', '');
               btn.setAttribute('aria-expanded', 'false');
               btn.textContent = 'Read more';
             } else {
-              copyEl.style.removeProperty('max-height');
-              copyEl.removeAttribute('data-clamped');
+              innerEl.style.removeProperty('max-height');
+              innerEl.removeAttribute('data-clamped');
               btn.setAttribute('aria-expanded', 'true');
               btn.textContent = 'Read less';
             }
