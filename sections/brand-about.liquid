@@ -275,48 +275,212 @@
       display: block;
     }
 
+    /* Copy-side clamp: fade mask at the bottom when clamped */
+    #{{ section_id }} .brand-about__copy[data-clamped] {
+      overflow: hidden;
+      position: relative;
+    }
+
+    #{{ section_id }} .brand-about__copy[data-clamped]::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3em;
+      background: linear-gradient(to bottom, transparent, var(--color-surface-cream, #F7F2EA));
+      pointer-events: none;
+    }
+
     {%- render 'fnop-section-heading-mobile' -%}
   {% endstyle %}
 
   <script>
     (function() {
-      const CAP = 12;
-      const section = document.getElementById('{{ section_id }}');
-      if (!section) return;
-      const table = section.querySelector('.brand-about__table');
-      if (!table) return;
-      const tbody = table.querySelector('tbody');
-      if (!tbody) return;
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      if (rows.length <= CAP) return;
+      var SECTION_ID = '{{ section_id }}';
+      var STACKED_BP = 849;
+      var FLOOR_LINES = 8;
+      var debounceTimer;
 
-      /* Hide overflow rows */
-      rows.forEach(function(tr, i) { if (i >= CAP) tr.hidden = true; });
+      function getSection() { return document.getElementById(SECTION_ID); }
 
-      /* Inject toggle button */
-      const wrap = document.createElement('div');
-      wrap.className = 'brand-about__controls';
-      const btn = document.createElement('button');
-      btn.className = 'brand-about__toggle';
-      btn.type = 'button';
-      btn.setAttribute('aria-expanded', 'false');
-      btn.setAttribute('aria-controls', table.id);
-      btn.textContent = 'Show All';
-      wrap.appendChild(btn);
-      table.parentNode.insertBefore(wrap, table.nextSibling);
+      function isStacked() { return window.innerWidth <= STACKED_BP; }
 
-      btn.addEventListener('click', function() {
-        const expanded = btn.getAttribute('aria-expanded') === 'true';
-        if (expanded) {
-          rows.forEach(function(tr, i) { if (i >= CAP) tr.hidden = true; });
-          btn.setAttribute('aria-expanded', 'false');
-          btn.textContent = 'Show All';
-        } else {
-          rows.forEach(function(tr) { tr.hidden = false; });
-          btn.setAttribute('aria-expanded', 'true');
-          btn.textContent = 'Show Less';
+      /* Measure content height below the heading for a column element.
+         heading.offsetHeight + its computed marginBottom gives the heading's
+         total footprint inside the column. */
+      function contentHeightBelowHeading(colEl) {
+        var heading = colEl.querySelector('.brand-about__heading');
+        if (!heading) return colEl.scrollHeight;
+        var mb = parseFloat(getComputedStyle(heading).marginBottom) || 0;
+        var headingFootprint = heading.offsetHeight + mb;
+        return colEl.scrollHeight - headingFootprint;
+      }
+
+      /* Get the heading footprint (height + margin) for a column */
+      function headingFootprint(colEl) {
+        var heading = colEl.querySelector('.brand-about__heading');
+        if (!heading) return 0;
+        var mb = parseFloat(getComputedStyle(heading).marginBottom) || 0;
+        return heading.offsetHeight + mb;
+      }
+
+      /* Compute the 8-line floor from the copy's actual line-height */
+      function computeFloor(copyEl) {
+        var p = copyEl.querySelector('p');
+        var target = p || copyEl;
+        var lh = parseFloat(getComputedStyle(target).lineHeight);
+        if (!isFinite(lh) || lh <= 0) lh = 34; /* fallback */
+        return lh * FLOOR_LINES;
+      }
+
+      /* Remove all clamping state */
+      function unclamped(section) {
+        var copyEl = section.querySelector('.brand-about__copy');
+        var relEl = section.querySelector('.brand-about__releases');
+        if (copyEl) {
+          copyEl.style.removeProperty('max-height');
+          copyEl.removeAttribute('data-clamped');
         }
+        if (relEl) {
+          /* Show all table rows */
+          var rows = relEl.querySelectorAll('.brand-about__table tbody tr');
+          rows.forEach(function(tr) { tr.hidden = false; });
+        }
+        /* Remove any injected toggles */
+        section.querySelectorAll('.brand-about__controls--balance').forEach(function(el) { el.remove(); });
+      }
+
+      function balance() {
+        var section = getSection();
+        if (!section) return;
+
+        /* Always reset first so we measure natural heights */
+        unclamped(section);
+
+        if (isStacked()) return;
+
+        var copyEl = section.querySelector('.brand-about__copy');
+        var relEl = section.querySelector('.brand-about__releases');
+        if (!copyEl || !relEl) return;
+
+        var copyH = contentHeightBelowHeading(copyEl);
+        var relH = contentHeightBelowHeading(relEl);
+
+        if (copyH === relH) return;
+
+        var floor = computeFloor(copyEl);
+        var shorter = Math.min(copyH, relH);
+        var target = Math.max(shorter, floor);
+
+        if (copyH > relH) {
+          /* Clamp the copy column */
+          var maxH = headingFootprint(copyEl) + target;
+
+          if (maxH >= copyEl.scrollHeight) return; /* nothing to clamp */
+
+          copyEl.style.maxHeight = maxH + 'px';
+          copyEl.setAttribute('data-clamped', '');
+
+          /* Inject toggle */
+          var wrap = document.createElement('div');
+          wrap.className = 'brand-about__controls brand-about__controls--balance';
+          var btn = document.createElement('button');
+          btn.className = 'brand-about__toggle';
+          btn.type = 'button';
+          btn.setAttribute('aria-expanded', 'false');
+          btn.textContent = 'Read more';
+          wrap.appendChild(btn);
+          copyEl.parentNode.insertBefore(wrap, copyEl.nextSibling);
+
+          btn.addEventListener('click', function() {
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            if (expanded) {
+              copyEl.style.maxHeight = maxH + 'px';
+              copyEl.setAttribute('data-clamped', '');
+              btn.setAttribute('aria-expanded', 'false');
+              btn.textContent = 'Read more';
+            } else {
+              copyEl.style.removeProperty('max-height');
+              copyEl.removeAttribute('data-clamped');
+              btn.setAttribute('aria-expanded', 'true');
+              btn.textContent = 'Read less';
+            }
+          });
+        } else {
+          /* Clamp the table — hide whole rows only */
+          var table = relEl.querySelector('.brand-about__table');
+          if (!table) return;
+          var tbody = table.querySelector('tbody');
+          if (!tbody) return;
+          var rows = Array.from(tbody.querySelectorAll('tr'));
+          if (rows.length <= 1) return;
+
+          /* thead height */
+          var thead = table.querySelector('thead');
+          var theadH = thead ? thead.offsetHeight : 0;
+          var available = target - theadH;
+          if (available <= 0) return;
+
+          /* Measure cumulative row heights to find the last row that fits */
+          var cumulative = 0;
+          var visibleCount = 0;
+          for (var i = 0; i < rows.length; i++) {
+            cumulative += rows[i].offsetHeight;
+            if (cumulative <= available) {
+              visibleCount = i + 1;
+            } else {
+              break;
+            }
+          }
+
+          if (visibleCount >= rows.length) return; /* all fit */
+          if (visibleCount < 1) visibleCount = 1;
+
+          rows.forEach(function(tr, idx) { if (idx >= visibleCount) tr.hidden = true; });
+
+          /* Inject toggle */
+          var wrap = document.createElement('div');
+          wrap.className = 'brand-about__controls brand-about__controls--balance';
+          var btn = document.createElement('button');
+          btn.className = 'brand-about__toggle';
+          btn.type = 'button';
+          btn.setAttribute('aria-expanded', 'false');
+          btn.setAttribute('aria-controls', table.id);
+          btn.textContent = 'Show All';
+          wrap.appendChild(btn);
+          table.parentNode.insertBefore(wrap, table.nextSibling);
+
+          btn.addEventListener('click', function() {
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            if (expanded) {
+              rows.forEach(function(tr, idx) { if (idx >= visibleCount) tr.hidden = true; });
+              btn.setAttribute('aria-expanded', 'false');
+              btn.textContent = 'Show All';
+            } else {
+              rows.forEach(function(tr) { tr.hidden = false; });
+              btn.setAttribute('aria-expanded', 'true');
+              btn.textContent = 'Show Less';
+            }
+          });
+        }
+      }
+
+      /* Boot */
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(balance, 50); });
+      } else {
+        setTimeout(balance, 50);
+      }
+
+      /* Resize — debounced */
+      window.addEventListener('resize', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(balance, 200);
       });
+
+      /* Theme editor */
+      document.addEventListener('shopify:section:load', function() { setTimeout(balance, 100); });
     })();
   </script>
 {%- endif -%}
