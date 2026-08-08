@@ -266,7 +266,7 @@
     {% comment %} ── Table toggle button (matches .cbg__more pattern) ── {% endcomment %}
     #{{ section_id }} .brand-about__controls {
       display: flex;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 20px;
       margin-top: 24px;
     }
@@ -299,7 +299,7 @@
     (function() {
       var SECTION_ID = '{{ section_id }}';
       var STACKED_BP = 849;
-      var FLOOR_LINES = 8;
+      var MIN_PARAS = 1;
       var debounceTimer;
 
       function getSection() { return document.getElementById(SECTION_ID); }
@@ -328,13 +328,38 @@
         return heading.offsetHeight + mb;
       }
 
-      /* Compute the 8-line floor from the copy's actual line-height */
-      function computeFloor(copyEl) {
-        var p = copyEl.querySelector('p');
-        var target = p || copyEl;
-        var lh = parseFloat(getComputedStyle(target).lineHeight);
-        if (!isFinite(lh) || lh <= 0) lh = 34; /* fallback */
-        return lh * FLOOR_LINES;
+      /* Compute the clamp height that shows the largest number of
+         complete paragraphs fitting within targetH, but always at
+         least MIN_PARAS paragraph(s) in full. */
+      function paragraphClampHeight(innerEl, targetH) {
+        var paras = innerEl.querySelectorAll('p');
+        if (!paras.length) return targetH;
+        var cumulative = 0;
+        var bestH = 0;
+        var count = 0;
+        for (var i = 0; i < paras.length; i++) {
+          var style = getComputedStyle(paras[i]);
+          var mt = parseFloat(style.marginTop) || 0;
+          var mb = parseFloat(style.marginBottom) || 0;
+          var ph = paras[i].offsetHeight + mt + mb;
+          cumulative += ph;
+          if (cumulative <= targetH) {
+            bestH = cumulative;
+            count = i + 1;
+          } else {
+            break;
+          }
+        }
+        /* Always show at least MIN_PARAS */
+        if (count < MIN_PARAS) {
+          cumulative = 0;
+          for (var j = 0; j < Math.min(MIN_PARAS, paras.length); j++) {
+            var s = getComputedStyle(paras[j]);
+            cumulative += paras[j].offsetHeight + (parseFloat(s.marginTop) || 0) + (parseFloat(s.marginBottom) || 0);
+          }
+          bestH = cumulative;
+        }
+        return bestH;
       }
 
       /* Remove all clamping state */
@@ -386,9 +411,8 @@
 
         if (copyH === relH) return;
 
-        var floor = computeFloor(copyEl);
         var shorter = Math.min(copyH, relH);
-        var target = Math.max(shorter, floor);
+        var target = shorter;
 
         if (copyH > relH) {
           /* Clamp the copy column — wrap content below heading in an
@@ -409,11 +433,12 @@
             copyEl.appendChild(innerEl);
           }
 
-          var innerMaxH = target;
           /* Measure inner's natural scrollHeight */
           innerEl.style.removeProperty('max-height');
           innerEl.removeAttribute('data-clamped');
           void innerEl.offsetHeight;
+
+          var innerMaxH = paragraphClampHeight(innerEl, target);
           if (innerMaxH >= innerEl.scrollHeight) return; /* nothing to clamp */
 
           innerEl.style.maxHeight = innerMaxH + 'px';
