@@ -38,32 +38,4 @@
     </a>
   {% endif %}
 
-  {% comment %} Tile 2: Promo Card (configurable via theme customizer) {% endcomment %}
-  {% if block_settings.promo_heading != blank or block_settings.promo_image != blank %}
-    <a href="{{ block_settings.promo_cta_link | default: '#' }}" class="mega-menu-tile mega-menu-tile--promo">
-      <div class="mega-menu-tile__image">
-        {% if block_settings.promo_image != blank %}
-          {{ block_settings.promo_image | image_url: width: 560 | image_tag:
-            loading: 'lazy',
-            sizes: '280px',
-            widths: '280, 560',
-            class: 'mega-menu-tile__img'
-          }}
-        {% else %}
-          <div class="mega-menu-tile__placeholder"></div>
-        {% endif %}
-      </div>
-      <div class="mega-menu-tile__body">
-        {% if block_settings.promo_eyebrow != blank %}
-          <span class="mega-menu-tile__eyebrow">{{ block_settings.promo_eyebrow }}</span>
-        {% endif %}
-        {% if block_settings.promo_heading != blank %}
-          <span class="mega-menu-tile__heading">{{ block_settings.promo_heading }}</span>
-        {% endif %}
-        {% if block_settings.promo_cta_text != blank %}
-          <span class="mega-menu-tile__cta">{{ block_settings.promo_cta_text }}</span>
-        {% endif %}
-      </div>
-    </a>
-  {% endif %}
 </div>
